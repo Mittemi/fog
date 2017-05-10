@@ -1,0 +1,53 @@
+docker-ui:
+  image: portainer/portainer
+  ports:
+  - 49000:9000
+  privileged: true
+  volumes:
+  - /var/run/docker.sock:/var/run/docker.sock
+  restart: always
+registry-srv:
+  image: registry:2
+  volumes:
+  - ./certs:/certs
+  - ./registry_data:/var/lib/registry
+  expose:
+  - 5000
+  restart: always
+  environment:
+    REGISTRY_HTTP_TLS_CERTIFICATE: /certs/cert.crt
+    REGISTRY_HTTP_TLS_KEY: /certs/key.key 
+    STORAGE_PATH: /var/lib/registry
+    SETTINGS_FLAVOR: local
+    SEARCH_BACKEND: sqlalchemy
+    SQLALCHEMY_INDEX_DATABASE: sqlite:////var/lib/registry/docker-registry.db
+    STANDALONE: "true"
+    TCP_PORTS: '5000'
+    VIRTUAL_HOST: '*:5000, https://*:5000'
+    FORCE_SSL: 'true'
+    REGISTRY_STORAGE_DELETE_ENABLED: "true"
+registry-ui:
+  image: konradkleine/docker-registry-frontend:v2
+  links:
+  - registry-srv:registry-srv
+  expose:
+  - 80
+  environment:
+    VIRTUAL_HOST: '*, https://*'
+    ENV_DOCKER_REGISTRY_HOST: registry-srv
+    ENV_DOCKER_REGISTRY_PORT: 5000
+    ENV_DOCKER_REGISTRY_USE_SSL: 1
+    ENV_REGISTRY_PROXY_FQDN: registry-srv
+  restart: always
+lb:
+   image: dockercloud/haproxy:1.6.2
+   links:
+     - registry-srv
+     - registry-ui
+   ports:
+     - '48080:80'
+     - '40443:443'
+     - '5000:5000'
+   restart: always
+   volumes:
+     - /var/run/docker.sock:/var/run/docker.sock
