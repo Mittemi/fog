@@ -12,6 +12,9 @@ services:
       context: ./admin-server/
       dockerfile: Dockerfile
     ports:
-     - "40080:48080"
+     - "40080:40080"
     links:
       - "eurekaserver:eureka"
+    environment:
+      - EUREKA_SERVICE_URL=http://192.168.2.100:8761
+      - SERVER_PORT=40080

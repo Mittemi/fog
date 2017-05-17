@@ -3,6 +3,8 @@ MAINTAINER Michael Mittermayr
 
 ENTRYPOINT ["/usr/bin/java", "-jar", "/usr/share/app.jar"]
 
-EXPOSE 8761
+ENV SERVER_PORT 8761
+
+EXPOSE $SERVER_PORT
 
 ADD target/eureka-server.jar /usr/share/app.jar
