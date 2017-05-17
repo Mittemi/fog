@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<included>
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <charset></charset>
+        </encoder>
+    </appender>
+
+    <logger name="com.example.demo" level="INFO"/>
+    <logger name="org.springframework.boot.SpringApplication" level="INFO"/>
+    <logger name="jdbc.sqltiming" level="TRACE"/>
+
+    <root level="WARN">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</included>
