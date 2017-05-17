@@ -10,6 +10,7 @@
         <module>platform-core</module>
         <module>platform-docker</module>
         <module>infrastructure</module>
+        <module>platform-swagger</module>
     </modules>
     <packaging>pom</packaging>
 
