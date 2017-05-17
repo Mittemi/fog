@@ -1,17 +1,17 @@
-version 2:
+version: '2'
 
 services:
-  eureka-server:
+  eurekaserver:
     build:
       context: ./eureka-server/
       dockerfile: Dockerfile
     ports:
       - "8761:8761"
-  admin-server:
+  adminserver:
     build:
       context: ./admin-server/
       dockerfile: Dockerfile
     ports:
      - "40080:48080"
-    link:
-      - "eureka-server:eureka"
+    links:
+      - "eurekaserver:eureka"
