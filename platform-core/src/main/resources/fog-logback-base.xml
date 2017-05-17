@@ -6,10 +6,10 @@
 
     <!--<contextName>${serverId}</contextName>-->
 
-    <springProfile name="!local">
+    <springProfile name="docker">
         <include resource="fog-logback-base-file.xml"/>
     </springProfile>
-    <springProfile name="local">
+    <springProfile name="!docker">
         <include resource="fog-logback-base-console.xml"/>
     </springProfile>
 

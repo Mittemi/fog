@@ -11,6 +11,9 @@
         <module>platform-docker</module>
         <module>infrastructure</module>
         <module>platform-swagger</module>
+        <module>deployment-manager</module>
+        <module>platform-server-core</module>
+        <module>platform-client-core</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -101,8 +104,19 @@
                 <version>1.5.0</version>
             </dependency>
 
+            <!--Feign-->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-starter-feign</artifactId>
+                <version>1.3.0.RELEASE</version>
+            </dependency>
 
-            <!--PROJECT-->
+            <!--Platform-->
+            <dependency>
+                <groupId>at.sintrum.fog</groupId>
+                <artifactId>platform-client-core</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
             <dependency>
                 <groupId>at.sintrum.fog</groupId>
                 <artifactId>platform-core</artifactId>
@@ -110,8 +124,26 @@
             </dependency>
             <dependency>
                 <groupId>at.sintrum.fog</groupId>
-                <artifactId>plattform-docker</artifactId>
+                <artifactId>platform-docker</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>at.sintrum.fog</groupId>
+                <artifactId>platform-server-core</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>at.sintrum.fog</groupId>
+                <artifactId>platform-swagger</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+
+            <!--Projects-->
+            <dependency>
+                <groupId>at.sintrum.fog</groupId>
+                <artifactId>deployment-manager-parent</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+                <scope>import</scope>
             </dependency>
 
         </dependencies>

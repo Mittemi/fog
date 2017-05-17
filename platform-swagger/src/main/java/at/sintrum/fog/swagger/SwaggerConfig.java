@@ -8,11 +8,13 @@ import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 /**
  * Created by Michael Mittermayr on 17.05.2017.
  */
 @Configuration
+@EnableSwagger2
 public class SwaggerConfig {
 
     @Bean
