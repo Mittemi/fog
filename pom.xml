@@ -14,6 +14,7 @@
         <module>deployment-manager</module>
         <module>platform-server-core</module>
         <module>platform-client-core</module>
+        <module>platform-test</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -136,6 +137,12 @@
                 <groupId>at.sintrum.fog</groupId>
                 <artifactId>platform-swagger</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>at.sintrum.fog</groupId>
+                <artifactId>platform-test</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+                <scope>test</scope>
             </dependency>
 
             <!--Projects-->

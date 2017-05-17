@@ -15,8 +15,11 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class DockerConfig {
 
-    @Value("${DOCKER_HOST:unix:///var/run/docker.sock}")
-    private String dockerHost;
+    public DockerConfig(@Value("${DOCKER_HOST:unix:///var/run/docker.sock}") String dockerHost) {
+        this.dockerHost = dockerHost;
+    }
+
+    private final String dockerHost;
 
     @Bean
     public DockerClient client() {

@@ -9,24 +9,17 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>platform-docker</artifactId>
+    <artifactId>platform-test</artifactId>
 
     <dependencies>
         <dependency>
-            <groupId>at.sintrum.fog</groupId>
-            <artifactId>platform-core</artifactId>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>com.github.docker-java</groupId>
-            <artifactId>docker-java</artifactId>
-        </dependency>
-
-
-        <dependency>
-            <groupId>at.sintrum.fog</groupId>
-            <artifactId>platform-test</artifactId>
-            <scope>test</scope>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
         </dependency>
     </dependencies>
 
