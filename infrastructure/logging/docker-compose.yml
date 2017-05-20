@@ -19,20 +19,28 @@ services:
     networks:
       - elk
 
-  logstash:
-    build: logstash/
-    container_name: fog_logging_logstash
-    volumes:
-      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
-      - ./logstash/pipeline:/usr/share/logstash/pipeline
-    ports:
-      - "45044:5044"
-    environment:
-      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
-    networks:
+  elastichq:
+     build: elasticsearch-HQ
+     container_name: fog_logging_elastichsearch-HQ
+     networks:
       - elk
-    depends_on:
-      - elasticsearch
+     ports:
+       - 49100:80
+
+#  logstash:
+#    build: logstash/
+#    container_name: fog_logging_logstash
+#    volumes:
+#      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
+#      - ./logstash/pipeline:/usr/share/logstash/pipeline
+#    ports:
+#      - "45044:5044"
+#    environment:
+#      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+#    networks:
+#      - elk
+#    depends_on:
+#      - elasticsearch
 
   kibana:
     build: kibana/
