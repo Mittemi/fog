@@ -1,0 +1,28 @@
+package at.sintrum.fog.deploymentmanager.service;
+
+import at.sintrum.fog.deploymentmanager.api.dto.*;
+import com.github.dockerjava.api.command.ListImagesCmd;
+
+import java.util.List;
+
+/**
+ * Created by Michael Mittermayr on 20.05.2017.
+ */
+public interface DockerService {
+
+    List<ContainerInfo> getContainers();
+
+    List<ImageInfo> getImages();
+
+    boolean isProtectedContainer(ContainerInfo containerInfo);
+
+    boolean startContainer(String id);
+
+    boolean stopContainer(String id);
+
+    CreateContainerResult createContainer(CreateContainerRequest createContainerRequest);
+
+    void pullImage(PullImageRequest pullImageRequest);
+
+    void pushImage(PushImageRequest pushImageRequest);
+}

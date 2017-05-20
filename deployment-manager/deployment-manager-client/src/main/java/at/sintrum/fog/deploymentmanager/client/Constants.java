@@ -5,5 +5,5 @@ package at.sintrum.fog.deploymentmanager.client;
  */
 public class Constants {
 
-    public static final String APPLICATION_NAME = "";
+    public static final String APPLICATION_NAME = "deployment-manager";
 }

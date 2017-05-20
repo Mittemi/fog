@@ -4,6 +4,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -24,7 +25,11 @@ public class DockerConfig {
     @Bean
     public DockerClient client() {
 
-        LoggerFactory.getLogger(DockerConfig.class).info("Docker-Host: " + dockerHost);
+        Logger logger = LoggerFactory.getLogger(DockerConfig.class);
+        logger.info("Docker-Host: " + dockerHost);
+        if (dockerHost.startsWith("unix:///") && System.getProperty("os.name").toLowerCase().startsWith("windows")) {
+            logger.warn("Docker-Host won't work on this system. Use TCP!");
+        }
 
         DockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder()
                 .withDockerHost(dockerHost)

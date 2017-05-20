@@ -15,3 +15,15 @@ eureka:
       defaultZone: ${EUREKA_SERVICE_URL:http://localhost:8761}/eureka/
 
 management.security.enabled: false
+
+fog.deploymentmanager.protectedContainers:
+  - "portainer/portainer"
+  - "logging_elastichq"
+  - "logging_kibana"
+  - "logging_elasticsearch"
+  - "infrastructure_adminserver"
+  - "infrastructure_eurekaserver"
+  - "dockercloud/haproxy:1.6.2"
+  - "konradkleine/docker-registry-frontend:v2"
+  - "registry:2"
+  - "elasticsearch:5.3.0"
