@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # Start the first process
-filebeat -e
+cd /beat
+filebeat -e &
 status=$?
 if [ $status -ne 0 ]; then
   echo "Failed to start filebeat: $status"
@@ -13,6 +14,7 @@ fi
 status=$?
 if [ $status -ne 0 ]; then
   echo "Failed to start application: $status"
+  echo "Failed to start application" > /logs/container.log
   exit $status
 fi
 
@@ -22,14 +24,14 @@ fi
 # if it detects that either of the processes has exited.
 # Otherwise it will loop forever, waking up every 60 seconds
 
-while /bin/true; do
-  PROCESS_1_STATUS=$(ps aux |grep -q filebeat |grep -v grep)
-  PROCESS_2_STATUS=$(ps aux |grep -q java | grep -v grep)
-  # If the greps above find anything, they will exit with 0 status
-  # If they are not both 0, then something is wrong
-  if [ $PROCESS_1_STATUS -ne 0 -o $PROCESS_2_STATUS -ne 0 ]; then
-    echo "One of the processes has already exited."
-    exit -1
-  fi
-  sleep 15
-done
+#while /bin/true; do
+#  PROCESS_1_STATUS=$(ps aux |grep -q filebeat |grep -v grep)
+#  PROCESS_2_STATUS=$(ps aux |grep -q java | grep -v grep)
+#  # If the greps above find anything, they will exit with 0 status
+#  # If they are not both 0, then something is wrong
+#  if [ $PROCESS_1_STATUS -ne 0 -o $PROCESS_2_STATUS -ne 0 ]; then
+#    echo "One of the processes has already exited."
+#    exit -1
+#  fi
+#  sleep 15
+#done

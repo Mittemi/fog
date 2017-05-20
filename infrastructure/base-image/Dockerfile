@@ -42,6 +42,11 @@ RUN \
 
 
 COPY docker-entrypoint.sh /
-RUN chmod +x docker-entrypoint.sh 
+RUN chmod +x docker-entrypoint.sh && mkdir -p /beat && \
+    echo "java -Dspring.profiles.active=development -jar /usr/share/app.jar" > /usr/share/run_app.sh && \
+    chmod +x /usr/share/run_app.sh
 ENTRYPOINT ["/docker-entrypoint.sh"]
+WORKDIR /
 
+COPY ./config/filebeat.yml /beat/
+COPY ./config/filebeat.template* /beat/
