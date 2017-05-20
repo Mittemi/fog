@@ -8,6 +8,7 @@ filebeat.prospectors:
 # Below are the prospector specific configurations.
 
 - type: log
+#  json.message_key: event
 
   # Change to true to enable this prospector configuration.
   enabled: true
@@ -15,7 +16,7 @@ filebeat.prospectors:
   # Paths that should be crawled and fetched. Glob based paths.
   paths:
 #    - /var/log/*.log
-    - /logs/*.log
+    - /logs/*.log.json
     #- c:\programdata\elasticsearch\logs\*
 
   # Exclude lines. A list of regular expressions to match. It drops the lines that are
@@ -52,11 +53,16 @@ filebeat.prospectors:
   # Note: After is the equivalent to previous and before is the equivalent to to next in Logstash
   #multiline.match: after
 
-  fields:
-    - app_type=${FOG_APP_TYPE}
-    - app_host=${FOG_APP_HOST}
+#  fields:
+#    app_type:${FOG_APP_TYPE}
+#    app_host:${FOG_APP_HOST}
 
 
 output.elasticsearch:
   # Array of hosts to connect to.
   hosts: ["192.168.2.100:49200"]
+
+processors:
+ - decode_json_fields:
+     fields: ['message']
+     target: json

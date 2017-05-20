@@ -43,7 +43,7 @@ RUN \
 
 COPY docker-entrypoint.sh /
 RUN chmod +x docker-entrypoint.sh && mkdir -p /beat && \
-    echo "java -Dspring.profiles.active=development -jar /usr/share/app.jar" > /usr/share/run_app.sh && \
+    echo "java -Dspring.profiles.active=docker -jar /usr/share/app.jar" > /usr/share/run_app.sh && \
     chmod +x /usr/share/run_app.sh
 ENTRYPOINT ["/docker-entrypoint.sh"]
 WORKDIR /
