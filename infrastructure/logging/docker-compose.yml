@@ -4,10 +4,11 @@ services:
 
   elasticsearch:
     build: elasticsearch/
+    container_name: fog_logging_elasticsearch
     volumes:
       - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
-      - ./elasticsearch/data:/usr/share/elasticsearch/data
-      - ./elasticsearch/logs:/usr/share/elasticsearch/logs
+      - ./elasticsearch/data:/usr/share/elasticsearch/data:rw
+      - ./elasticsearch/logs:/usr/share/elasticsearch/logs:rw
     ports:
       - "49200:9200"
       - "49300:9300"
@@ -20,11 +21,12 @@ services:
 
   logstash:
     build: logstash/
+    container_name: fog_logging_logstash
     volumes:
       - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
       - ./logstash/pipeline:/usr/share/logstash/pipeline
     ports:
-      - "45000:5000"
+      - "45044:5044"
     environment:
       LS_JAVA_OPTS: "-Xmx256m -Xms256m"
     networks:
@@ -34,6 +36,7 @@ services:
 
   kibana:
     build: kibana/
+    container_name: fog_logging_kibana
     volumes:
       - ./kibana/config/:/usr/share/kibana/config
     ports:
