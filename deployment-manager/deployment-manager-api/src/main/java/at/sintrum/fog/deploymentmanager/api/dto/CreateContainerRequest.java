@@ -13,6 +13,12 @@ public class CreateContainerRequest {
 
     private List<String> environment;
 
+    private List<VolumeInfo> volumes;
+
+    private String restartPolicy;
+
+    private boolean withTty;
+
     public String getImage() {
         return image;
     }
@@ -35,5 +41,29 @@ public class CreateContainerRequest {
 
     public void setEnvironment(List<String> environment) {
         this.environment = environment;
+    }
+
+    public boolean isWithTty() {
+        return withTty;
+    }
+
+    public void setWithTty(boolean withTty) {
+        this.withTty = withTty;
+    }
+
+    public String getRestartPolicy() {
+        return restartPolicy;
+    }
+
+    public void setRestartPolicy(String restartPolicy) {
+        this.restartPolicy = restartPolicy;
+    }
+
+    public List<VolumeInfo> getVolumes() {
+        return volumes;
+    }
+
+    public void setVolumes(List<VolumeInfo> volumes) {
+        this.volumes = volumes;
     }
 }

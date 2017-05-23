@@ -3,12 +3,11 @@ package at.sintrum.fog.deploymentmanager.service;
 import at.sintrum.fog.deploymentmanager.api.dto.*;
 import at.sintrum.fog.deploymentmanager.config.DeploymentManagerConfigProperties;
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.PullImageCmd;
 import com.github.dockerjava.api.command.PushImageCmd;
-import com.github.dockerjava.api.model.Container;
-import com.github.dockerjava.api.model.ContainerPort;
-import com.github.dockerjava.api.model.Image;
+import com.github.dockerjava.api.model.*;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 import com.github.dockerjava.core.command.PushImageResultCallback;
 import org.slf4j.Logger;
@@ -17,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -96,9 +96,60 @@ public class DockerServiceImpl implements DockerService {
     @Override
     public CreateContainerResult createContainer(CreateContainerRequest createContainerRequest) {
 
-        CreateContainerResponse response = dockerClient.createContainerCmd(createContainerRequest.getImage()).exec();
+        CreateContainerCmd createContainerCmd = dockerClient.createContainerCmd(createContainerRequest.getImage());
+        createContainerCmd.withTty(createContainerRequest.isWithTty());
+        createContainerCmd.withEnv(createContainerRequest.getEnvironment());
+        if (!StringUtils.isEmpty(createContainerRequest.getRestartPolicy())) {
+            createContainerCmd.withRestartPolicy(RestartPolicy.parse(createContainerRequest.getRestartPolicy()));
+        }
 
+        fillPortBindings(createContainerRequest);
+        fillVolume(createContainerRequest, createContainerCmd);
+
+
+        //TODO: container links
+        //TODO: bind exposed ports dynamically
+
+        CreateContainerResponse response = createContainerCmd.exec();
         return new CreateContainerResult(response.getId(), response.getWarnings());
+    }
+
+    private void fillPortBindings(CreateContainerRequest createContainerRequest) {
+        List<PortBinding> portBindings = new LinkedList<>();
+        for (PortInfo portInfo : createContainerRequest.getPortInfos()) {
+            Ports.Binding binding;
+            if (StringUtils.isEmpty(portInfo.getIp())) {
+                binding = Ports.Binding.bindPort(portInfo.getHostPort());
+            } else {
+                binding = Ports.Binding.bindIpAndPort(portInfo.getIp(), portInfo.getHostPort());
+            }
+
+
+            ExposedPort exposedPort;
+            if (StringUtils.isEmpty(portInfo.getType())) {
+                exposedPort = new ExposedPort(portInfo.getContainerPort());
+            } else {
+                exposedPort = new ExposedPort(portInfo.getContainerPort(), InternetProtocol.valueOf(portInfo.getType()));
+            }
+
+            PortBinding portBinding = new PortBinding(binding, exposedPort);
+            portBindings.add(portBinding);
+        }
+    }
+
+    private void fillVolume(CreateContainerRequest createContainerRequest, CreateContainerCmd createContainerCmd) {
+        List<Volume> volumes = new LinkedList<>();
+        List<Bind> binds = new LinkedList<>();
+        for (VolumeInfo volumeInfo : createContainerRequest.getVolumes()) {
+            Volume volume = new Volume(volumeInfo.getContainerDir());
+            volumes.add(volume);
+            if (!StringUtils.isEmpty(volumeInfo.getHostDir())) {
+                Bind bind = new Bind(volumeInfo.getHostDir(), volume);
+                binds.add(bind);
+            }
+        }
+        createContainerCmd.withVolumes(volumes);
+        createContainerCmd.withBinds(binds);
     }
 
     @Override
@@ -106,6 +157,7 @@ public class DockerServiceImpl implements DockerService {
         PullImageCmd pullImageCmd = dockerClient.pullImageCmd(pullImageRequest.getName());
 
         if (!StringUtils.isEmpty(pullImageRequest.getTag())) {
+            LOG.warn("Pull image without tag!");
             pullImageCmd.withTag(pullImageCmd.getTag());
         }
 
@@ -117,6 +169,7 @@ public class DockerServiceImpl implements DockerService {
         PushImageCmd pushImageCmd = dockerClient.pushImageCmd(pushImageRequest.getName());
 
         if (!StringUtils.isEmpty(pushImageRequest.getTag())) {
+            LOG.warn("Push image without tag!");
             pushImageCmd.withTag(pushImageRequest.getTag());
         }
 

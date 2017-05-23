@@ -6,17 +6,17 @@ package at.sintrum.fog.deploymentmanager.api.dto;
 public class PortInfo {
 
     private String ip;
-    private Integer privatePort;
-    private Integer publicPort;
+    private Integer containerPort;
+    private Integer hostPort;
     private String type;
 
     public PortInfo() {
     }
 
-    public PortInfo(String ip, Integer privatePort, Integer publicPort, String type) {
+    public PortInfo(String ip, Integer containerPort, Integer hostPort, String type) {
         this.ip = ip;
-        this.privatePort = privatePort;
-        this.publicPort = publicPort;
+        this.containerPort = containerPort;
+        this.hostPort = hostPort;
         this.type = type;
     }
 
@@ -28,20 +28,20 @@ public class PortInfo {
         this.ip = ip;
     }
 
-    public Integer getPrivatePort() {
-        return privatePort;
+    public Integer getContainerPort() {
+        return containerPort;
     }
 
-    public void setPrivatePort(Integer privatePort) {
-        this.privatePort = privatePort;
+    public void setContainerPort(Integer containerPort) {
+        this.containerPort = containerPort;
     }
 
-    public Integer getPublicPort() {
-        return publicPort;
+    public Integer getHostPort() {
+        return hostPort;
     }
 
-    public void setPublicPort(Integer publicPort) {
-        this.publicPort = publicPort;
+    public void setHostPort(Integer hostPort) {
+        this.hostPort = hostPort;
     }
 
     public String getType() {
@@ -54,6 +54,6 @@ public class PortInfo {
 
     @Override
     public String toString() {
-        return ip + ":" + publicPort + "->" + privatePort + "(" + type + ")";
+        return ip + ":" + hostPort + "->" + containerPort + "(" + type + ")";
     }
 }
