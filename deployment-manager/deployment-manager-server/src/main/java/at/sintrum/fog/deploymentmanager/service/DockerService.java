@@ -22,6 +22,10 @@ public interface DockerService {
 
     CreateContainerResult createContainer(CreateContainerRequest createContainerRequest);
 
+    CommitContainerResult commitContainer(CommitContainerRequest commitContainerRequest);
+
+    void tagImage(String imageId, String repository, String tag);
+
     void pullImage(PullImageRequest pullImageRequest);
 
     void pushImage(PushImageRequest pushImageRequest);

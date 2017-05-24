@@ -3,10 +3,7 @@ package at.sintrum.fog.deploymentmanager.service;
 import at.sintrum.fog.deploymentmanager.api.dto.*;
 import at.sintrum.fog.deploymentmanager.config.DeploymentManagerConfigProperties;
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.command.CreateContainerCmd;
-import com.github.dockerjava.api.command.CreateContainerResponse;
-import com.github.dockerjava.api.command.PullImageCmd;
-import com.github.dockerjava.api.command.PushImageCmd;
+import com.github.dockerjava.api.command.*;
 import com.github.dockerjava.api.model.*;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 import com.github.dockerjava.core.command.PushImageResultCallback;
@@ -112,6 +109,17 @@ public class DockerServiceImpl implements DockerService {
 
         CreateContainerResponse response = createContainerCmd.exec();
         return new CreateContainerResult(response.getId(), response.getWarnings());
+    }
+
+    @Override
+    public CommitContainerResult commitContainer(CommitContainerRequest commitContainerRequest) {
+        CommitCmd commitCmd = dockerClient.commitCmd(commitContainerRequest.getContainerId());
+        return new CommitContainerResult(commitCmd.exec());
+    }
+
+    @Override
+    public void tagImage(String imageId, String repository, String tag) {
+        dockerClient.tagImageCmd(imageId, repository, tag).exec();
     }
 
     private void fillPortBindings(CreateContainerRequest createContainerRequest) {
