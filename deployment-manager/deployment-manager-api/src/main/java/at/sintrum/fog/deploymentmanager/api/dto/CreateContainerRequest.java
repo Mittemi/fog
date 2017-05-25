@@ -1,5 +1,6 @@
 package at.sintrum.fog.deploymentmanager.api.dto;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -9,11 +10,11 @@ public class CreateContainerRequest {
 
     private String image;
 
-    private List<PortInfo> portInfos;
+    private List<PortInfo> portInfos = new LinkedList<>();
 
-    private List<String> environment;
+    private List<String> environment = new LinkedList<>();
 
-    private List<VolumeInfo> volumes;
+    private List<VolumeInfo> volumes = new LinkedList<>();
 
     private String restartPolicy;
 

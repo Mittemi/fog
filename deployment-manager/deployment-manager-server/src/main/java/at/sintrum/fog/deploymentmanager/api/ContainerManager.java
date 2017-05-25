@@ -1,8 +1,6 @@
 package at.sintrum.fog.deploymentmanager.api;
 
-import at.sintrum.fog.deploymentmanager.api.dto.ContainerInfo;
-import at.sintrum.fog.deploymentmanager.api.dto.CreateContainerRequest;
-import at.sintrum.fog.deploymentmanager.api.dto.CreateContainerResult;
+import at.sintrum.fog.deploymentmanager.api.dto.*;
 import at.sintrum.fog.deploymentmanager.service.DockerService;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -45,5 +43,10 @@ public class ContainerManager implements ContainerManagerApi {
     @Override
     public CreateContainerResult createContainer(CreateContainerRequest createContainerRequest) {
         return dockerService.createContainer(createContainerRequest);
+    }
+
+    @Override
+    public CommitContainerResult commitContainer(CommitContainerRequest commitContainerRequest) {
+        return dockerService.commitContainer(commitContainerRequest);
     }
 }

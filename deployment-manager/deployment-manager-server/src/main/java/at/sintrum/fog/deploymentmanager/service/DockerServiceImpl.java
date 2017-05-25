@@ -37,7 +37,7 @@ public class DockerServiceImpl implements DockerService {
     @Override
     public List<ContainerInfo> getContainers() {
 
-        List<Container> listResult = dockerClient.listContainersCmd().exec();
+        List<Container> listResult = dockerClient.listContainersCmd().withShowAll(true).exec();
 
         return listResult.stream().map(DockerServiceImpl::mapToDto).filter(x -> !isProtectedContainer(x)).collect(Collectors.toList());
     }
@@ -63,7 +63,8 @@ public class DockerServiceImpl implements DockerService {
     }
 
     public boolean startContainer(String id) {
-        Optional<ContainerInfo> first = getContainers().stream().filter(x -> x.getId().equals(id)).findFirst();
+        //TODO: check if single container only (exactly 1)
+        Optional<ContainerInfo> first = getContainers().stream().filter(x -> x.getId().startsWith(id)).findFirst();
 
         if (first.isPresent()) {
             ContainerInfo containerInfo = first.get();
@@ -77,7 +78,8 @@ public class DockerServiceImpl implements DockerService {
     }
 
     public boolean stopContainer(String id) {
-        Optional<ContainerInfo> first = getContainers().stream().filter(x -> x.getId().equals(id)).findFirst();
+        //TODO: check if single container only (exactly 1)
+        Optional<ContainerInfo> first = getContainers().stream().filter(x -> x.getId().startsWith(id)).findFirst();
 
         if (first.isPresent()) {
             ContainerInfo containerInfo = first.get();
@@ -100,7 +102,7 @@ public class DockerServiceImpl implements DockerService {
             createContainerCmd.withRestartPolicy(RestartPolicy.parse(createContainerRequest.getRestartPolicy()));
         }
 
-        fillPortBindings(createContainerRequest);
+        fillPortBindings(createContainerRequest, createContainerCmd);
         fillVolume(createContainerRequest, createContainerCmd);
 
 
@@ -122,8 +124,9 @@ public class DockerServiceImpl implements DockerService {
         dockerClient.tagImageCmd(imageId, repository, tag).exec();
     }
 
-    private void fillPortBindings(CreateContainerRequest createContainerRequest) {
+    private void fillPortBindings(CreateContainerRequest createContainerRequest, CreateContainerCmd createContainerCmd) {
         List<PortBinding> portBindings = new LinkedList<>();
+        List<ExposedPort> exposedPorts = new LinkedList<>();
         for (PortInfo portInfo : createContainerRequest.getPortInfos()) {
             Ports.Binding binding;
             if (StringUtils.isEmpty(portInfo.getIp())) {
@@ -131,7 +134,6 @@ public class DockerServiceImpl implements DockerService {
             } else {
                 binding = Ports.Binding.bindIpAndPort(portInfo.getIp(), portInfo.getHostPort());
             }
-
 
             ExposedPort exposedPort;
             if (StringUtils.isEmpty(portInfo.getType())) {
@@ -141,8 +143,11 @@ public class DockerServiceImpl implements DockerService {
             }
 
             PortBinding portBinding = new PortBinding(binding, exposedPort);
+            exposedPorts.add(exposedPort);
             portBindings.add(portBinding);
         }
+        createContainerCmd.withExposedPorts(exposedPorts);
+        createContainerCmd.withPortBindings(portBindings);
     }
 
     private void fillVolume(CreateContainerRequest createContainerRequest, CreateContainerCmd createContainerCmd) {

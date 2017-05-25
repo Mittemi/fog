@@ -15,6 +15,9 @@
         <module>platform-server-core</module>
         <module>platform-client-core</module>
         <module>platform-test</module>
+        <module>applications</module>
+        <module>platform-application-core</module>
+        <module>platform-host-info</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -115,6 +118,11 @@
             <!--Platform-->
             <dependency>
                 <groupId>at.sintrum.fog</groupId>
+                <artifactId>platform-application-core</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>at.sintrum.fog</groupId>
                 <artifactId>platform-client-core</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
             </dependency>
@@ -126,6 +134,11 @@
             <dependency>
                 <groupId>at.sintrum.fog</groupId>
                 <artifactId>platform-docker</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>at.sintrum.fog</groupId>
+                <artifactId>platform-host-info</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
             </dependency>
             <dependency>
@@ -148,9 +161,8 @@
             <!--Projects-->
             <dependency>
                 <groupId>at.sintrum.fog</groupId>
-                <artifactId>deployment-manager-parent</artifactId>
+                <artifactId>deployment-manager-client</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
-                <scope>import</scope>
             </dependency>
 
         </dependencies>

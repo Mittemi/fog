@@ -12,6 +12,9 @@ public class ImageInfo {
         this.tags = tags;
     }
 
+    public ImageInfo() {
+    }
+
     private String id;
 
     private List<String> tags;

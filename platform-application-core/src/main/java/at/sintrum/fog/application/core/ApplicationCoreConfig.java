@@ -1,5 +1,7 @@
-package at.sintrum.fog.servercore;
+package at.sintrum.fog.application.core;
 
+import at.sintrum.fog.core.PlatformCoreConfig;
+import at.sintrum.fog.deploymentmanager.client.DeploymentManagerClientConfig;
 import at.sintrum.fog.hostinfo.HostInfoProviderConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,12 +13,12 @@ import org.springframework.context.annotation.Import;
 import javax.annotation.PostConstruct;
 
 /**
- * Created by Michael Mittermayr on 17.05.2017.
+ * Created by Michael Mittermayr on 24.05.2017.
  */
 @Configuration
-@Import({HostInfoProviderConfig.class})
+@Import({DeploymentManagerClientConfig.class, PlatformCoreConfig.class, HostInfoProviderConfig.class})
 @EnableDiscoveryClient
-public class ServerCoreConfig {
+public class ApplicationCoreConfig {
 
     @Value("${EUREKA_SERVICE_URL:UNKNOWN}")
     private String eurekaUrl;
@@ -26,7 +28,7 @@ public class ServerCoreConfig {
 
     @PostConstruct
     public void invoke() {
-        Logger logger = LoggerFactory.getLogger(ServerCoreConfig.class);
+        Logger logger = LoggerFactory.getLogger(ApplicationCoreConfig.class);
 
         if ("UNKNOWN".equals(eurekaUrl) || "UNKNOWN".equals(eurekaClientIp)) {
             logger.warn("ENV settings for Eureka missing!");
@@ -35,5 +37,4 @@ public class ServerCoreConfig {
         logger.info("EurekaUrl: " + eurekaUrl);
         logger.info("EurekaClientIP: " + eurekaClientIp);
     }
-
 }
