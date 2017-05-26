@@ -17,4 +17,5 @@ services:
       - "eurekaserver:eureka"
     environment:
       - EUREKA_SERVICE_URL=http://192.168.2.100:8761
+      - EUREKA_CLIENT_IP=192.168.2.100
       - SERVER_PORT=40080
