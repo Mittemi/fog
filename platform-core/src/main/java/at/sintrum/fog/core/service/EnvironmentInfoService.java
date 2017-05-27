@@ -8,4 +8,6 @@ public interface EnvironmentInfoService {
     String getOwnContainerId();
 
     boolean isInsideContainer();
+
+    String getDeploymentManagerUrl();
 }

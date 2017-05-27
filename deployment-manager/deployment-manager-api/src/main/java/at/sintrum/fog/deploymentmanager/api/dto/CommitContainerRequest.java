@@ -26,4 +26,12 @@ public class CommitContainerRequest {
     public void setTags(List<String> tags) {
         this.tags = tags;
     }
+
+    public CommitContainerRequest() {
+    }
+
+    public CommitContainerRequest(String containerId, List<String> tags) {
+        this.containerId = containerId;
+        this.tags = tags;
+    }
 }

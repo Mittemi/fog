@@ -1,11 +1,18 @@
 package at.sintrum.fog.clientcore;
 
 import at.sintrum.fog.clientcore.annotation.DoNotRegister;
+import at.sintrum.fog.clientcore.client.ClientProvider;
+import feign.Client;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.web.WebMvcRegistrations;
 import org.springframework.boot.autoconfigure.web.WebMvcRegistrationsAdapter;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.feign.FeignClient;
+import org.springframework.cloud.netflix.feign.FeignClientsConfiguration;
+import org.springframework.cloud.netflix.feign.ribbon.LoadBalancerFeignClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
@@ -15,7 +22,14 @@ import java.lang.annotation.Annotation;
  * Created by Michael Mittermayr on 17.05.2017.
  */
 @Configuration
+@Import({FeignClientsConfiguration.class})
 public class ClientCoreConfig {
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ClientProvider clientProvider(DiscoveryClient discoveryClient, Client eurekaEnabledClient) {
+        return new at.sintrum.fog.clientcore.client.impl.ClientProvider(discoveryClient, eurekaEnabledClient, new Client.Default(null, null));
+    }
 
     @Bean
     public WebMvcRegistrations feignWebRegistrations() {

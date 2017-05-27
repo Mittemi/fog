@@ -7,7 +7,7 @@ public class MoveApplicationRequest {
 
     private String targetIp;
 
-    private String targetPort;
+    private int targetPort;
 
     public String getTargetIp() {
         return targetIp;
@@ -17,11 +17,11 @@ public class MoveApplicationRequest {
         this.targetIp = targetIp;
     }
 
-    public String getTargetPort() {
+    public int getTargetPort() {
         return targetPort;
     }
 
-    public void setTargetPort(String targetPort) {
+    public void setTargetPort(int targetPort) {
         this.targetPort = targetPort;
     }
 }

@@ -5,5 +5,5 @@ package at.sintrum.fog.application.core.service;
  */
 public interface MoveApplicationService {
 
-    void moveApplication(String targetIp, String targetPort);
+    void moveApplication(String targetIp, int targetPort);
 }

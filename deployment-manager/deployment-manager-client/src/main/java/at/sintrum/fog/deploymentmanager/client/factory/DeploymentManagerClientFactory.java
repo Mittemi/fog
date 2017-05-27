@@ -8,6 +8,8 @@ import at.sintrum.fog.deploymentmanager.client.api.ImageManager;
  */
 public interface DeploymentManagerClientFactory {
 
+    String buildUrl(String ip, int port);
+
     ImageManager createImageManagerClient(String url);
 
     ContainerManager createContainerManagerClient(String url);

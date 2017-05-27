@@ -1,6 +1,8 @@
 package at.sintrum.fog.core.service;
 
+import at.sintrum.fog.core.config.FogApplicationConfigProperties;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -15,6 +17,11 @@ import java.util.Scanner;
 public class EnvironmentInfoServiceImpl implements EnvironmentInfoService {
 
     private final org.slf4j.Logger LOG = LoggerFactory.getLogger(EnvironmentInfoServiceImpl.class);
+    private FogApplicationConfigProperties fogApplicationConfigProperties;
+
+    public EnvironmentInfoServiceImpl(FogApplicationConfigProperties fogApplicationConfigProperties) {
+        this.fogApplicationConfigProperties = fogApplicationConfigProperties;
+    }
 
     @Override
     public String getOwnContainerId() {
@@ -34,6 +41,11 @@ public class EnvironmentInfoServiceImpl implements EnvironmentInfoService {
 
         LOG.warn("Unable to determine if application runs inside a container!");
         return false;
+    }
+
+    @Override
+    public String getDeploymentManagerUrl() {
+        return fogApplicationConfigProperties.getDeploymentManagerUrl();
     }
 
     private String getHostname() {
