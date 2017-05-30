@@ -1,21 +1,14 @@
 package at.sintrum.fog.application.core.service;
 
 import at.sintrum.fog.core.service.EnvironmentInfoService;
-import at.sintrum.fog.deploymentmanager.api.dto.CommitContainerRequest;
-import at.sintrum.fog.deploymentmanager.api.dto.CommitContainerResult;
 import at.sintrum.fog.deploymentmanager.api.dto.ContainerInfo;
 import at.sintrum.fog.deploymentmanager.client.api.ContainerManager;
 import at.sintrum.fog.deploymentmanager.client.api.ImageManager;
 import at.sintrum.fog.deploymentmanager.client.factory.DeploymentManagerClientFactory;
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.DiscoveryClient;
-import com.netflix.discovery.EurekaClient;
+import at.sintrum.fog.metadatamanager.client.factory.MetadataManagerClientFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-
-import java.awt.*;
-import java.util.*;
 
 /**
  * Created by Michael Mittermayr on 24.05.2017.
@@ -24,28 +17,30 @@ import java.util.*;
 public class MoveApplicationServiceImpl implements MoveApplicationService {
 
     private final EnvironmentInfoService environmentInfoService;
-    private final DeploymentManagerClientFactory clientFactory;
+    private final DeploymentManagerClientFactory deploymentManagerClientFactory;
+    private MetadataManagerClientFactory metadataManagerClientFactory;
 
     private final Logger LOGGER = LoggerFactory.getLogger(MoveApplicationServiceImpl.class);
 
-    public MoveApplicationServiceImpl(EnvironmentInfoService environmentInfoService, DeploymentManagerClientFactory clientFactory) {
+    public MoveApplicationServiceImpl(EnvironmentInfoService environmentInfoService, DeploymentManagerClientFactory deploymentManagerClientFactory, MetadataManagerClientFactory metadataManagerClientFactory) {
         this.environmentInfoService = environmentInfoService;
-        this.clientFactory = clientFactory;
+        this.deploymentManagerClientFactory = deploymentManagerClientFactory;
+        this.metadataManagerClientFactory = metadataManagerClientFactory;
     }
 
     @Override
     public void moveApplication(String targetIp, int targetPort) {
         String containerId = environmentInfoService.getOwnContainerId();
         containerId = "8d38361ab939";
-        String targetDeploymentMangerUrl = clientFactory.buildUrl(targetIp, targetPort);
+        String targetDeploymentMangerUrl = deploymentManagerClientFactory.buildUrl(targetIp, targetPort);
         //TODO: check if container exists, check if it is running at all
 
         String sourceDeploymentManagerUrl = environmentInfoService.getDeploymentManagerUrl();
-        ContainerManager sourceContainerManager = clientFactory.createContainerManagerClient(sourceDeploymentManagerUrl);
-        ImageManager sourceImageManager = clientFactory.createImageManagerClient(sourceDeploymentManagerUrl);
+        ContainerManager sourceContainerManager = deploymentManagerClientFactory.createContainerManagerClient(sourceDeploymentManagerUrl);
+        ImageManager sourceImageManager = deploymentManagerClientFactory.createImageManagerClient(sourceDeploymentManagerUrl);
 
-        ContainerManager targetContainerManger = clientFactory.createContainerManagerClient(targetDeploymentMangerUrl);
-        ImageManager targetImageManager = clientFactory.createImageManagerClient(targetDeploymentMangerUrl);
+        ContainerManager targetContainerManger = deploymentManagerClientFactory.createContainerManagerClient(targetDeploymentMangerUrl);
+        ImageManager targetImageManager = deploymentManagerClientFactory.createImageManagerClient(targetDeploymentMangerUrl);
 
         java.util.List<ContainerInfo> containers = sourceContainerManager.getContainers();
 

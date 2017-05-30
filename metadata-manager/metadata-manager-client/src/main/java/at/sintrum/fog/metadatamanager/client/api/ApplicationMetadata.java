@@ -1,7 +1,8 @@
-package factory.api;
+package at.sintrum.fog.metadatamanager.client.api;
 
 import at.sintrum.fog.clientcore.annotation.DoNotRegister;
 import at.sintrum.fog.metadatamanager.api.ApplicationMetadataApi;
+
 
 /**
  * Created by Michael Mittermayr on 30.05.2017.

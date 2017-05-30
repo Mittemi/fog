@@ -3,6 +3,7 @@ package at.sintrum.fog.application.core;
 import at.sintrum.fog.core.PlatformCoreConfig;
 import at.sintrum.fog.deploymentmanager.client.DeploymentManagerClientConfig;
 import at.sintrum.fog.hostinfo.HostInfoProviderConfig;
+import at.sintrum.fog.metadatamanager.client.MetadataManagerClientConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,7 +17,7 @@ import javax.annotation.PostConstruct;
  * Created by Michael Mittermayr on 24.05.2017.
  */
 @Configuration
-@Import({DeploymentManagerClientConfig.class, PlatformCoreConfig.class, HostInfoProviderConfig.class})
+@Import({DeploymentManagerClientConfig.class, MetadataManagerClientConfig.class, PlatformCoreConfig.class, HostInfoProviderConfig.class})
 @EnableDiscoveryClient
 public class ApplicationCoreConfig {
 

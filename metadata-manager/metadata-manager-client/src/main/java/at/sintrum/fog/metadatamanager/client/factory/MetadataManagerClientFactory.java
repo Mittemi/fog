@@ -1,6 +1,6 @@
-package factory;
+package at.sintrum.fog.metadatamanager.client.factory;
 
-import factory.api.ApplicationMetadata;
+import at.sintrum.fog.metadatamanager.client.api.ApplicationMetadata;
 
 /**
  * Created by Michael Mittermayr on 30.05.2017.

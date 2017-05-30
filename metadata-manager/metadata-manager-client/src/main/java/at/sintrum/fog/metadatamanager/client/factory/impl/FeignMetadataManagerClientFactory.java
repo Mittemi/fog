@@ -1,9 +1,10 @@
-package factory.impl;
+package at.sintrum.fog.metadatamanager.client.factory.impl;
 
 import at.sintrum.fog.clientcore.client.ClientProvider;
 import at.sintrum.fog.clientcore.client.FeignClientFactoryBase;
-import factory.MetadataManagerClientFactory;
-import factory.api.ApplicationMetadata;
+import at.sintrum.fog.metadatamanager.client.api.ApplicationMetadata;
+import at.sintrum.fog.metadatamanager.client.factory.MetadataManagerClientFactory;
+
 import feign.Contract;
 import feign.codec.Decoder;
 import feign.codec.Encoder;

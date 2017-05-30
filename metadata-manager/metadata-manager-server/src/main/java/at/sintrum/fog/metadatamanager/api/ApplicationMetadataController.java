@@ -19,12 +19,12 @@ public class ApplicationMetadataController implements ApplicationMetadataApi {
     }
 
     @Override
-    public void storeContainerMetadata(@RequestBody DockerImageMetadata dockerImageMetadata) {
+    public void storeImageMetadata(@RequestBody DockerImageMetadata dockerImageMetadata) {
         applicationMetadataService.storeMetdata(dockerImageMetadata);
     }
 
     @Override
-    public DockerImageMetadata getContainerMetadata(@PathVariable("imageId") String imageId) {
-        return applicationMetadataService.getMetadata(imageId);
+    public DockerImageMetadata getImageMetadata(@PathVariable("id") String id) {
+        return applicationMetadataService.getMetadata(id);
     }
 }

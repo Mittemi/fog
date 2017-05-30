@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 public interface ApplicationMetadataApi {
 
     @RequestMapping(value = "", method = RequestMethod.PUT)
-    void storeContainerMetadata(@RequestBody DockerImageMetadata dockerImageMetadata);
+    void storeImageMetadata(@RequestBody DockerImageMetadata dockerImageMetadata);
 
-    @RequestMapping(value = "{imageId}", method = RequestMethod.GET)
-    DockerImageMetadata getContainerMetadata(@PathVariable("imageId") String imageId);
+    @RequestMapping(value = "{id}", method = RequestMethod.GET)
+    DockerImageMetadata getImageMetadata(@PathVariable("id") String imageId);
 }
