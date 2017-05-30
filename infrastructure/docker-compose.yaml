@@ -2,12 +2,14 @@ version: '2'
 
 services:
   eurekaserver:
+    container_name: infrastructure_eureka
     build:
       context: ./eureka-server/
       dockerfile: Dockerfile
     ports:
       - "8761:8761"
   adminserver:
+    container_name: infrastructure_adminserver
     build:
       context: ./admin-server/
       dockerfile: Dockerfile

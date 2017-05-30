@@ -1,10 +1,12 @@
 redis:
+  container_name: metadata_redis
   image: redis
   volumes:
     - ./data:/data
   ports:
-    46379:6379
+   - "46379:6379"
 redisCommander:
+  container_name: metadata_rediscommander
   image: tenstartups/redis-commander
   command: --redis-host redis
   links:
