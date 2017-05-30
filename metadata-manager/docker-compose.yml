@@ -1,0 +1,13 @@
+redis:
+  image: redis
+  volumes:
+    - ./data:/data
+  ports:
+    46379:6379
+redisCommander:
+  image: tenstartups/redis-commander
+  command: --redis-host redis
+  links:
+    - redis:redis
+  ports:
+    - "48081:8081"

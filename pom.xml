@@ -18,6 +18,7 @@
         <module>applications</module>
         <module>platform-application-core</module>
         <module>platform-host-info</module>
+        <module>metadata-manager</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -162,6 +163,11 @@
             <dependency>
                 <groupId>at.sintrum.fog</groupId>
                 <artifactId>deployment-manager-client</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>at.sintrum.fog</groupId>
+                <artifactId>metadata-manager-client</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
             </dependency>
 
