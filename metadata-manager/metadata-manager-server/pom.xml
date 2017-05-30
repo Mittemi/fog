@@ -29,6 +29,21 @@
             <artifactId>platform-server-core</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>at.sintrum.fog</groupId>
+            <artifactId>metadata-manager-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.modelmapper</groupId>
+            <artifactId>modelmapper</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

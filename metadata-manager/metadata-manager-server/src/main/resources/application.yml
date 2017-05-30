@@ -19,4 +19,9 @@ endpoints:
   shutdown:
     enabled: true
 
+redis:
+  host: ${REDIS_HOST:localhost}
+  port: ${REDIS_PORT:6379}
+
 fog.metadatamanager:
+
