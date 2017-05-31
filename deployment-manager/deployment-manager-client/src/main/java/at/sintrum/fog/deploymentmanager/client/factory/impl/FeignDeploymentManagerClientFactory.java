@@ -15,7 +15,7 @@ import feign.codec.Encoder;
 public class FeignDeploymentManagerClientFactory extends FeignClientFactoryBase implements DeploymentManagerClientFactory {
 
     public FeignDeploymentManagerClientFactory(ClientProvider clientProvider, Decoder decoder, Encoder encoder, Contract contract) {
-        super(clientProvider, decoder, contract, encoder);
+        super(clientProvider, decoder, contract, encoder, "deployment-manager");
     }
 
     @Override

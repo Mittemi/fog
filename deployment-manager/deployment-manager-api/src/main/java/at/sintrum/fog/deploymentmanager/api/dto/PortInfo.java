@@ -20,6 +20,11 @@ public class PortInfo {
         this.type = type;
     }
 
+    public PortInfo(Integer containerPort, Integer hostPort) {
+        this.containerPort = containerPort;
+        this.hostPort = hostPort;
+    }
+
     public String getIp() {
         return ip;
     }

@@ -2,6 +2,7 @@ package at.sintrum.fog.metadatamanager.domain;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -14,7 +15,12 @@ public class DockerImageMetadataEntity {
     @Id
     private String id;
 
+    private String tag;
+
     private List<Integer> ports;
+
+    private List<String> environment;
+
 
     public String getId() {
         return id;
@@ -30,5 +36,21 @@ public class DockerImageMetadataEntity {
 
     public void setPorts(List<Integer> ports) {
         this.ports = ports;
+    }
+
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
+    }
+
+    public List<String> getEnvironment() {
+        return environment;
+    }
+
+    public void setEnvironment(List<String> environment) {
+        this.environment = environment;
     }
 }

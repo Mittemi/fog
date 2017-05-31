@@ -1,15 +1,16 @@
 package at.sintrum.fog.clientcore;
 
 import at.sintrum.fog.clientcore.annotation.DoNotRegister;
-import at.sintrum.fog.clientcore.client.ClientProvider;
+import at.sintrum.fog.clientcore.client.ClientProviderImpl;
 import feign.Client;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.web.WebMvcRegistrations;
 import org.springframework.boot.autoconfigure.web.WebMvcRegistrationsAdapter;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.cloud.netflix.feign.FeignClientsConfiguration;
-import org.springframework.cloud.netflix.feign.ribbon.LoadBalancerFeignClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -25,10 +26,13 @@ import java.lang.annotation.Annotation;
 @Import({FeignClientsConfiguration.class})
 public class ClientCoreConfig {
 
+    private Logger LOG = LoggerFactory.getLogger(ClientCoreConfig.class);
+
     @Bean
     @ConditionalOnMissingBean
-    public ClientProvider clientProvider(DiscoveryClient discoveryClient, Client eurekaEnabledClient) {
-        return new at.sintrum.fog.clientcore.client.impl.ClientProvider(discoveryClient, eurekaEnabledClient, new Client.Default(null, null));
+    public ClientProviderImpl clientProvider(DiscoveryClient discoveryClient, Client eurekaEnabledClient) {
+        ClientProviderImpl clientProvider = new ClientProviderImpl(discoveryClient, eurekaEnabledClient, new Client.Default(null, null));
+        return clientProvider;
     }
 
     @Bean

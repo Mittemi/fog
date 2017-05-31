@@ -167,11 +167,19 @@ public class DockerServiceImpl implements DockerService {
 
     @Override
     public void pullImage(PullImageRequest pullImageRequest) {
-        PullImageCmd pullImageCmd = dockerClient.pullImageCmd(pullImageRequest.getName());
+        String repository = deploymentManagerConfigProperties.getRegistry() + "/";
+        repository = repository + pullImageRequest.getName();
+        PullImageCmd pullImageCmd = dockerClient.pullImageCmd(repository);
 
-        if (!StringUtils.isEmpty(pullImageRequest.getTag())) {
-            LOG.warn("Pull image without tag!");
-            pullImageCmd.withTag(pullImageCmd.getTag());
+        if (StringUtils.isEmpty(pullImageRequest.getTag())) {
+            LOG.warn("Pull image without tag! Fallback to: latest");
+            pullImageCmd.withTag("latest");
+        } else {
+            pullImageCmd.withTag(pullImageRequest.getTag());
+        }
+
+        if (!StringUtils.isEmpty(deploymentManagerConfigProperties.getRegistry())) {
+            pullImageCmd.withRegistry(deploymentManagerConfigProperties.getRegistry());
         }
 
         pullImageCmd.exec(new PullImageResultCallback()).awaitSuccess();
@@ -181,8 +189,10 @@ public class DockerServiceImpl implements DockerService {
     public void pushImage(PushImageRequest pushImageRequest) {
         PushImageCmd pushImageCmd = dockerClient.pushImageCmd(pushImageRequest.getName());
 
-        if (!StringUtils.isEmpty(pushImageRequest.getTag())) {
+        if (StringUtils.isEmpty(pushImageRequest.getTag())) {
             LOG.warn("Push image without tag!");
+            pushImageCmd.withTag("latest");
+        } else {
             pushImageCmd.withTag(pushImageRequest.getTag());
         }
 

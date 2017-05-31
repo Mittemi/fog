@@ -6,6 +6,10 @@ import at.sintrum.fog.metadatamanager.repository.ApplicationMetadataRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
 /**
  * Created by Michael Mittermayr on 30.05.2017.
  */
@@ -20,7 +24,7 @@ public class ApplicationMetadataService {
         this.modelMapper = modelMapper;
     }
 
-    public void storeMetdata(DockerImageMetadata metadata) {
+    public void storeMetadata(DockerImageMetadata metadata) {
 
         DockerImageMetadataEntity map = modelMapper.map(metadata, DockerImageMetadataEntity.class);
         repository.save(map);
@@ -28,6 +32,11 @@ public class ApplicationMetadataService {
 
     public DockerImageMetadata getMetadata(String imageId) {
         DockerImageMetadataEntity one = repository.findOne(imageId);
+        if (one == null) return null;
         return modelMapper.map(one, DockerImageMetadata.class);
+    }
+
+    public List<DockerImageMetadata> getAll() {
+        return StreamSupport.stream(repository.findAll().spliterator(), false).map(x -> modelMapper.map(x, DockerImageMetadata.class)).collect(Collectors.toList());
     }
 }

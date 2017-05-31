@@ -5,6 +5,14 @@ package at.sintrum.fog.deploymentmanager.api.dto;
  */
 public class PullImageRequest {
 
+    public PullImageRequest() {
+    }
+
+    public PullImageRequest(String name, String tag) {
+        this.name = name;
+        this.tag = tag;
+    }
+
     private String name;
 
     private String tag;

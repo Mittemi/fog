@@ -15,7 +15,7 @@ import feign.codec.Encoder;
 public class FeignMetadataManagerClientFactory extends FeignClientFactoryBase implements MetadataManagerClientFactory {
 
     public FeignMetadataManagerClientFactory(ClientProvider clientProvider, Decoder decoder, Encoder encoder, Contract contract) {
-        super(clientProvider, decoder, contract, encoder);
+        super(clientProvider, decoder, contract, encoder, "metadata-manager");
     }
 
     @Override

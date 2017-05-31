@@ -38,6 +38,11 @@
             <artifactId>platform-server-core</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>at.sintrum.fog</groupId>
+            <artifactId>metadata-manager-client</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

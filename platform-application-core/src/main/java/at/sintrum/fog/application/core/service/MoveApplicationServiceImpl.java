@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 /**
  * Created by Michael Mittermayr on 24.05.2017.
  */
-@Service
+//@Service
 public class MoveApplicationServiceImpl implements MoveApplicationService {
 
     private final EnvironmentInfoService environmentInfoService;

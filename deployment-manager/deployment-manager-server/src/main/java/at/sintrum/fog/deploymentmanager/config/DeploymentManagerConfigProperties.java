@@ -13,11 +13,21 @@ public class DeploymentManagerConfigProperties {
 
     private List<String> protectedContainers = new LinkedList<>();
 
+    private String registry;
+
     public List<String> getProtectedContainers() {
         return protectedContainers;
     }
 
     public void setProtectedContainers(List<String> protectedContainers) {
         this.protectedContainers = protectedContainers;
+    }
+
+    public String getRegistry() {
+        return registry;
+    }
+
+    public void setRegistry(String registry) {
+        this.registry = registry;
     }
 }

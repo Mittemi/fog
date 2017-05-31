@@ -1,15 +1,23 @@
 package at.sintrum.fog.application.core;
 
+import at.sintrum.fog.application.core.service.MoveApplicationService;
+import at.sintrum.fog.application.core.service.MoveApplicationServiceImpl;
 import at.sintrum.fog.core.PlatformCoreConfig;
+import at.sintrum.fog.core.service.EnvironmentInfoService;
 import at.sintrum.fog.deploymentmanager.client.DeploymentManagerClientConfig;
+import at.sintrum.fog.deploymentmanager.client.factory.DeploymentManagerClientFactory;
 import at.sintrum.fog.hostinfo.HostInfoProviderConfig;
 import at.sintrum.fog.metadatamanager.client.MetadataManagerClientConfig;
+import at.sintrum.fog.metadatamanager.client.factory.MetadataManagerClientFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.annotation.Order;
 
 import javax.annotation.PostConstruct;
 
@@ -17,7 +25,7 @@ import javax.annotation.PostConstruct;
  * Created by Michael Mittermayr on 24.05.2017.
  */
 @Configuration
-@Import({DeploymentManagerClientConfig.class, MetadataManagerClientConfig.class, PlatformCoreConfig.class, HostInfoProviderConfig.class})
+@Import({PlatformCoreConfig.class, HostInfoProviderConfig.class, DeploymentManagerClientConfig.class, MetadataManagerClientConfig.class})
 @EnableDiscoveryClient
 public class ApplicationCoreConfig {
 
@@ -37,5 +45,10 @@ public class ApplicationCoreConfig {
 
         logger.info("EurekaUrl: " + eurekaUrl);
         logger.info("EurekaClientIP: " + eurekaClientIp);
+    }
+
+    @Bean
+    public MoveApplicationService moveApplicationService(EnvironmentInfoService environmentInfoService, DeploymentManagerClientFactory deploymentManagerClientFactory, MetadataManagerClientFactory metadataManagerClientFactory) {
+        return new MoveApplicationServiceImpl(environmentInfoService, deploymentManagerClientFactory, metadataManagerClientFactory);
     }
 }
