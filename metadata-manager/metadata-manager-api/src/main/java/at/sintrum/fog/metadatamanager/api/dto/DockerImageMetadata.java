@@ -13,6 +13,8 @@ public class DockerImageMetadata {
 
     private String tag;
 
+    private boolean isEurekaEnabled;
+
     private List<Integer> ports;
 
     private List<String> environment;
@@ -47,5 +49,13 @@ public class DockerImageMetadata {
 
     public void setEnvironment(List<String> environment) {
         this.environment = environment;
+    }
+
+    public boolean isEurekaEnabled() {
+        return isEurekaEnabled;
+    }
+
+    public void setEurekaEnabled(boolean eurekaEnabled) {
+        isEurekaEnabled = eurekaEnabled;
     }
 }

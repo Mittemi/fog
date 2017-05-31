@@ -6,6 +6,7 @@ eureka:
     leaseRenewalIntervalInSeconds: 10
     prefer-ip-address: true
     ip-address: ${EUREKA_CLIENT_IP:192.168.1.10}
+    non-secure-port: ${EUREKA_CLIENT_PORT:${server.port}}
     metadata-map:
       instanceId: ${vcap.application.instance_id:${spring.application.name}:${spring.application.instance_id:${server.port}}}
 

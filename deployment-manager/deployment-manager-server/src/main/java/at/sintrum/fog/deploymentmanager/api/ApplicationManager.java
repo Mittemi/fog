@@ -3,6 +3,7 @@ package at.sintrum.fog.deploymentmanager.api;
 import at.sintrum.fog.deploymentmanager.api.dto.*;
 import at.sintrum.fog.deploymentmanager.config.DeploymentManagerConfigProperties;
 import at.sintrum.fog.deploymentmanager.service.DockerService;
+import at.sintrum.fog.deploymentmanager.service.FogEnvironmentService;
 import at.sintrum.fog.metadatamanager.api.dto.DockerImageMetadata;
 import at.sintrum.fog.metadatamanager.api.dto.DockerImageMetadataRequest;
 import at.sintrum.fog.metadatamanager.client.api.ApplicationMetadata;
@@ -26,12 +27,16 @@ public class ApplicationManager implements ApplicationManagerApi {
     private final DockerService dockerService;
     private ApplicationMetadata applicationMetadata;
     private DeploymentManagerConfigProperties deploymentManagerConfigProperties;
+    private FogEnvironmentService fogEnvironmentService;
+
+    //TODO: move some stuff to a service
 
 
-    public ApplicationManager(DockerService dockerService, ApplicationMetadata applicationMetadata, DeploymentManagerConfigProperties deploymentManagerConfigProperties) {
+    public ApplicationManager(DockerService dockerService, ApplicationMetadata applicationMetadata, DeploymentManagerConfigProperties deploymentManagerConfigProperties, FogEnvironmentService fogEnvironmentService) {
         this.dockerService = dockerService;
         this.applicationMetadata = applicationMetadata;
         this.deploymentManagerConfigProperties = deploymentManagerConfigProperties;
+        this.fogEnvironmentService = fogEnvironmentService;
     }
 
 
@@ -73,8 +78,26 @@ public class ApplicationManager implements ApplicationManagerApi {
     }
 
     private void setEnvironment(DockerImageMetadata imageMetadata, CreateContainerRequest createContainerRequest) {
+
+        List<String> environment = new LinkedList<>();
+
         if (imageMetadata.getEnvironment() != null) {
-            createContainerRequest.setEnvironment(new LinkedList<>(imageMetadata.getEnvironment()));
+            environment.addAll(imageMetadata.getEnvironment());
+        }
+
+        addDynamicEnvironmentKey(environment, "EUREKA_SERVICE_URL", fogEnvironmentService.getEurekaServiceUrl());
+        addDynamicEnvironmentKey(environment, "EUREKA_CLIENT_IP", fogEnvironmentService.getEurekaClientIp());
+        addDynamicEnvironmentKey(environment, "FOG_BASE_URL", fogEnvironmentService.getFogBaseUrl());
+
+        createContainerRequest.setEnvironment(environment);
+    }
+
+    private void addDynamicEnvironmentKey(List<String> environment, String key, String value) {
+        if (!environment.stream().anyMatch(x -> x.startsWith(key))) {
+            LOG.info("Set dynamic env key '" + key + "' to value: " + value);
+            environment.add(key + "=" + value);
+        } else {
+            LOG.info("Skip dynamic env key: " + key);
         }
     }
 

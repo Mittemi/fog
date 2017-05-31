@@ -7,6 +7,8 @@ import at.sintrum.fog.deploymentmanager.client.factory.impl.FeignDeploymentManag
 import feign.Contract;
 import feign.codec.Decoder;
 import feign.codec.Encoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -18,9 +20,12 @@ import org.springframework.context.annotation.Import;
 @Import({ClientCoreConfig.class})
 public class DeploymentManagerClientConfig {
 
+    private final Logger LOG = LoggerFactory.getLogger(DeploymentManagerClientConfig.class);
+
     //named bean required, don't know why but otherwise the creation order is mixed up
     @Bean(name = "DeploymentManagerClientFactory")
     public DeploymentManagerClientFactory deploymentManagerClientFactory(ClientProvider clientProvider, Decoder decoder, Encoder encoder, Contract contract) {
+        LOG.debug("Create DeploymentManagerClientFactory");
         return new FeignDeploymentManagerClientFactory(clientProvider, decoder, encoder, contract);
     }
 }

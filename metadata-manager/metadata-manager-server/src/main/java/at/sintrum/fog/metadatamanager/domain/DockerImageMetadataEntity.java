@@ -21,6 +21,7 @@ public class DockerImageMetadataEntity {
 
     private List<String> environment;
 
+    private boolean isEurekaEnabled;
 
     public String getId() {
         return id;
@@ -52,5 +53,13 @@ public class DockerImageMetadataEntity {
 
     public void setEnvironment(List<String> environment) {
         this.environment = environment;
+    }
+
+    public boolean isEurekaEnabled() {
+        return isEurekaEnabled;
+    }
+
+    public void setEurekaEnabled(boolean eurekaEnabled) {
+        isEurekaEnabled = eurekaEnabled;
     }
 }

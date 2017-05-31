@@ -13,9 +13,7 @@
         <include resource="fog-logback-base-console.xml"/>
     </springProfile>
 
-    <logger name="com.example.demo" level="INFO"/>
-
-    <logger name="org.springframework.boot.SpringApplication" level="INFO"/>
+    <logger name="org.springframework.boot.SpringApplication" level="DEBUG"/>
 
     <!--<springProfile name="!local">-->
     <!--<logger name="AccessLog" level="TRACE" additivity="false">-->
