@@ -12,6 +12,8 @@ fi
 # Start the second process
 /usr/share/run_app.sh
 status=$?
+echo "Application stopped, wait 60 seconds to ship some logs"
+sleep 60
 if [ $status -ne 0 ]; then
   echo "Failed to start application: $status"
   echo "Failed to start application" > /logs/container.log
