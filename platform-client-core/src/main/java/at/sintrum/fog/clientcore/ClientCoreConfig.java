@@ -1,8 +1,13 @@
 package at.sintrum.fog.clientcore;
 
 import at.sintrum.fog.clientcore.annotation.DoNotRegister;
+import at.sintrum.fog.clientcore.client.ClientProvider;
 import at.sintrum.fog.clientcore.client.ClientProviderImpl;
+import at.sintrum.fog.clientcore.client.ClientFactoryFactory;
+import at.sintrum.fog.clientcore.client.FeignClientFactoryFactoryImpl;
 import feign.Client;
+import feign.Contract;
+import feign.codec.Decoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -33,6 +38,11 @@ public class ClientCoreConfig {
     public ClientProviderImpl clientProvider(DiscoveryClient discoveryClient, Client eurekaEnabledClient) {
         ClientProviderImpl clientProvider = new ClientProviderImpl(discoveryClient, eurekaEnabledClient, new Client.Default(null, null));
         return clientProvider;
+    }
+
+    @Bean
+    public ClientFactoryFactory feignClientFactoryFactory(ClientProvider clientProvider, feign.codec.Encoder encoder, Decoder decoder, Contract contract) {
+        return new FeignClientFactoryFactoryImpl(clientProvider, decoder, contract, encoder);
     }
 
     @Bean

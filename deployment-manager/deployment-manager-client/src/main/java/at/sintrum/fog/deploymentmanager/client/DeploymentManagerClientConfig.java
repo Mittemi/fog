@@ -1,12 +1,8 @@
 package at.sintrum.fog.deploymentmanager.client;
 
 import at.sintrum.fog.clientcore.ClientCoreConfig;
-import at.sintrum.fog.clientcore.client.ClientProvider;
+import at.sintrum.fog.clientcore.client.ClientFactoryFactory;
 import at.sintrum.fog.deploymentmanager.client.factory.DeploymentManagerClientFactory;
-import at.sintrum.fog.deploymentmanager.client.factory.impl.FeignDeploymentManagerClientFactory;
-import feign.Contract;
-import feign.codec.Decoder;
-import feign.codec.Encoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -24,8 +20,8 @@ public class DeploymentManagerClientConfig {
 
     //named bean required, don't know why but otherwise the creation order is mixed up
     @Bean(name = "DeploymentManagerClientFactory")
-    public DeploymentManagerClientFactory deploymentManagerClientFactory(ClientProvider clientProvider, Decoder decoder, Encoder encoder, Contract contract) {
+    public DeploymentManagerClientFactory deploymentManagerClientFactory(ClientFactoryFactory factory) {
         LOG.debug("Create DeploymentManagerClientFactory");
-        return new FeignDeploymentManagerClientFactory(clientProvider, decoder, encoder, contract);
+        return factory.buildFactory(DeploymentManagerClientFactory.class, "deployment-manager");
     }
 }
