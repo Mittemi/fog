@@ -1,7 +1,6 @@
 package at.sintrum.fog.metadatamanager.api;
 
 import at.sintrum.fog.metadatamanager.api.dto.DockerImageMetadata;
-import at.sintrum.fog.metadatamanager.api.dto.DockerImageMetadataRequest;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,11 +15,10 @@ import java.util.List;
 public interface ApplicationMetadataApi {
 
     @RequestMapping(value = "", method = RequestMethod.PUT)
-    void storeImageMetadata(@RequestBody DockerImageMetadata dockerImageMetadata);
+    DockerImageMetadata storeImageMetadata(@RequestBody DockerImageMetadata dockerImageMetadata);
 
-    @RequestMapping(value = "getById", method = RequestMethod.POST)
-        //TODO: use GET if possible
-    DockerImageMetadata getImageMetadata(@RequestBody DockerImageMetadataRequest request);
+    @RequestMapping(value = "getById/{id}", method = RequestMethod.GET)
+    DockerImageMetadata getImageMetadata(@PathVariable("id") String id);
 
     @RequestMapping(value = "getAll", method = RequestMethod.POST)
     List<DockerImageMetadata> getAll();

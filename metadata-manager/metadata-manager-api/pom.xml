@@ -13,6 +13,13 @@
     <artifactId>metadata-manager-api</artifactId>
 
     <dependencies>
+
+        <dependency>
+            <groupId>at.sintrum.fog</groupId>
+            <artifactId>platform-core</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>

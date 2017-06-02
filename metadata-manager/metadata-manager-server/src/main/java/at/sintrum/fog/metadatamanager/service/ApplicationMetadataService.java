@@ -3,8 +3,10 @@ package at.sintrum.fog.metadatamanager.service;
 import at.sintrum.fog.metadatamanager.api.dto.DockerImageMetadata;
 import at.sintrum.fog.metadatamanager.domain.DockerImageMetadataEntity;
 import at.sintrum.fog.metadatamanager.repository.ApplicationMetadataRepository;
+import org.joda.time.DateTime;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,10 +26,22 @@ public class ApplicationMetadataService {
         this.modelMapper = modelMapper;
     }
 
-    public void storeMetadata(DockerImageMetadata metadata) {
+    public DockerImageMetadata storeMetadata(DockerImageMetadata metadata) {
 
         DockerImageMetadataEntity map = modelMapper.map(metadata, DockerImageMetadataEntity.class);
+
+        if (!StringUtils.isEmpty(metadata.getId())) {
+            DockerImageMetadataEntity existingEntry = repository.findOne(metadata.getId());
+            if (existingEntry != null) {
+                map.setCreationDate(existingEntry.getCreationDate());
+            }
+        }
+        if (map.getCreationDate() == null) {
+            map.setCreationDate(new DateTime().toDate());
+        }
+        map.setLastUpdate(new DateTime().toDate());
         repository.save(map);
+        return modelMapper.map(map, DockerImageMetadata.class);
     }
 
     public DockerImageMetadata getMetadata(String imageId) {

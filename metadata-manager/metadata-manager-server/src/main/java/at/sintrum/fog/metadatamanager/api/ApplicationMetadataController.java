@@ -1,8 +1,8 @@
 package at.sintrum.fog.metadatamanager.api;
 
 import at.sintrum.fog.metadatamanager.api.dto.DockerImageMetadata;
-import at.sintrum.fog.metadatamanager.api.dto.DockerImageMetadataRequest;
 import at.sintrum.fog.metadatamanager.service.ApplicationMetadataService;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,13 +21,13 @@ public class ApplicationMetadataController implements ApplicationMetadataApi {
     }
 
     @Override
-    public void storeImageMetadata(@RequestBody DockerImageMetadata dockerImageMetadata) {
-        applicationMetadataService.storeMetadata(dockerImageMetadata);
+    public DockerImageMetadata storeImageMetadata(@RequestBody DockerImageMetadata dockerImageMetadata) {
+        return applicationMetadataService.storeMetadata(dockerImageMetadata);
     }
 
     @Override
-    public DockerImageMetadata getImageMetadata(@RequestBody DockerImageMetadataRequest request) {
-        DockerImageMetadata metadata = applicationMetadataService.getMetadata(request.getImageId());
+    public DockerImageMetadata getImageMetadata(@PathVariable("id") String id) {
+        DockerImageMetadata metadata = applicationMetadataService.getMetadata(id);
 
 //        if (metadata == null) {
 //            throw new RuntimeException();

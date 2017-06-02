@@ -1,20 +1,17 @@
 package at.sintrum.fog.deploymentmanager.api;
 
-import at.sintrum.fog.deploymentmanager.api.dto.*;
-import at.sintrum.fog.deploymentmanager.config.DeploymentManagerConfigProperties;
+import at.sintrum.fog.deploymentmanager.api.dto.ApplicationStartRequest;
+import at.sintrum.fog.deploymentmanager.api.dto.CreateContainerRequest;
+import at.sintrum.fog.deploymentmanager.api.dto.CreateContainerResult;
+import at.sintrum.fog.deploymentmanager.api.dto.PullImageRequest;
+import at.sintrum.fog.deploymentmanager.service.DeploymentService;
 import at.sintrum.fog.deploymentmanager.service.DockerService;
-import at.sintrum.fog.deploymentmanager.service.FogEnvironmentService;
 import at.sintrum.fog.metadatamanager.api.dto.DockerImageMetadata;
-import at.sintrum.fog.metadatamanager.api.dto.DockerImageMetadataRequest;
 import at.sintrum.fog.metadatamanager.client.api.ApplicationMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Created by Michael Mittermayr on 31.05.2017.
@@ -26,89 +23,38 @@ public class ApplicationManager implements ApplicationManagerApi {
 
     private final DockerService dockerService;
     private ApplicationMetadata applicationMetadata;
-    private DeploymentManagerConfigProperties deploymentManagerConfigProperties;
-    private FogEnvironmentService fogEnvironmentService;
+    private DeploymentService deploymentService;
 
     //TODO: move some stuff to a service
 
 
-    public ApplicationManager(DockerService dockerService, ApplicationMetadata applicationMetadata, DeploymentManagerConfigProperties deploymentManagerConfigProperties, FogEnvironmentService fogEnvironmentService) {
+    public ApplicationManager(DockerService dockerService, ApplicationMetadata applicationMetadata, DeploymentService deploymentService) {
         this.dockerService = dockerService;
         this.applicationMetadata = applicationMetadata;
-        this.deploymentManagerConfigProperties = deploymentManagerConfigProperties;
-        this.fogEnvironmentService = fogEnvironmentService;
+        this.deploymentService = deploymentService;
     }
 
 
     @Override
     public void requestApplicationStart(@RequestBody ApplicationStartRequest applicationStartRequest) {
 
-        String imageId = applicationStartRequest.getImageId();
+        String metadataId = applicationStartRequest.getMetadataId();
 
-        LOG.info("Request application start: " + imageId);
+        LOG.info("Request application start: " + metadataId);
 
-        DockerImageMetadata imageMetadata = applicationMetadata.getImageMetadata(new DockerImageMetadataRequest(imageId));
+        DockerImageMetadata imageMetadata = applicationMetadata.getImageMetadata(metadataId);
 
         if (imageMetadata == null) {
-            LOG.error("Image metadata missing for: " + imageId);
+            LOG.error("Image metadata missing for: " + metadataId);
         } else {
-            dockerService.pullImage(new PullImageRequest(imageMetadata.getId(), imageMetadata.getTag()));
+            dockerService.pullImage(new PullImageRequest(imageMetadata.getImage(), imageMetadata.getTag()));
 
-            CreateContainerRequest createContainerRequest = new CreateContainerRequest();
-
-            setEnvironment(imageMetadata, createContainerRequest);
-            setImage(imageMetadata, createContainerRequest);
-            setPortInfos(imageMetadata, createContainerRequest);
+            CreateContainerRequest createContainerRequest = deploymentService.buildCreateContainerRequest(imageMetadata);
 
             CreateContainerResult container = dockerService.createContainer(createContainerRequest);
 
             //TODO: logging
             dockerService.startContainer(container.getId());
-        }
-    }
-
-    private void setPortInfos(DockerImageMetadata imageMetadata, CreateContainerRequest createContainerRequest) {
-        List<PortInfo> portInfos = new LinkedList<>();
-        if (imageMetadata.getPorts() != null) {
-            for (Integer port : imageMetadata.getPorts()) {
-                portInfos.add(new PortInfo(port, port));
-            }
-        }
-        createContainerRequest.setPortInfos(portInfos);
-    }
-
-    private void setEnvironment(DockerImageMetadata imageMetadata, CreateContainerRequest createContainerRequest) {
-
-        List<String> environment = new LinkedList<>();
-
-        if (imageMetadata.getEnvironment() != null) {
-            environment.addAll(imageMetadata.getEnvironment());
-        }
-
-        addDynamicEnvironmentKey(environment, "EUREKA_SERVICE_URL", fogEnvironmentService.getEurekaServiceUrl());
-        addDynamicEnvironmentKey(environment, "EUREKA_CLIENT_IP", fogEnvironmentService.getEurekaClientIp());
-        addDynamicEnvironmentKey(environment, "FOG_BASE_URL", fogEnvironmentService.getFogBaseUrl());
-
-        createContainerRequest.setEnvironment(environment);
-    }
-
-    private void addDynamicEnvironmentKey(List<String> environment, String key, String value) {
-        if (!environment.stream().anyMatch(x -> x.startsWith(key))) {
-            LOG.info("Set dynamic env key '" + key + "' to value: " + value);
-            environment.add(key + "=" + value);
-        } else {
-            LOG.info("Skip dynamic env key: " + key);
-        }
-    }
-
-    private void setImage(DockerImageMetadata imageMetadata, CreateContainerRequest createContainerRequest) {
-
-        String prefix = deploymentManagerConfigProperties.getRegistry() + "/";
-
-        if (!StringUtils.isEmpty(imageMetadata.getTag())) {
-            createContainerRequest.setImage(prefix + imageMetadata.getId() + ":" + imageMetadata.getTag());
-        } else {
-            createContainerRequest.setImage(prefix + imageMetadata.getId());
         }
     }
 }

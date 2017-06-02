@@ -2,7 +2,6 @@ package at.sintrum.fog.metadatamanager.domain;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
-import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -10,10 +9,12 @@ import java.util.List;
  * Created by Michael Mittermayr on 30.05.2017.
  */
 @RedisHash("imageMetadata")
-public class DockerImageMetadataEntity {
+public class DockerImageMetadataEntity extends BaseEntity {
 
     @Id
     private String id;
+
+    private String image;
 
     private String tag;
 
@@ -22,6 +23,7 @@ public class DockerImageMetadataEntity {
     private List<String> environment;
 
     private boolean isEurekaEnabled;
+
 
     public String getId() {
         return id;
@@ -61,5 +63,13 @@ public class DockerImageMetadataEntity {
 
     public void setEurekaEnabled(boolean eurekaEnabled) {
         isEurekaEnabled = eurekaEnabled;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 }
