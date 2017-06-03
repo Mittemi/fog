@@ -1,13 +1,11 @@
 package at.sintrum.fog.metadatamanager.api.dto;
 
-import org.joda.time.DateTime;
-
 import java.util.List;
 
 /**
  * Created by Michael Mittermayr on 30.05.2017.
  */
-public class DockerImageMetadata {
+public class DockerImageMetadata extends MetadataBase {
 
     private String id;
 
@@ -20,10 +18,6 @@ public class DockerImageMetadata {
     private List<Integer> ports;
 
     private List<String> environment;
-
-    private DateTime creationDate;
-
-    private DateTime lastUpdate;
 
     public String getId() {
         return id;
@@ -71,21 +65,5 @@ public class DockerImageMetadata {
 
     public void setImage(String image) {
         this.image = image;
-    }
-
-    public DateTime getLastUpdate() {
-        return lastUpdate;
-    }
-
-    public void setLastUpdate(DateTime lastUpdate) {
-        this.lastUpdate = lastUpdate;
-    }
-
-    public DateTime getCreationDate() {
-        return creationDate;
-    }
-
-    public void setCreationDate(DateTime creationDate) {
-        this.creationDate = creationDate;
     }
 }

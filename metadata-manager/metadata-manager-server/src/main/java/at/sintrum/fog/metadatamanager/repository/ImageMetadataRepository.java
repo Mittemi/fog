@@ -6,6 +6,6 @@ import org.springframework.data.repository.CrudRepository;
 /**
  * Created by Michael Mittermayr on 30.05.2017.
  */
-public interface ApplicationMetadataRepository extends CrudRepository<DockerImageMetadataEntity, String> {
+public interface ImageMetadataRepository extends CrudRepository<DockerImageMetadataEntity, String> {
 
 }

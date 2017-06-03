@@ -1,7 +1,6 @@
 package at.sintrum.fog.deploymentmanager.service;
 
 import at.sintrum.fog.deploymentmanager.api.dto.*;
-import com.github.dockerjava.api.command.ListImagesCmd;
 
 import java.util.List;
 
@@ -15,6 +14,8 @@ public interface DockerService {
     List<ImageInfo> getImages();
 
     boolean isProtectedContainer(ContainerInfo containerInfo);
+
+    ContainerInfo getContainerInfo(String containerId);
 
     boolean startContainer(String id);
 

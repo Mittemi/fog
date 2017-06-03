@@ -62,6 +62,11 @@ public class DockerServiceImpl implements DockerService {
         return deploymentManagerConfigProperties.getProtectedContainers().stream().anyMatch(x -> x.equals(containerInfo.getImage()));
     }
 
+    @Override
+    public ContainerInfo getContainerInfo(String containerId) {
+        return getContainers().stream().filter(x -> x.getId().equals(containerId)).findFirst().orElse(null);
+    }
+
     public boolean startContainer(String id) {
         //TODO: check if single container only (exactly 1)
         Optional<ContainerInfo> first = getContainers().stream().filter(x -> x.getId().startsWith(id)).findFirst();

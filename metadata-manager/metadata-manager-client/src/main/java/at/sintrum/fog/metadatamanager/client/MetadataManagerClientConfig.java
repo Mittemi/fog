@@ -2,7 +2,7 @@ package at.sintrum.fog.metadatamanager.client;
 
 import at.sintrum.fog.clientcore.ClientCoreConfig;
 import at.sintrum.fog.clientcore.client.ClientFactoryFactory;
-import at.sintrum.fog.metadatamanager.client.api.ApplicationMetadata;
+import at.sintrum.fog.metadatamanager.client.api.ImageMetadata;
 import at.sintrum.fog.metadatamanager.client.factory.MetadataManagerClientFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,7 +23,7 @@ public class MetadataManagerClientConfig {
     }
 
     @Bean
-    public ApplicationMetadata applicationMetadata(MetadataManagerClientFactory clientFactory) {
+    public ImageMetadata applicationMetadata(MetadataManagerClientFactory clientFactory) {
         return clientFactory.createApplicationMetadata(null);
     }
 }

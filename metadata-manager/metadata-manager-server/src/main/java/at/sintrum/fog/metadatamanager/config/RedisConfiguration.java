@@ -1,6 +1,6 @@
 package at.sintrum.fog.metadatamanager.config;
 
-import at.sintrum.fog.metadatamanager.repository.ApplicationMetadataRepository;
+import at.sintrum.fog.metadatamanager.repository.ImageMetadataRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,7 +15,7 @@ import org.springframework.data.redis.repository.configuration.EnableRedisReposi
  * Created by Michael Mittermayr on 30.05.2017.
  */
 @Configuration
-@EnableRedisRepositories(basePackageClasses = ApplicationMetadataRepository.class)
+@EnableRedisRepositories(basePackageClasses = ImageMetadataRepository.class)
 public class RedisConfiguration {
 
     private final Logger LOGGER = LoggerFactory.getLogger(RedisConfiguration.class);

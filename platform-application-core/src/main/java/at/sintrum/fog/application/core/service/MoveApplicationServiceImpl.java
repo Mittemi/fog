@@ -8,7 +8,6 @@ import at.sintrum.fog.deploymentmanager.client.factory.DeploymentManagerClientFa
 import at.sintrum.fog.metadatamanager.client.factory.MetadataManagerClientFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 
 /**
  * Created by Michael Mittermayr on 24.05.2017.
@@ -44,7 +43,7 @@ public class MoveApplicationServiceImpl implements MoveApplicationService {
 
         java.util.List<ContainerInfo> containers = sourceContainerManager.getContainers();
 
-        //notifyApplicationAboutShutdown(containerId, sourceContainerManager);
+        notifyApplicationAboutShutdown(containerId, sourceContainerManager);
         stopContainer(containerId, sourceContainerManager);
         transferLocalState(containerId, sourceContainerManager, sourceImageManager);
 
@@ -65,6 +64,7 @@ public class MoveApplicationServiceImpl implements MoveApplicationService {
 
     private void notifyApplicationAboutShutdown(String containerId, ContainerManager containerManagerClient) {
         //TODO: notify target application about shutdown
+
 
         try {
             Thread.sleep(3000);
