@@ -2,6 +2,7 @@ package at.sintrum.fog.metadatamanager.client;
 
 import at.sintrum.fog.clientcore.ClientCoreConfig;
 import at.sintrum.fog.clientcore.client.ClientFactoryFactory;
+import at.sintrum.fog.metadatamanager.api.ContainerMetadataApi;
 import at.sintrum.fog.metadatamanager.api.ImageMetadataApi;
 import at.sintrum.fog.metadatamanager.client.factory.MetadataManagerClientFactory;
 import org.springframework.context.annotation.Bean;
@@ -24,6 +25,11 @@ public class MetadataManagerClientConfig {
 
     @Bean
     public ImageMetadataApi applicationMetadata(MetadataManagerClientFactory clientFactory) {
-        return clientFactory.createApplicationMetadata(null);
+        return clientFactory.createApplicationMetadataClient(null);
+    }
+
+    @Bean
+    public ContainerMetadataApi containerMetadataApi(MetadataManagerClientFactory clientFactory) {
+        return clientFactory.createContainerMetadataClient(null);
     }
 }

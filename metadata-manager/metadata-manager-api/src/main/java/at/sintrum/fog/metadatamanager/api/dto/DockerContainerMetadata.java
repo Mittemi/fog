@@ -5,6 +5,15 @@ package at.sintrum.fog.metadatamanager.api.dto;
  */
 public class DockerContainerMetadata extends MetadataBase {
 
+    public DockerContainerMetadata(String containerId, String imageMetadataId) {
+        this.containerId = containerId;
+        this.imageMetadataId = imageMetadataId;
+    }
+
+    public DockerContainerMetadata() {
+
+    }
+
     private String containerId;
 
     private String imageMetadataId;

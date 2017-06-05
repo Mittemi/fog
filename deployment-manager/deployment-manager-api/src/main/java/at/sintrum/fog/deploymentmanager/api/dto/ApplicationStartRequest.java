@@ -7,6 +7,13 @@ public class ApplicationStartRequest {
 
     private String metadataId;
 
+    public ApplicationStartRequest(String metadataId) {
+        this.metadataId = metadataId;
+    }
+
+    public ApplicationStartRequest() {
+    }
+
     public String getMetadataId() {
         return metadataId;
     }

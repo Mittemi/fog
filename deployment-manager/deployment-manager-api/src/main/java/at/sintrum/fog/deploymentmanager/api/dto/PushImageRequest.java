@@ -1,11 +1,17 @@
 package at.sintrum.fog.deploymentmanager.api.dto;
 
-import org.springframework.util.StringUtils;
-
 /**
  * Created by Michael Mittermayr on 20.05.2017.
  */
 public class PushImageRequest {
+
+    public PushImageRequest() {
+    }
+
+    public PushImageRequest(String name, String tag) {
+        this.name = name;
+        this.tag = tag;
+    }
 
     private String name;
 

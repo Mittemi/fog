@@ -67,6 +67,10 @@ public class DockerServiceImpl implements DockerService {
         return getContainers().stream().filter(x -> x.getId().equals(containerId)).findFirst().orElse(null);
     }
 
+    public ImageInfo getImageInfo(String imageId) {
+        return getImages().stream().filter(x -> x.getId().equals(imageId)).findFirst().orElse(null);
+    }
+
     public boolean startContainer(String id) {
         //TODO: check if single container only (exactly 1)
         Optional<ContainerInfo> first = getContainers().stream().filter(x -> x.getId().startsWith(id)).findFirst();
@@ -120,13 +124,30 @@ public class DockerServiceImpl implements DockerService {
 
     @Override
     public CommitContainerResult commitContainer(CommitContainerRequest commitContainerRequest) {
+
+        String temporaryTag = "latest_checkpoint";
+        ContainerInfo containerInfo = getContainerInfo(commitContainerRequest.getContainerId());
+        String repository = getRepositoryName(containerInfo.getImage());
+
         CommitCmd commitCmd = dockerClient.commitCmd(commitContainerRequest.getContainerId());
-        return new CommitContainerResult(commitCmd.exec());
+        commitCmd.withRepository(repository);
+        commitCmd.withTag(temporaryTag);
+
+        CommitContainerResult result = new CommitContainerResult(commitCmd.exec(), containerInfo.getImage());
+        for (String tag : commitContainerRequest.getTags()) {
+            tagImage(repository + ":" + temporaryTag, repository, tag);
+        }
+        return result;
+    }
+
+    private String getRepositoryName(String imageName) {
+        return deploymentManagerConfigProperties.getRegistry() + "/" + imageName;
     }
 
     @Override
     public void tagImage(String imageId, String repository, String tag) {
-        dockerClient.tagImageCmd(imageId, repository, tag).exec();
+        TagImageCmd tagImageCmd = dockerClient.tagImageCmd(imageId, repository, tag);
+        tagImageCmd.exec();
     }
 
     private void fillPortBindings(CreateContainerRequest createContainerRequest, CreateContainerCmd createContainerCmd) {

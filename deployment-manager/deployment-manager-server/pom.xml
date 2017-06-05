@@ -43,6 +43,10 @@
             <artifactId>metadata-manager-client</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>at.sintrum.fog</groupId>
+            <artifactId>deployment-manager-client</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
