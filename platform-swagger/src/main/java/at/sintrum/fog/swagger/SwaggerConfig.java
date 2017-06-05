@@ -34,11 +34,17 @@ public class SwaggerConfig {
         if (x == null) {
             return false;
         }
-        String packageName = x.declaringClass().getPackage().getName();
+        Class<?> aClass = x.declaringClass();
+        if (aClass == null) return false;
+
+        Package aPackage = aClass.getPackage();
+        if (aPackage == null) return false;
+
+        String packageName = aPackage.getName();
         if (packageName.startsWith("at.sintrum")) {
             return true;
         } else if (packageName.startsWith("org.springframework.boot.actuate.endpoint.mvc")) {
-            String name = x.declaringClass().getName();
+            String name = aClass.getName();
             return name.contains("ShutdownMvcEndpoint");
         }
 

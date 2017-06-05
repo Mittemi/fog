@@ -6,6 +6,7 @@ import at.sintrum.fog.deploymentmanager.config.DeploymentManagerConfigProperties
 import at.sintrum.fog.metadatamanager.api.dto.DockerImageMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.LinkedList;
@@ -14,6 +15,7 @@ import java.util.List;
 /**
  * Created by Michael Mittermayr on 02.06.2017.
  */
+@Service
 public class DeploymentService {
 
     private Logger LOG = LoggerFactory.getLogger(DeploymentService.class);
@@ -61,7 +63,7 @@ public class DeploymentService {
     }
 
     private void addDynamicEnvironmentKey(List<String> environment, String key, String value) {
-        if (!environment.stream().anyMatch(x -> x.startsWith(key))) {
+        if (environment.stream().noneMatch(x -> x.startsWith(key))) {
             LOG.info("Set dynamic env key '" + key + "' to value: " + value);
             environment.add(key + "=" + value);
         } else {

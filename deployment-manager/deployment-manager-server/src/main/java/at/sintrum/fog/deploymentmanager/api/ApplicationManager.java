@@ -3,8 +3,8 @@ package at.sintrum.fog.deploymentmanager.api;
 import at.sintrum.fog.deploymentmanager.api.dto.*;
 import at.sintrum.fog.deploymentmanager.service.DeploymentService;
 import at.sintrum.fog.deploymentmanager.service.DockerService;
+import at.sintrum.fog.metadatamanager.api.ImageMetadataApi;
 import at.sintrum.fog.metadatamanager.api.dto.DockerImageMetadata;
-import at.sintrum.fog.metadatamanager.client.api.ImageMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,13 +21,13 @@ public class ApplicationManager implements ApplicationManagerApi {
     private final Logger LOG = LoggerFactory.getLogger(ApplicationManager.class);
 
     private final DockerService dockerService;
-    private ImageMetadata applicationMetadata;
+    private ImageMetadataApi applicationMetadata;
     private DeploymentService deploymentService;
 
     //TODO: move some stuff to a service
 
 
-    public ApplicationManager(DockerService dockerService, ImageMetadata applicationMetadata, DeploymentService deploymentService) {
+    public ApplicationManager(DockerService dockerService, ImageMetadataApi applicationMetadata, DeploymentService deploymentService) {
         this.dockerService = dockerService;
         this.applicationMetadata = applicationMetadata;
         this.deploymentService = deploymentService;

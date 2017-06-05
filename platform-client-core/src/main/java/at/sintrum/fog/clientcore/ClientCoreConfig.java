@@ -1,9 +1,9 @@
 package at.sintrum.fog.clientcore;
 
 import at.sintrum.fog.clientcore.annotation.DoNotRegister;
+import at.sintrum.fog.clientcore.client.ClientFactoryFactory;
 import at.sintrum.fog.clientcore.client.ClientProvider;
 import at.sintrum.fog.clientcore.client.ClientProviderImpl;
-import at.sintrum.fog.clientcore.client.ClientFactoryFactory;
 import at.sintrum.fog.clientcore.client.FeignClientFactoryFactoryImpl;
 import feign.Client;
 import feign.Contract;
@@ -19,10 +19,8 @@ import org.springframework.cloud.netflix.feign.FeignClientsConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
-
-import java.lang.annotation.Annotation;
 
 /**
  * Created by Michael Mittermayr on 17.05.2017.
@@ -56,13 +54,26 @@ public class ClientCoreConfig {
     }
 
     private static class FeignFilterRequestMappingHandlerMapping extends RequestMappingHandlerMapping {
+
+        private static final Logger LOG = LoggerFactory.getLogger(FeignFilterRequestMappingHandlerMapping.class);
+
         @Override
         protected boolean isHandler(Class<?> beanType) {
-            return super.isHandler(beanType) && doesntHaveAnnotation(beanType, FeignClient.class) && doesntHaveAnnotation(beanType, DoNotRegister.class);
-        }
+            if (super.isHandler(beanType)) {
+                boolean result = !AnnotatedElementUtils.hasAnnotation(beanType, FeignClient.class) && !AnnotatedElementUtils.hasAnnotation(beanType, DoNotRegister.class);
 
-        private boolean doesntHaveAnnotation(Class<?> beanType, Class<? extends Annotation> annotation) {
-            return AnnotationUtils.findAnnotation(beanType, annotation) == null;
+                if (result) {
+                    if (beanType.getName().startsWith("com.sun.proxy")) {
+                        LOG.info("Skip registration for proxy: " + beanType);
+                        return false;
+                    }
+                    LOG.info("Register " + beanType);
+                } else {
+                    LOG.debug("Skip " + beanType);
+                }
+                return result;
+            }
+            return false;
         }
     }
 }
