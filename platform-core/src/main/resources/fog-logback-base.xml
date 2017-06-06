@@ -1,10 +1,11 @@
 <included>
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
 
-    <springProperty scope="context" name="serverId" source="fog.server.id"/>
-    <springProperty scope="context" name="serviceId" source="fog.service.id"/>
+    <springProperty scope="context" name="serverId" source="spring.application.name"/>
+    <springProperty scope="context" name="IP" source="EUREKA_CLIENT_IP"/>
+    <springProperty scope="context" name="PORT" source="server.port"/>
 
-    <!--<contextName>${serverId}</contextName>-->
+    <jmxConfigurator/>
 
     <springProfile name="docker">
         <include resource="fog-logback-base-file.xml"/>

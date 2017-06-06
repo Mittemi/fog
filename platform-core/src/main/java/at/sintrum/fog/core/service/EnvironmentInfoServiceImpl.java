@@ -17,10 +17,32 @@ import java.util.Scanner;
 public class EnvironmentInfoServiceImpl implements EnvironmentInfoService {
 
     private final org.slf4j.Logger LOG = LoggerFactory.getLogger(EnvironmentInfoServiceImpl.class);
-    private FogApplicationConfigProperties fogApplicationConfigProperties;
+    private final FogApplicationConfigProperties fogApplicationConfigProperties;
+    private final String fogBaseUrl;
+    private final String eurekaServiceUrl;
+    private final String eurekaClientIP;
+    private final String serverPort;
+    private final String applicationName;
 
-    public EnvironmentInfoServiceImpl(FogApplicationConfigProperties fogApplicationConfigProperties) {
+    public EnvironmentInfoServiceImpl(FogApplicationConfigProperties fogApplicationConfigProperties,
+                                      @Value("${FOG_BASE_URL:UNKNOWN}") String fogBaseUrl,
+                                      @Value("${EUREKA_SERVICE_URL:UNKNOWN}") String eurekaServiceUrl,
+                                      @Value("${EUREKA_CLIENT_IP:UNKNOWN}") String eurekaClientIP,
+                                      @Value("${server.port}") String serverPort,
+                                      @Value("${spring.application.name}") String applicationName) {
         this.fogApplicationConfigProperties = fogApplicationConfigProperties;
+        this.eurekaServiceUrl = eurekaServiceUrl;
+        this.eurekaClientIP = eurekaClientIP;
+        this.serverPort = serverPort;
+        this.applicationName = applicationName;
+
+        if ("deployment-manager".equals(applicationName) && "UNKNOWN".equals(fogBaseUrl)) {
+            fogBaseUrl = "http://" + eurekaClientIP + ":" + serverPort;
+            LOG.info("FOG_BASE_URL, rewrite to: " + fogBaseUrl);
+        } else {
+            LOG.info("FOG_BASE_URL: " + fogBaseUrl);
+        }
+        this.fogBaseUrl = fogBaseUrl;
     }
 
     @Override
@@ -44,8 +66,18 @@ public class EnvironmentInfoServiceImpl implements EnvironmentInfoService {
     }
 
     @Override
-    public String getDeploymentManagerUrl() {
-        return fogApplicationConfigProperties.getDeploymentManagerUrl();
+    public String getEurekaServiceUrl() {
+        return eurekaServiceUrl;
+    }
+
+    @Override
+    public String getEurekaClientIp() {
+        return eurekaClientIP;
+    }
+
+    @Override
+    public String getFogBaseUrl() {
+        return fogBaseUrl;
     }
 
     private String getHostname() {

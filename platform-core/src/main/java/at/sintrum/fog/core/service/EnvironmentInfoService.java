@@ -9,5 +9,9 @@ public interface EnvironmentInfoService {
 
     boolean isInsideContainer();
 
-    String getDeploymentManagerUrl();
+    String getEurekaServiceUrl();
+
+    String getEurekaClientIp();
+
+    String getFogBaseUrl();
 }

@@ -9,6 +9,16 @@ public class ApplicationMoveRequest {
 
     private String targetFog;
 
+    private String applicationUrl;
+
+    public ApplicationMoveRequest(String containerId, String targetFog) {
+        this.containerId = containerId;
+        this.targetFog = targetFog;
+    }
+
+    public ApplicationMoveRequest() {
+    }
+
     public String getContainerId() {
         return containerId;
     }
@@ -23,5 +33,13 @@ public class ApplicationMoveRequest {
 
     public void setTargetFog(String targetFog) {
         this.targetFog = targetFog;
+    }
+
+    public String getApplicationUrl() {
+        return applicationUrl;
+    }
+
+    public void setApplicationUrl(String applicationUrl) {
+        this.applicationUrl = applicationUrl;
     }
 }

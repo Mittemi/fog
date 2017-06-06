@@ -2,5 +2,4 @@
 
 <configuration scan="true">
     <include resource="fog-logback-base.xml"/>
-    <jmxConfigurator/>
 </configuration>

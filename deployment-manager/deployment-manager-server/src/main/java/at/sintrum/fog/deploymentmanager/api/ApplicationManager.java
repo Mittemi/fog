@@ -1,5 +1,6 @@
 package at.sintrum.fog.deploymentmanager.api;
 
+import at.sintrum.fog.clientcore.service.ShutdownApplicationService;
 import at.sintrum.fog.core.service.EnvironmentInfoService;
 import at.sintrum.fog.deploymentmanager.api.dto.*;
 import at.sintrum.fog.deploymentmanager.client.factory.DeploymentManagerClientFactory;
@@ -11,6 +12,7 @@ import at.sintrum.fog.metadatamanager.api.dto.DockerContainerMetadata;
 import at.sintrum.fog.metadatamanager.api.dto.DockerImageMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,14 +33,16 @@ public class ApplicationManager implements ApplicationManagerApi {
     private final DeploymentService deploymentService;
     private final DeploymentManagerClientFactory clientFactory;
     private final EnvironmentInfoService environmentInfoService;
+    private final ShutdownApplicationService shutdownApplicationService;
 
-    public ApplicationManager(DockerService dockerService, ImageMetadataApi imageMetadataApi, ContainerMetadataApi containerMetadataApi, DeploymentService deploymentService, DeploymentManagerClientFactory clientFactory, EnvironmentInfoService environmentInfoService) {
+    public ApplicationManager(DockerService dockerService, ImageMetadataApi imageMetadataApi, ContainerMetadataApi containerMetadataApi, DeploymentService deploymentService, DeploymentManagerClientFactory clientFactory, EnvironmentInfoService environmentInfoService, ShutdownApplicationService shutdownApplicationService) {
         this.dockerService = dockerService;
         this.imageMetadataApi = imageMetadataApi;
         this.containerMetadataApi = containerMetadataApi;
         this.deploymentService = deploymentService;
         this.clientFactory = clientFactory;
         this.environmentInfoService = environmentInfoService;
+        this.shutdownApplicationService = shutdownApplicationService;
     }
 
 
@@ -53,7 +57,7 @@ public class ApplicationManager implements ApplicationManagerApi {
 
         if (imageMetadata == null) {
             LOG.error("Image metadata missing for: " + metadataId);
-            return new FogOperationResult(null, false, environmentInfoService.getDeploymentManagerUrl(), "Image metadata missing.");
+            return new FogOperationResult(null, false, environmentInfoService.getFogBaseUrl(), "Image metadata missing.");
         } else {
             dockerService.pullImage(new PullImageRequest(imageMetadata.getImage(), imageMetadata.getTag()));
 
@@ -71,7 +75,7 @@ public class ApplicationManager implements ApplicationManagerApi {
             //TODO: logging
             dockerService.startContainer(container.getId());
 
-            return new FogOperationResult(container.getId(), true, environmentInfoService.getDeploymentManagerUrl());
+            return new FogOperationResult(container.getId(), true, environmentInfoService.getFogBaseUrl());
         }
     }
 
@@ -82,10 +86,20 @@ public class ApplicationManager implements ApplicationManagerApi {
 
         if (containerInfo == null) {
             LOG.warn("Can't move container. Unknown container '" + applicationMoveRequest.getContainerId() + "'");
-            return new FogOperationResult(null, false, environmentInfoService.getDeploymentManagerUrl(), "unknown container");
+            return new FogOperationResult(null, false, environmentInfoService.getFogBaseUrl(), "unknown container");
         } else {
             String tag = "checkpoint_" + UUID.randomUUID().toString();
 
+            try {
+                if (StringUtils.isEmpty(applicationMoveRequest.getApplicationUrl())) {
+                    LOG.warn("ApplicationURL missing. Can't send shutdown request.");
+                } else {
+                    shutdownApplicationService.shutdown(applicationMoveRequest.getApplicationUrl());
+                    Thread.sleep(1000);
+                }
+            } catch (Exception ex) {
+                LOG.error("Request application shutdown failed with: " + ex);
+            }
             dockerService.stopContainer(applicationMoveRequest.getContainerId());
 
             CommitContainerResult checkpoint = dockerService.commitContainer(new CommitContainerRequest(applicationMoveRequest.getContainerId(), Collections.singletonList(tag)));
@@ -95,7 +109,7 @@ public class ApplicationManager implements ApplicationManagerApi {
 
             if (containerMetadata == null) {
                 LOG.error("ContainerMetadata missing for container: " + containerInfo.getId());
-                return new FogOperationResult(null, false, environmentInfoService.getDeploymentManagerUrl(), "missing container metadata");
+                return new FogOperationResult(null, false, environmentInfoService.getFogBaseUrl(), "missing container metadata");
             } else {
                 DockerImageMetadata imageMetadata = imageMetadataApi.getById(containerMetadata.getImageMetadataId());
                 imageMetadata.setImage(checkpoint.getImage());      //TODO: check if required!
@@ -114,7 +128,7 @@ public class ApplicationManager implements ApplicationManagerApi {
                 } else {
                     LOG.info("Move container failed. Restart original container");
                     dockerService.startContainer(applicationMoveRequest.getContainerId());
-                    return new FogOperationResult(applicationMoveRequest.getContainerId(), false, environmentInfoService.getDeploymentManagerUrl(), "move failed, recovered");
+                    return new FogOperationResult(applicationMoveRequest.getContainerId(), false, environmentInfoService.getFogBaseUrl(), "move failed, recovered");
                 }
 
                 return fogOperationResult;

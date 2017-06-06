@@ -8,13 +8,4 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "fog.app")
 public class FogApplicationConfigProperties {
 
-    private String deploymentManagerUrl;
-
-    public String getDeploymentManagerUrl() {
-        return deploymentManagerUrl;
-    }
-
-    public void setDeploymentManagerUrl(String deploymentManagerUrl) {
-        this.deploymentManagerUrl = deploymentManagerUrl;
-    }
 }

@@ -5,6 +5,7 @@ import at.sintrum.fog.clientcore.client.ClientFactoryFactory;
 import at.sintrum.fog.clientcore.client.ClientProvider;
 import at.sintrum.fog.clientcore.client.ClientProviderImpl;
 import at.sintrum.fog.clientcore.client.FeignClientFactoryFactoryImpl;
+import at.sintrum.fog.clientcore.service.ShutdownApplicationServiceImpl;
 import feign.Client;
 import feign.Contract;
 import feign.codec.Decoder;
@@ -17,6 +18,7 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.cloud.netflix.feign.FeignClientsConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -26,6 +28,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  * Created by Michael Mittermayr on 17.05.2017.
  */
 @Configuration
+@ComponentScan(basePackageClasses = {ShutdownApplicationServiceImpl.class})
 @Import({FeignClientsConfiguration.class})
 public class ClientCoreConfig {
 

@@ -17,6 +17,10 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties({FogApplicationConfigProperties.class})
 public class PlatformCoreConfig {
 
+    public void configure() {
+        
+    }
+
     @Bean
     public ObjectMapper objectMapper() {
 

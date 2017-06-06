@@ -1,5 +1,6 @@
 package at.sintrum.fog.deploymentmanager.service;
 
+import at.sintrum.fog.core.service.EnvironmentInfoService;
 import at.sintrum.fog.deploymentmanager.api.dto.CreateContainerRequest;
 import at.sintrum.fog.deploymentmanager.api.dto.PortInfo;
 import at.sintrum.fog.deploymentmanager.config.DeploymentManagerConfigProperties;
@@ -19,11 +20,12 @@ import java.util.List;
 public class DeploymentService {
 
     private Logger LOG = LoggerFactory.getLogger(DeploymentService.class);
-    private FogEnvironmentService fogEnvironmentService;
+
+    private final EnvironmentInfoService environmentInfoService;
     private DeploymentManagerConfigProperties deploymentManagerConfigProperties;
 
-    public DeploymentService(FogEnvironmentService fogEnvironmentService, DeploymentManagerConfigProperties deploymentManagerConfigProperties) {
-        this.fogEnvironmentService = fogEnvironmentService;
+    public DeploymentService(EnvironmentInfoService environmentInfoService, DeploymentManagerConfigProperties deploymentManagerConfigProperties) {
+        this.environmentInfoService = environmentInfoService;
         this.deploymentManagerConfigProperties = deploymentManagerConfigProperties;
     }
 
@@ -55,9 +57,9 @@ public class DeploymentService {
             environment.addAll(imageMetadata.getEnvironment());
         }
 
-        addDynamicEnvironmentKey(environment, "EUREKA_SERVICE_URL", fogEnvironmentService.getEurekaServiceUrl());
-        addDynamicEnvironmentKey(environment, "EUREKA_CLIENT_IP", fogEnvironmentService.getEurekaClientIp());
-        addDynamicEnvironmentKey(environment, "FOG_BASE_URL", fogEnvironmentService.getFogBaseUrl());
+        addDynamicEnvironmentKey(environment, "EUREKA_SERVICE_URL", environmentInfoService.getEurekaServiceUrl());
+        addDynamicEnvironmentKey(environment, "EUREKA_CLIENT_IP", environmentInfoService.getEurekaClientIp());
+        addDynamicEnvironmentKey(environment, "FOG_BASE_URL", environmentInfoService.getFogBaseUrl());
 
         createContainerRequest.setEnvironment(environment);
     }
