@@ -37,7 +37,7 @@ VOLUME ["/logs"]
 # Install additional tools, remove for production!
 RUN \
   apt-get update && \
-  apt-get install -y nano net-tools curl htop && \
+  apt-get install -y nano net-tools curl htop dnsutils && \
   rm -rf /var/lib/apt/lists/*
 
 
