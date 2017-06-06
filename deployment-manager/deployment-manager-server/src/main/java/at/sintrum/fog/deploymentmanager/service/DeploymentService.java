@@ -74,12 +74,33 @@ public class DeploymentService {
     private void setImage(DockerImageMetadata imageMetadata, CreateContainerRequest createContainerRequest) {
 
         //TODO: use same method as in dockerClient
-        String prefix = deploymentManagerConfigProperties.getRegistry() + "/";
+        String prefix = getRepositoryName(imageMetadata.getImage());
 
         if (!StringUtils.isEmpty(imageMetadata.getTag())) {
-            createContainerRequest.setImage(prefix + imageMetadata.getImage() + ":" + imageMetadata.getTag());
+            createContainerRequest.setImage(prefix + ":" + imageMetadata.getTag());
         } else {
-            createContainerRequest.setImage(prefix + imageMetadata.getImage());
+            createContainerRequest.setImage(prefix);
         }
+    }
+
+    public String getRepositoryName(String imageName) {
+
+        if (!imageName.startsWith(deploymentManagerConfigProperties.getRegistry())) {
+
+            if (imageName.contains("/")) {
+                LOG.error("Invalid repository link");
+            }
+            //TODO: prevent double /
+            imageName = deploymentManagerConfigProperties.getRegistry() + "/" + imageName;
+        }
+
+        int idx = imageName.lastIndexOf("/");
+        if (imageName.lastIndexOf(":") > idx) {
+            String old = imageName;
+            imageName = imageName.substring(0, imageName.lastIndexOf(":"));
+            LOG.debug("Rewrite repository string from '" + old + "' to '" + imageName + "'");
+        }
+
+        return imageName;
     }
 }

@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Created by Michael Mittermayr on 03.06.2017.
  */
-public class MetadataControllerBase<TModel extends MetadataBase> implements MetadataApi<TModel> {
+public abstract class MetadataControllerBase<TModel extends MetadataBase> {
 
     private final MetadataService<TModel> modelMetadataService;
 
@@ -19,17 +19,20 @@ public class MetadataControllerBase<TModel extends MetadataBase> implements Meta
     }
 
 
-    @Override
     public TModel store(@RequestBody TModel metadata) {
         return modelMetadataService.store(metadata);
     }
 
-    @Override
+
     public TModel getById(@PathVariable("id") String id) {
         return modelMetadataService.get(id);
     }
 
-    @Override
+
+    public void delete(@PathVariable("id") String id) {
+        modelMetadataService.delete(id);
+    }
+
     public List<TModel> getAll() {
         return modelMetadataService.getAll();
     }

@@ -35,10 +35,14 @@ public class SwaggerConfig {
             return false;
         }
         Class<?> aClass = x.declaringClass();
-        if (aClass == null) return false;
+        if (aClass == null) {
+            return false;
+        }
 
         Package aPackage = aClass.getPackage();
-        if (aPackage == null) return false;
+        if (aPackage == null) {
+            return false;
+        }
 
         String packageName = aPackage.getName();
         if (packageName.startsWith("at.sintrum")) {

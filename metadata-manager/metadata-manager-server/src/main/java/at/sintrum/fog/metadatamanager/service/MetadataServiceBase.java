@@ -59,5 +59,9 @@ public abstract class MetadataServiceBase<TModel extends MetadataBase, TEntity e
         return list.stream().filter(Objects::nonNull).map(x -> modelMapper.map(x, modelClazz)).collect(Collectors.toList());
     }
 
+    public void delete(String id) {
+        repository.delete(id);
+    }
+
     abstract String getId(TModel metadata);
 }

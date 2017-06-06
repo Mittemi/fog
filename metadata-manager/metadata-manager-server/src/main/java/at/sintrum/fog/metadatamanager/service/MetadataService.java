@@ -13,5 +13,7 @@ public interface MetadataService<TModel extends MetadataBase> {
 
     TModel get(String id);
 
+    void delete(String id);
+
     List<TModel> getAll();
 }

@@ -1,5 +1,6 @@
 package at.sintrum.fog.deploymentmanager.api;
 
+import at.sintrum.fog.core.service.EnvironmentInfoService;
 import at.sintrum.fog.deploymentmanager.api.dto.*;
 import at.sintrum.fog.deploymentmanager.client.factory.DeploymentManagerClientFactory;
 import at.sintrum.fog.deploymentmanager.service.DeploymentService;
@@ -29,18 +30,20 @@ public class ApplicationManager implements ApplicationManagerApi {
     private final ContainerMetadataApi containerMetadataApi;
     private final DeploymentService deploymentService;
     private final DeploymentManagerClientFactory clientFactory;
+    private final EnvironmentInfoService environmentInfoService;
 
-    public ApplicationManager(DockerService dockerService, ImageMetadataApi imageMetadataApi, ContainerMetadataApi containerMetadataApi, DeploymentService deploymentService, DeploymentManagerClientFactory clientFactory) {
+    public ApplicationManager(DockerService dockerService, ImageMetadataApi imageMetadataApi, ContainerMetadataApi containerMetadataApi, DeploymentService deploymentService, DeploymentManagerClientFactory clientFactory, EnvironmentInfoService environmentInfoService) {
         this.dockerService = dockerService;
         this.imageMetadataApi = imageMetadataApi;
         this.containerMetadataApi = containerMetadataApi;
         this.deploymentService = deploymentService;
         this.clientFactory = clientFactory;
+        this.environmentInfoService = environmentInfoService;
     }
 
 
     @Override
-    public void requestApplicationStart(@RequestBody ApplicationStartRequest applicationStartRequest) {
+    public FogOperationResult requestApplicationStart(@RequestBody ApplicationStartRequest applicationStartRequest) {
 
         String metadataId = applicationStartRequest.getMetadataId();
 
@@ -50,6 +53,7 @@ public class ApplicationManager implements ApplicationManagerApi {
 
         if (imageMetadata == null) {
             LOG.error("Image metadata missing for: " + metadataId);
+            return new FogOperationResult(null, false, environmentInfoService.getDeploymentManagerUrl(), "Image metadata missing.");
         } else {
             dockerService.pullImage(new PullImageRequest(imageMetadata.getImage(), imageMetadata.getTag()));
 
@@ -57,7 +61,7 @@ public class ApplicationManager implements ApplicationManagerApi {
 
             CreateContainerResult container = dockerService.createContainer(createContainerRequest);
 
-            if (container.getWarnings().length > 0) {
+            if (container.getWarnings() != null && container.getWarnings().length > 0) {
                 LOG.warn("Warnings during container creation. ID: " + container.getId() + "\n" + String.join("\n, ", container.getWarnings()));
             }
 
@@ -66,18 +70,24 @@ public class ApplicationManager implements ApplicationManagerApi {
 
             //TODO: logging
             dockerService.startContainer(container.getId());
+
+            return new FogOperationResult(container.getId(), true, environmentInfoService.getDeploymentManagerUrl());
         }
     }
 
     @Override
-    public void moveApplication(@RequestBody ApplicationMoveRequest applicationMoveRequest) {
+    public FogOperationResult moveApplication(@RequestBody ApplicationMoveRequest applicationMoveRequest) {
 
         ContainerInfo containerInfo = dockerService.getContainerInfo(applicationMoveRequest.getContainerId());
 
         if (containerInfo == null) {
             LOG.warn("Can't move container. Unknown container '" + applicationMoveRequest.getContainerId() + "'");
+            return new FogOperationResult(null, false, environmentInfoService.getDeploymentManagerUrl(), "unknown container");
         } else {
             String tag = "checkpoint_" + UUID.randomUUID().toString();
+
+            dockerService.stopContainer(applicationMoveRequest.getContainerId());
+
             CommitContainerResult checkpoint = dockerService.commitContainer(new CommitContainerRequest(applicationMoveRequest.getContainerId(), Collections.singletonList(tag)));
             dockerService.pushImage(new PushImageRequest(checkpoint.getImage(), tag));
 
@@ -85,6 +95,7 @@ public class ApplicationManager implements ApplicationManagerApi {
 
             if (containerMetadata == null) {
                 LOG.error("ContainerMetadata missing for container: " + containerInfo.getId());
+                return new FogOperationResult(null, false, environmentInfoService.getDeploymentManagerUrl(), "missing container metadata");
             } else {
                 DockerImageMetadata imageMetadata = imageMetadataApi.getById(containerMetadata.getImageMetadataId());
                 imageMetadata.setImage(checkpoint.getImage());      //TODO: check if required!
@@ -94,7 +105,19 @@ public class ApplicationManager implements ApplicationManagerApi {
 
                 at.sintrum.fog.deploymentmanager.client.api.ApplicationManager applicationManagerClient = clientFactory.createApplicationManagerClient(applicationMoveRequest.getTargetFog());
 
-                applicationManagerClient.requestApplicationStart(new ApplicationStartRequest(imageMetadata.getId()));
+                FogOperationResult fogOperationResult = applicationManagerClient.requestApplicationStart(new ApplicationStartRequest(imageMetadata.getId()));
+
+                if (fogOperationResult.isSuccessful()) {
+                    //TODO: remove container
+                    containerMetadataApi.delete(applicationMoveRequest.getContainerId());
+                    dockerService.removeContainer(applicationMoveRequest.getContainerId());
+                } else {
+                    LOG.info("Move container failed. Restart original container");
+                    dockerService.startContainer(applicationMoveRequest.getContainerId());
+                    return new FogOperationResult(applicationMoveRequest.getContainerId(), false, environmentInfoService.getDeploymentManagerUrl(), "move failed, recovered");
+                }
+
+                return fogOperationResult;
             }
 
             //TODO: remove container, free resources

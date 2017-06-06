@@ -30,4 +30,6 @@ public interface DockerService {
     void pullImage(PullImageRequest pullImageRequest);
 
     void pushImage(PushImageRequest pushImageRequest);
+
+    void removeContainer(String containerId);
 }

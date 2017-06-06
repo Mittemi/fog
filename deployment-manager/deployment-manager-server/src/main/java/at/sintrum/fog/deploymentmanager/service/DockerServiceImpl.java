@@ -26,12 +26,14 @@ public class DockerServiceImpl implements DockerService {
 
     private final DockerClient dockerClient;
     private DeploymentManagerConfigProperties deploymentManagerConfigProperties;
+    private final DeploymentService deploymentService;
 
     private final Logger LOG = LoggerFactory.getLogger(DockerServiceImpl.class);
 
-    public DockerServiceImpl(DockerClient dockerClient, DeploymentManagerConfigProperties deploymentManagerConfigProperties) {
+    public DockerServiceImpl(DockerClient dockerClient, DeploymentManagerConfigProperties deploymentManagerConfigProperties, DeploymentService deploymentService) {
         this.dockerClient = dockerClient;
         this.deploymentManagerConfigProperties = deploymentManagerConfigProperties;
+        this.deploymentService = deploymentService;
     }
 
     @Override
@@ -127,21 +129,17 @@ public class DockerServiceImpl implements DockerService {
 
         String temporaryTag = "latest_checkpoint";
         ContainerInfo containerInfo = getContainerInfo(commitContainerRequest.getContainerId());
-        String repository = getRepositoryName(containerInfo.getImage());
+        String repository = deploymentService.getRepositoryName(containerInfo.getImage());
 
         CommitCmd commitCmd = dockerClient.commitCmd(commitContainerRequest.getContainerId());
         commitCmd.withRepository(repository);
         commitCmd.withTag(temporaryTag);
 
-        CommitContainerResult result = new CommitContainerResult(commitCmd.exec(), containerInfo.getImage());
+        CommitContainerResult result = new CommitContainerResult(commitCmd.exec(), repository);
         for (String tag : commitContainerRequest.getTags()) {
             tagImage(repository + ":" + temporaryTag, repository, tag);
         }
         return result;
-    }
-
-    private String getRepositoryName(String imageName) {
-        return deploymentManagerConfigProperties.getRegistry() + "/" + imageName;
     }
 
     @Override
@@ -193,8 +191,7 @@ public class DockerServiceImpl implements DockerService {
 
     @Override
     public void pullImage(PullImageRequest pullImageRequest) {
-        String repository = deploymentManagerConfigProperties.getRegistry() + "/";
-        repository = repository + pullImageRequest.getName();
+        String repository = deploymentService.getRepositoryName(pullImageRequest.getName());
         PullImageCmd pullImageCmd = dockerClient.pullImageCmd(repository);
 
         if (StringUtils.isEmpty(pullImageRequest.getTag())) {
@@ -223,6 +220,21 @@ public class DockerServiceImpl implements DockerService {
         }
 
         pushImageCmd.exec(new PushImageResultCallback()).awaitSuccess();
+    }
+
+    @Override
+    public void removeContainer(String containerId) {
+        ContainerInfo containerInfo = getContainerInfo(containerId);
+
+        if (containerInfo == null) {
+            LOG.error("Container with id '" + containerId + "' not found");
+        } else {
+            if (containerInfo.isRunning()) {
+                LOG.error("Failed to remove container with id '" + containerId + "'. Stop container first.");
+            } else {
+                dockerClient.removeContainerCmd(containerId).withRemoveVolumes(true).exec();
+            }
+        }
     }
 
     private static ContainerInfo mapToDto(Container container) {
