@@ -22,6 +22,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 /**
@@ -63,7 +64,8 @@ public class ClientCoreConfig {
         @Override
         protected boolean isHandler(Class<?> beanType) {
             if (super.isHandler(beanType)) {
-                boolean result = !AnnotatedElementUtils.hasAnnotation(beanType, FeignClient.class) && !AnnotatedElementUtils.hasAnnotation(beanType, DoNotRegister.class);
+                boolean result = !AnnotatedElementUtils.hasAnnotation(beanType, FeignClient.class) && !AnnotatedElementUtils.hasAnnotation(beanType, DoNotRegister.class)
+                        && AnnotatedElementUtils.hasAnnotation(beanType, Controller.class);
 
                 if (result) {
                     if (beanType.getName().startsWith("com.sun.proxy")) {
