@@ -112,7 +112,7 @@ public class ApplicationManager implements ApplicationManagerApi {
                 return new FogOperationResult(null, false, environmentInfoService.getFogBaseUrl(), "missing container metadata");
             } else {
                 DockerImageMetadata imageMetadata = imageMetadataApi.getById(containerMetadata.getImageMetadataId());
-                imageMetadata.setImage(checkpoint.getImage());      //TODO: check if required!
+                imageMetadata.setImage(checkpoint.getImage());
                 imageMetadata.setTag(tag);
                 imageMetadata.setId(null);  //create new/no update
                 imageMetadata = imageMetadataApi.store(imageMetadata);
@@ -122,7 +122,6 @@ public class ApplicationManager implements ApplicationManagerApi {
                 FogOperationResult fogOperationResult = applicationManagerClient.requestApplicationStart(new ApplicationStartRequest(imageMetadata.getId()));
 
                 if (fogOperationResult.isSuccessful()) {
-                    //TODO: remove container
                     containerMetadataApi.delete(applicationMoveRequest.getContainerId());
                     dockerService.removeContainer(applicationMoveRequest.getContainerId());
                 } else {
@@ -133,9 +132,6 @@ public class ApplicationManager implements ApplicationManagerApi {
 
                 return fogOperationResult;
             }
-
-            //TODO: remove container, free resources
-            //dockerService.removeContainer
         }
     }
 }

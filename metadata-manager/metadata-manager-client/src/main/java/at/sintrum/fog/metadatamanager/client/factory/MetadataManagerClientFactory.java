@@ -1,5 +1,6 @@
 package at.sintrum.fog.metadatamanager.client.factory;
 
+import at.sintrum.fog.clientcore.annotation.EnableRetry;
 import at.sintrum.fog.clientcore.client.ClientFactory;
 import at.sintrum.fog.metadatamanager.api.ContainerMetadataApi;
 import at.sintrum.fog.metadatamanager.api.ImageMetadataApi;
@@ -9,7 +10,9 @@ import at.sintrum.fog.metadatamanager.api.ImageMetadataApi;
  */
 public interface MetadataManagerClientFactory extends ClientFactory {
 
+    @EnableRetry
     ImageMetadataApi createApplicationMetadataClient(String url);
 
+    @EnableRetry
     ContainerMetadataApi createContainerMetadataClient(String url);
 }

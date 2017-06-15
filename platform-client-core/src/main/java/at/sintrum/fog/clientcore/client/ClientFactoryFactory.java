@@ -7,4 +7,6 @@ public interface ClientFactoryFactory extends ClientFactory {
     <T extends ClientFactory> T buildFactory(Class<T> factoryInterface, String serviceName);
 
     <T> T buildClient(Class<T> apiInterface, String url);
+
+    <T> T buildClient(Class<T> apiInterface, String url, boolean enableRetry);
 }

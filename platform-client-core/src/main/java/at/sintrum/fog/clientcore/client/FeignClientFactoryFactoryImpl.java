@@ -1,12 +1,15 @@
 package at.sintrum.fog.clientcore.client;
 
+import at.sintrum.fog.clientcore.annotation.EnableRetry;
 import feign.Contract;
 import feign.Feign;
 import feign.Logger;
 import feign.Retryer;
 import feign.codec.Decoder;
 import feign.codec.Encoder;
+import feign.codec.ErrorDecoder;
 import feign.slf4j.Slf4jLogger;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Proxy;
@@ -33,6 +36,16 @@ public class FeignClientFactoryFactoryImpl implements ClientFactoryFactory {
     }
 
     public <T> T buildClient(Class<T> apiInterface, String url) {
+        return buildClient(apiInterface, url, false);
+    }
+
+    public <T> T buildClient(Class<T> apiInterface, String url, boolean enableRetry) {
+
+        Retryer retryer = Retryer.NEVER_RETRY;
+        if (enableRetry) {
+            retryer = new Retryer.Default();
+        }
+
         return Feign.builder()
                 .client(clientProvider.getClient(url))
                 .contract(contract)
@@ -40,7 +53,8 @@ public class FeignClientFactoryFactoryImpl implements ClientFactoryFactory {
                 .decoder(decoder)
                 .logger(new Slf4jLogger(apiInterface.getName()))
                 .logLevel(Logger.Level.FULL)
-                .retryer(Retryer.NEVER_RETRY)       //TODO: retry?
+                .errorDecoder(new ErrorDecoder.Default())
+                .retryer(retryer)
                 //.decode404()
                 .target(apiInterface, url);
     }
@@ -67,7 +81,7 @@ public class FeignClientFactoryFactoryImpl implements ClientFactoryFactory {
 
             url = fixUrl(url, serviceName);
 
-            return buildClient(method.getReturnType(), url);
+            return buildClient(method.getReturnType(), url, AnnotatedElementUtils.hasAnnotation(method, EnableRetry.class));
         }));
     }
 }
