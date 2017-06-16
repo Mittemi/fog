@@ -2,7 +2,7 @@
 
 <included>
     <!--<property name="LOG_FILE" value="${LOG_FILE:-${LOG_PATH:-${LOG_TEMP:-${java.io.tmpdir:-/tmp}}/}spring.log}"/>-->
-    <property name="LOG_FILE" value="logs/${serverId}.log"/>
+    <property name="LOG_FILE" value="/logs/${serverId}.log"/>
     <property name="FILE_LOG_PATTERN" value="%date{ISO8601} %-5p [%t] --- %c{1}: %m%n"/>
     <include resource="org/springframework/boot/logging/logback/file-appender.xml"/>
 
