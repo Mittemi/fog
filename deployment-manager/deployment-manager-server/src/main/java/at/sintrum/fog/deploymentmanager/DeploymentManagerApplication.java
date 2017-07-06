@@ -13,13 +13,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.scheduling.annotation.EnableAsync;
 
 /**
  * Created by Michael Mittermayr on 17.05.2017.
  */
 @Configuration
-@EnableAsync
 @EnableAutoConfiguration
 @SpringBootApplication
 @EnableConfigurationProperties(DeploymentManagerConfigProperties.class)

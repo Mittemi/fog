@@ -24,14 +24,11 @@ public class ApplicationManager implements ApplicationManagerApi {
         this.applicationManagerService = applicationManagerService;
     }
 
-
-    // @Async
     @Override
     public FogOperationResult requestApplicationStart(@RequestBody ApplicationStartRequest applicationStartRequest) {
         return applicationManagerService.start(applicationStartRequest);
     }
 
-    //   @Async
     @Override
     public FogOperationResult moveApplication(@RequestBody ApplicationMoveRequest applicationMoveRequest) {
         return applicationManagerService.move(applicationMoveRequest);

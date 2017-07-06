@@ -10,6 +10,7 @@ import at.sintrum.fog.metadatamanager.api.dto.DockerContainerMetadata;
 import at.sintrum.fog.metadatamanager.api.dto.DockerImageMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -74,6 +75,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
         return fogOperationResult;
     }
 
+    @Async
     @Override
     public FogOperationResult start(ApplicationStartRequest applicationStartRequest) {
         String metadataId = applicationStartRequest.getMetadataId();
@@ -106,6 +108,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
         }
     }
 
+    @Async
     @Override
     public FogOperationResult move(ApplicationMoveRequest applicationMoveRequest) {
         ContainerInfo containerInfo = dockerService.getContainerInfo(applicationMoveRequest.getContainerId());

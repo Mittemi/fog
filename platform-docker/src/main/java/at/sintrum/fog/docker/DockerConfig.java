@@ -31,9 +31,15 @@ public class DockerConfig {
             logger.warn("Docker-Host won't work on this system. Use TCP!");
         }
 
-        DockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder()
+        DefaultDockerClientConfig.Builder defaultConfigBuilder = DefaultDockerClientConfig.createDefaultConfigBuilder();
+
+        if (dockerHost.startsWith("tcp:/")) {
+            defaultConfigBuilder.withDockerConfig("C:\\");      //workaround due to docker java bug with wincred auth config when docker for windows is installed
+        }
+
+        DockerClientConfig config = defaultConfigBuilder
                 .withDockerHost(dockerHost)
-                .withApiVersion("1.27")
+                .withApiVersion("1.30")
                 .withRegistryUrl("https://index.docker.io/v1/")
                 .build();
         return DockerClientBuilder.getInstance(config).build();
