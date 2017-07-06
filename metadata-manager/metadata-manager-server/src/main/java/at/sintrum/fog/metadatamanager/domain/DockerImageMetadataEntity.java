@@ -24,6 +24,7 @@ public class DockerImageMetadataEntity extends BaseEntity {
 
     private boolean isEurekaEnabled;
 
+    private boolean isStateless;
 
     public String getId() {
         return id;
@@ -71,5 +72,13 @@ public class DockerImageMetadataEntity extends BaseEntity {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public boolean isStateless() {
+        return isStateless;
+    }
+
+    public void setStateless(boolean stateless) {
+        isStateless = stateless;
     }
 }

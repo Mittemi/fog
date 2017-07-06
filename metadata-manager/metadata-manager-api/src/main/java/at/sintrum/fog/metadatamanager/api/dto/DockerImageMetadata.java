@@ -15,6 +15,8 @@ public class DockerImageMetadata extends MetadataBase {
 
     private boolean isEurekaEnabled;
 
+    private boolean isStateless;
+
     private List<Integer> ports;
 
     private List<String> environment;
@@ -65,5 +67,13 @@ public class DockerImageMetadata extends MetadataBase {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public boolean isStateless() {
+        return isStateless;
+    }
+
+    public void setStateless(boolean stateless) {
+        isStateless = stateless;
     }
 }
