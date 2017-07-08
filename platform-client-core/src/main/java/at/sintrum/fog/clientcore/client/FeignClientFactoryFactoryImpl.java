@@ -9,6 +9,7 @@ import feign.codec.Decoder;
 import feign.codec.Encoder;
 import feign.codec.ErrorDecoder;
 import feign.slf4j.Slf4jLogger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.util.StringUtils;
 
@@ -22,6 +23,7 @@ public class FeignClientFactoryFactoryImpl implements ClientFactoryFactory {
     private final Decoder decoder;
     private final Encoder encoder;
     private final Contract contract;
+    private final org.slf4j.Logger LOG = LoggerFactory.getLogger(FeignClientFactoryFactoryImpl.class);
 
     public FeignClientFactoryFactoryImpl(ClientProvider clientProvider, Decoder decoder, Contract contract, Encoder encoder) {
         this.clientProvider = clientProvider;
@@ -43,6 +45,7 @@ public class FeignClientFactoryFactoryImpl implements ClientFactoryFactory {
 
         Retryer retryer = Retryer.NEVER_RETRY;
         if (enableRetry) {
+            LOG.debug("Enable retry for: " + apiInterface.getCanonicalName());
             retryer = new Retryer.Default();
         }
 

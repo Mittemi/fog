@@ -25,11 +25,11 @@ public interface DockerService {
 
     CommitContainerResult commitContainer(CommitContainerRequest commitContainerRequest);
 
-    void tagImage(String imageId, String repository, String tag);
+    boolean tagImage(String imageId, String repository, String tag);
 
-    void pullImage(PullImageRequest pullImageRequest);
+    boolean pullImage(PullImageRequest pullImageRequest);
 
-    void pushImage(PushImageRequest pushImageRequest);
+    boolean pushImage(PushImageRequest pushImageRequest);
 
-    void removeContainer(String containerId);
+    boolean removeContainer(String containerId);
 }

@@ -65,6 +65,10 @@ public class EnvironmentInfoServiceImpl implements EnvironmentInfoService {
         return false;
     }
 
+    public String getOwnUrl() {
+        return "http://" + getEurekaClientIp() + ":" + serverPort;
+    }
+
     @Override
     public String getEurekaServiceUrl() {
         return eurekaServiceUrl;
@@ -78,6 +82,11 @@ public class EnvironmentInfoServiceImpl implements EnvironmentInfoService {
     @Override
     public String getFogBaseUrl() {
         return fogBaseUrl;
+    }
+
+    @Override
+    public String getFogId() {
+        return fogBaseUrl;      //TODO: check if this could get trimmed
     }
 
     private String getHostname() {

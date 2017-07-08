@@ -4,9 +4,12 @@ import at.sintrum.fog.hostinfo.HostInfoProviderConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.PropertySources;
 
 import javax.annotation.PostConstruct;
 
@@ -14,6 +17,10 @@ import javax.annotation.PostConstruct;
  * Created by Michael Mittermayr on 17.05.2017.
  */
 @Configuration
+@PropertySources(
+        @PropertySource("classpath:servercore-application.yml")
+)
+@EnableConfigurationProperties
 @Import({HostInfoProviderConfig.class})
 @EnableDiscoveryClient
 public class ServerCoreConfig {
@@ -35,5 +42,4 @@ public class ServerCoreConfig {
         logger.info("EurekaUrl: " + eurekaUrl);
         logger.info("EurekaClientIP: " + eurekaClientIp);
     }
-
 }

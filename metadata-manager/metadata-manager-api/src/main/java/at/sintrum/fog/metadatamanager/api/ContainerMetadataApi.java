@@ -24,4 +24,7 @@ public interface ContainerMetadataApi {
 
     @RequestMapping(value = "", method = RequestMethod.GET)
     List<DockerContainerMetadata> getAll();
+
+    @RequestMapping(value = "reset", method = RequestMethod.POST)
+    void reset();
 }

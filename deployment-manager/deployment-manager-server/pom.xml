@@ -30,6 +30,11 @@
 
         <dependency>
             <groupId>at.sintrum.fog</groupId>
+            <artifactId>platform-redis</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>at.sintrum.fog</groupId>
             <artifactId>platform-swagger</artifactId>
         </dependency>
 
@@ -47,6 +52,7 @@
             <groupId>at.sintrum.fog</groupId>
             <artifactId>deployment-manager-client</artifactId>
         </dependency>
+
     </dependencies>
 
     <build>

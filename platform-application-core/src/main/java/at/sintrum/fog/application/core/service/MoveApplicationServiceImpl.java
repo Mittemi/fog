@@ -33,9 +33,10 @@ public class MoveApplicationServiceImpl implements MoveApplicationService {
 
         String sourceDeploymentManagerUrl = environmentInfoService.getFogBaseUrl();
 
-        //TODO: request app shutdown, persist stuff, notify about shutdown
-
         ApplicationManager applicationManagerClient = deploymentManagerClientFactory.createApplicationManagerClient(sourceDeploymentManagerUrl);
-        applicationManagerClient.moveApplication(new ApplicationMoveRequest(containerId, targetDeploymentMangerUrl));
+        ApplicationMoveRequest applicationMoveRequest = new ApplicationMoveRequest(containerId, targetDeploymentMangerUrl);
+        applicationMoveRequest.setApplicationUrl(environmentInfoService.getOwnUrl());
+
+        applicationManagerClient.moveApplication(applicationMoveRequest);
     }
 }

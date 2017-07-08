@@ -39,4 +39,9 @@ public class ContainerMetadataController implements ContainerMetadataApi {
     public void delete(@PathVariable("id") String id) {
         metadataService.delete(id);
     }
+
+    @Override
+    public void reset() {
+        metadataService.deleteAll();
+    }
 }

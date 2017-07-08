@@ -7,6 +7,8 @@ public class ApplicationStartRequest {
 
     private String metadataId;
 
+    private boolean skipPull;
+
     public ApplicationStartRequest(String metadataId) {
         this.metadataId = metadataId;
     }
@@ -20,5 +22,13 @@ public class ApplicationStartRequest {
 
     public void setMetadataId(String metadataId) {
         this.metadataId = metadataId;
+    }
+
+    public boolean isSkipPull() {
+        return skipPull;
+    }
+
+    public void setSkipPull(boolean skipPull) {
+        this.skipPull = skipPull;
     }
 }

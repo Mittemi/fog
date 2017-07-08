@@ -63,5 +63,9 @@ public abstract class MetadataServiceBase<TModel extends MetadataBase, TEntity e
         repository.delete(id);
     }
 
+    public void deleteAll() {
+        repository.deleteAll();
+    }
+
     abstract String getId(TModel metadata);
 }

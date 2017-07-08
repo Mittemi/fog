@@ -66,7 +66,7 @@ public class DockerServiceImpl implements DockerService {
 
     @Override
     public ContainerInfo getContainerInfo(String containerId) {
-        return getContainers().stream().filter(x -> x.getId().equals(containerId)).findFirst().orElse(null);
+        return getContainers().stream().filter(x -> x.getId().startsWith(containerId)).findFirst().orElse(null);
     }
 
     public ImageInfo getImageInfo(String imageId) {
@@ -106,46 +106,63 @@ public class DockerServiceImpl implements DockerService {
     @Override
     public CreateContainerResult createContainer(CreateContainerRequest createContainerRequest) {
 
-        CreateContainerCmd createContainerCmd = dockerClient.createContainerCmd(createContainerRequest.getImage());
-        createContainerCmd.withTty(createContainerRequest.isWithTty());
-        createContainerCmd.withEnv(createContainerRequest.getEnvironment());
-        if (!StringUtils.isEmpty(createContainerRequest.getRestartPolicy())) {
-            createContainerCmd.withRestartPolicy(RestartPolicy.parse(createContainerRequest.getRestartPolicy()));
+        try {
+            CreateContainerCmd createContainerCmd = dockerClient.createContainerCmd(createContainerRequest.getImage());
+            createContainerCmd.withTty(createContainerRequest.isWithTty());
+            createContainerCmd.withEnv(createContainerRequest.getEnvironment());
+            if (!StringUtils.isEmpty(createContainerRequest.getRestartPolicy())) {
+                createContainerCmd.withRestartPolicy(RestartPolicy.parse(createContainerRequest.getRestartPolicy()));
+            }
+
+            fillPortBindings(createContainerRequest, createContainerCmd);
+            fillVolume(createContainerRequest, createContainerCmd);
+
+
+            //TODO: container links
+            //TODO: bind exposed ports dynamically
+
+            CreateContainerResponse response = createContainerCmd.exec();
+            return new CreateContainerResult(response.getId(), response.getWarnings());
+        } catch (Exception ex) {
+            LOG.error("Create container failed", ex);
+            return null;
         }
-
-        fillPortBindings(createContainerRequest, createContainerCmd);
-        fillVolume(createContainerRequest, createContainerCmd);
-
-
-        //TODO: container links
-        //TODO: bind exposed ports dynamically
-
-        CreateContainerResponse response = createContainerCmd.exec();
-        return new CreateContainerResult(response.getId(), response.getWarnings());
     }
 
     @Override
     public CommitContainerResult commitContainer(CommitContainerRequest commitContainerRequest) {
 
-        String temporaryTag = "latest_checkpoint";
-        ContainerInfo containerInfo = getContainerInfo(commitContainerRequest.getContainerId());
-        String repository = deploymentService.getRepositoryName(containerInfo.getImage());
+        try {
+            String temporaryTag = "latest_checkpoint";
+            ContainerInfo containerInfo = getContainerInfo(commitContainerRequest.getContainerId());
+            String repository = deploymentService.getRepositoryName(containerInfo.getImage());
 
-        CommitCmd commitCmd = dockerClient.commitCmd(commitContainerRequest.getContainerId());
-        commitCmd.withRepository(repository);
-        commitCmd.withTag(temporaryTag);
+            CommitCmd commitCmd = dockerClient.commitCmd(commitContainerRequest.getContainerId());
+            commitCmd.withRepository(repository);
+            commitCmd.withTag(temporaryTag);
 
-        CommitContainerResult result = new CommitContainerResult(commitCmd.exec(), repository);
-        for (String tag : commitContainerRequest.getTags()) {
-            tagImage(repository + ":" + temporaryTag, repository, tag);
+            CommitContainerResult result = new CommitContainerResult(commitCmd.exec(), repository);
+            for (String tag : commitContainerRequest.getTags()) {
+                tagImage(repository + ":" + temporaryTag, repository, tag);
+            }
+
+            return result;
+        } catch (Exception ex) {
+            LOG.error("Commit container failed", ex);
+            return null;
         }
-        return result;
     }
 
     @Override
-    public void tagImage(String imageId, String repository, String tag) {
-        TagImageCmd tagImageCmd = dockerClient.tagImageCmd(imageId, repository, tag);
-        tagImageCmd.exec();
+    public boolean tagImage(String imageId, String repository, String tag) {
+        try {
+            TagImageCmd tagImageCmd = dockerClient.tagImageCmd(imageId, repository, tag);
+            tagImageCmd.exec();
+            return true;
+        } catch (Exception ex) {
+            LOG.error("Tag image failed", ex);
+            return false;
+        }
     }
 
     private void fillPortBindings(CreateContainerRequest createContainerRequest, CreateContainerCmd createContainerCmd) {
@@ -190,50 +207,69 @@ public class DockerServiceImpl implements DockerService {
     }
 
     @Override
-    public void pullImage(PullImageRequest pullImageRequest) {
-        String repository = deploymentService.getRepositoryName(pullImageRequest.getName());
-        PullImageCmd pullImageCmd = dockerClient.pullImageCmd(repository);
+    public boolean pullImage(PullImageRequest pullImageRequest) {
+        try {
+            String repository = deploymentService.getRepositoryName(pullImageRequest.getName());
+            PullImageCmd pullImageCmd = dockerClient.pullImageCmd(repository);
 
-        if (StringUtils.isEmpty(pullImageRequest.getTag())) {
-            LOG.warn("Pull image without tag! Fallback to: latest");
-            pullImageCmd.withTag("latest");
-        } else {
-            pullImageCmd.withTag(pullImageRequest.getTag());
-        }
-
-        if (!StringUtils.isEmpty(deploymentManagerConfigProperties.getRegistry())) {
-            pullImageCmd.withRegistry(deploymentManagerConfigProperties.getRegistry());
-        }
-
-        pullImageCmd.exec(new PullImageResultCallback()).awaitSuccess();
-    }
-
-    @Override
-    public void pushImage(PushImageRequest pushImageRequest) {
-        PushImageCmd pushImageCmd = dockerClient.pushImageCmd(pushImageRequest.getName());
-
-        if (StringUtils.isEmpty(pushImageRequest.getTag())) {
-            LOG.warn("Push image without tag!");
-            pushImageCmd.withTag("latest");
-        } else {
-            pushImageCmd.withTag(pushImageRequest.getTag());
-        }
-
-        pushImageCmd.exec(new PushImageResultCallback()).awaitSuccess();
-    }
-
-    @Override
-    public void removeContainer(String containerId) {
-        ContainerInfo containerInfo = getContainerInfo(containerId);
-
-        if (containerInfo == null) {
-            LOG.error("Container with id '" + containerId + "' not found");
-        } else {
-            if (containerInfo.isRunning()) {
-                LOG.error("Failed to remove container with id '" + containerId + "'. Stop container first.");
+            if (StringUtils.isEmpty(pullImageRequest.getTag())) {
+                LOG.warn("Pull image without tag! Fallback to: latest");
+                pullImageCmd.withTag("latest");
             } else {
-                dockerClient.removeContainerCmd(containerId).withRemoveVolumes(true).exec();
+                pullImageCmd.withTag(pullImageRequest.getTag());
             }
+
+            if (!StringUtils.isEmpty(deploymentManagerConfigProperties.getRegistry())) {
+                pullImageCmd.withRegistry(deploymentManagerConfigProperties.getRegistry());
+            }
+
+            pullImageCmd.exec(new PullImageResultCallback()).awaitSuccess();
+            return true;
+        } catch (Exception ex) {
+            LOG.error("Pull image failed", ex);
+            return false;
+        }
+    }
+
+    @Override
+    public boolean pushImage(PushImageRequest pushImageRequest) {
+
+        try {
+            PushImageCmd pushImageCmd = dockerClient.pushImageCmd(pushImageRequest.getName());
+
+            if (StringUtils.isEmpty(pushImageRequest.getTag())) {
+                LOG.warn("Push image without tag!");
+                pushImageCmd.withTag("latest");
+            } else {
+                pushImageCmd.withTag(pushImageRequest.getTag());
+            }
+
+            pushImageCmd.exec(new PushImageResultCallback()).awaitSuccess();
+            return true;
+        } catch (Exception ex) {
+            LOG.error("Push image failed", ex);
+            return false;
+        }
+    }
+
+    @Override
+    public boolean removeContainer(String containerId) {
+        try {
+            ContainerInfo containerInfo = getContainerInfo(containerId);
+
+            if (containerInfo == null) {
+                LOG.error("Container with id '" + containerId + "' not found");
+            } else {
+                if (containerInfo.isRunning()) {
+                    LOG.error("Failed to remove container with id '" + containerId + "'. Stop container first.");
+                } else {
+                    dockerClient.removeContainerCmd(containerId).withRemoveVolumes(true).exec();
+                }
+            }
+            return true;
+        } catch (Exception ex) {
+            LOG.error("Remove container failed", ex);
+            return false;
         }
     }
 

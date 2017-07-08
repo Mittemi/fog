@@ -23,7 +23,9 @@ public class AsyncConfig implements AsyncConfigurer {
 
     @Override
     public Executor getAsyncExecutor() {
-        return new SimpleAsyncTaskExecutor();
+        SimpleAsyncTaskExecutor simpleAsyncTaskExecutor = new SimpleAsyncTaskExecutor();
+        simpleAsyncTaskExecutor.setConcurrencyLimit(2);
+        return simpleAsyncTaskExecutor;
     }
 
     @Override
