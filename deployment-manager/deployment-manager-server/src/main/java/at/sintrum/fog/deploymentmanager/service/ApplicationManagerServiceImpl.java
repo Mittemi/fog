@@ -106,6 +106,11 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
 
             CreateContainerRequest createContainerRequest = deploymentService.buildCreateContainerRequest(imageMetadata);
 
+            if (applicationStartRequest.isStandbyMode()) {
+                LOG.info("Start application in standby mode");
+                deploymentService.enableServiceProfile(createContainerRequest, "standby");
+            }
+
             CreateContainerResult container = dockerService.createContainer(createContainerRequest);
 
             if (container == null) {

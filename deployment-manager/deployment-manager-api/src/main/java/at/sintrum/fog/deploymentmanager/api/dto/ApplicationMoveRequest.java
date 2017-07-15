@@ -11,6 +11,10 @@ public class ApplicationMoveRequest {
 
     private String applicationUrl;
 
+    private boolean standbyMode;
+
+    private boolean upgradeApplicationIfPossible;
+
     public ApplicationMoveRequest(String containerId, String targetFog) {
         this.containerId = containerId;
         this.targetFog = targetFog;
@@ -41,5 +45,21 @@ public class ApplicationMoveRequest {
 
     public void setApplicationUrl(String applicationUrl) {
         this.applicationUrl = applicationUrl;
+    }
+
+    public boolean isStandbyMode() {
+        return standbyMode;
+    }
+
+    public void setStandbyMode(boolean standbyMode) {
+        this.standbyMode = standbyMode;
+    }
+
+    public boolean isUpgradeApplicationIfPossible() {
+        return upgradeApplicationIfPossible;
+    }
+
+    public void setUpgradeApplicationIfPossible(boolean upgradeApplicationIfPossible) {
+        this.upgradeApplicationIfPossible = upgradeApplicationIfPossible;
     }
 }

@@ -12,6 +12,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by Michael Mittermayr on 02.06.2017.
@@ -19,6 +20,11 @@ import java.util.List;
 @Service
 public class DeploymentService {
 
+    public static final String SERVICE_PROFILE = "SERVICE_PROFILE";
+    public static final String EUREKA_SERVICE_URL = "EUREKA_SERVICE_URL";
+    public static final String EUREKA_CLIENT_IP = "EUREKA_CLIENT_IP";
+    public static final String FOG_BASE_URL = "FOG_BASE_URL";
+    public static final String METADATA_ID = "METADATA_ID";
     private Logger LOG = LoggerFactory.getLogger(DeploymentService.class);
 
     private final EnvironmentInfoService environmentInfoService;
@@ -29,10 +35,30 @@ public class DeploymentService {
         this.deploymentManagerConfigProperties = deploymentManagerConfigProperties;
     }
 
+    public void enableServiceProfile(CreateContainerRequest createContainerRequest, String profile) {
+        Optional<String> first = createContainerRequest.getEnvironment().stream().filter(x -> x.startsWith(SERVICE_PROFILE)).findFirst();
+
+        if (first.isPresent()) {
+            String profileStr = first.get().substring(SERVICE_PROFILE.length() + 1);
+            createContainerRequest.getEnvironment().remove(profileStr);
+
+            if (!StringUtils.isEmpty(profileStr)) {
+                profileStr = profileStr + "," + profile;
+            } else {
+                profileStr = profile;
+            }
+            enableServiceProfile(createContainerRequest, profileStr);
+        } else {
+            LOG.debug("Set SERVICE_PROFILE to: " + profile);
+            addDynamicEnvironmentKey(createContainerRequest.getEnvironment(), SERVICE_PROFILE, profile);
+        }
+    }
+
     public CreateContainerRequest buildCreateContainerRequest(DockerImageMetadata imageMetadata) {
         CreateContainerRequest createContainerRequest = new CreateContainerRequest();
 
         setEnvironment(imageMetadata, createContainerRequest);
+        enableServiceProfile(createContainerRequest, environmentInfoService.getServiceProfile());
         setImage(imageMetadata, createContainerRequest);
         setPortInfos(imageMetadata, createContainerRequest);
         return createContainerRequest;
@@ -58,12 +84,11 @@ public class DeploymentService {
         }
 
         if (imageMetadata.isEurekaEnabled()) {
-            addDynamicEnvironmentKey(environment, "EUREKA_SERVICE_URL", environmentInfoService.getEurekaServiceUrl());
-            addDynamicEnvironmentKey(environment, "EUREKA_CLIENT_IP", environmentInfoService.getEurekaClientIp());
+            addDynamicEnvironmentKey(environment, EUREKA_SERVICE_URL, environmentInfoService.getEurekaServiceUrl());
+            addDynamicEnvironmentKey(environment, EUREKA_CLIENT_IP, environmentInfoService.getEurekaClientIp());
         }
-        addDynamicEnvironmentKey(environment, "FOG_BASE_URL", environmentInfoService.getFogBaseUrl());
-        addDynamicEnvironmentKey(environment, "SERVICE_PROFILE", environmentInfoService.getServiceProfile());
-        addDynamicEnvironmentKey(environment, "METADATA_ID", imageMetadata.getId());
+        addDynamicEnvironmentKey(environment, FOG_BASE_URL, environmentInfoService.getFogBaseUrl());
+        addDynamicEnvironmentKey(environment, METADATA_ID, imageMetadata.getId());
 
         createContainerRequest.setEnvironment(environment);
     }

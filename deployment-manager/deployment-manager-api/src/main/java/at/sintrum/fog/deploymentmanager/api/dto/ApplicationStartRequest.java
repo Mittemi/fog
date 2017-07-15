@@ -9,6 +9,10 @@ public class ApplicationStartRequest {
 
     private boolean skipPull;
 
+    private boolean standbyMode;
+
+    private boolean upgradeApplicationIfPossible;
+
     public ApplicationStartRequest(String metadataId) {
         this.metadataId = metadataId;
     }
@@ -30,5 +34,21 @@ public class ApplicationStartRequest {
 
     public void setSkipPull(boolean skipPull) {
         this.skipPull = skipPull;
+    }
+
+    public boolean isUpgradeApplicationIfPossible() {
+        return upgradeApplicationIfPossible;
+    }
+
+    public void setUpgradeApplicationIfPossible(boolean upgradeApplicationIfPossible) {
+        this.upgradeApplicationIfPossible = upgradeApplicationIfPossible;
+    }
+
+    public boolean isStandbyMode() {
+        return standbyMode;
+    }
+
+    public void setStandbyMode(boolean standbyMode) {
+        this.standbyMode = standbyMode;
     }
 }
