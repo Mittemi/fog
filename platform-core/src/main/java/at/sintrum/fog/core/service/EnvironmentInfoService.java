@@ -18,4 +18,6 @@ public interface EnvironmentInfoService {
     String getFogId();
 
     String getOwnUrl();
+
+    String getServiceProfile();
 }

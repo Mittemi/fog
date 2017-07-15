@@ -20,6 +20,7 @@
         <module>platform-host-info</module>
         <module>metadata-manager</module>
         <module>platform-redis</module>
+        <module>application-housing</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -215,6 +216,11 @@
             <dependency>
                 <groupId>at.sintrum.fog</groupId>
                 <artifactId>metadata-manager-client</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>at.sintrum.fog</groupId>
+                <artifactId>application-housing-client</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
             </dependency>
 

@@ -18,15 +18,17 @@ services:
     tty: true
     networks:
       - elk
+    restart: always
 
   elastichq:
-     build: elasticsearch-HQ
-     container_name: fog_logging_elastichsearch-HQ
-     networks:
+    build: elasticsearch-HQ
+    container_name: fog_logging_elastichsearch-HQ
+    networks:
       - elk
-     ports:
+    ports:
        - 49100:80
 
+    restart: always
 #  logstash:
 #    build: logstash/
 #    container_name: fog_logging_logstash
@@ -53,8 +55,7 @@ services:
       - elk
     depends_on:
       - elasticsearch
-
+    restart: always
 networks:
-
   elk:
     driver: bridge

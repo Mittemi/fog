@@ -4,6 +4,8 @@ import at.sintrum.fog.core.config.FogApplicationConfigProperties;
 import at.sintrum.fog.core.service.EnvironmentInfoService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -17,9 +19,7 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties({FogApplicationConfigProperties.class})
 public class PlatformCoreConfig {
 
-    public void configure() {
-        
-    }
+    private static final Logger LOG = LoggerFactory.getLogger(PlatformCoreConfig.class);
 
     @Bean
     public ObjectMapper objectMapper() {

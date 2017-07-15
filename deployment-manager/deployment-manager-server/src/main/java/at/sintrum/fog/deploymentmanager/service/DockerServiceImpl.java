@@ -15,8 +15,8 @@ import org.springframework.util.StringUtils;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by Michael Mittermayr on 20.05.2017.
@@ -66,7 +66,11 @@ public class DockerServiceImpl implements DockerService {
 
     @Override
     public ContainerInfo getContainerInfo(String containerId) {
-        return getContainers().stream().filter(x -> x.getId().startsWith(containerId)).findFirst().orElse(null);
+        Stream<ContainerInfo> containerInfoStream = getContainers().stream().filter(x -> x.getId().startsWith(containerId));
+        if (containerInfoStream.count() > 1) {
+            LOG.error("Container ID was not unique: " + containerId);
+        }
+        return containerInfoStream.findFirst().orElse(null);
     }
 
     public ImageInfo getImageInfo(String imageId) {
@@ -74,11 +78,8 @@ public class DockerServiceImpl implements DockerService {
     }
 
     public boolean startContainer(String id) {
-        //TODO: check if single container only (exactly 1)
-        Optional<ContainerInfo> first = getContainers().stream().filter(x -> x.getId().startsWith(id)).findFirst();
-
-        if (first.isPresent()) {
-            ContainerInfo containerInfo = first.get();
+        ContainerInfo containerInfo = getContainerInfo(id);
+        if (containerInfo != null) {
             LOG.debug("Start Container: " + containerInfo);
             dockerClient.startContainerCmd(containerInfo.getId()).exec();
             return true;
@@ -89,11 +90,9 @@ public class DockerServiceImpl implements DockerService {
     }
 
     public boolean stopContainer(String id) {
-        //TODO: check if single container only (exactly 1)
-        Optional<ContainerInfo> first = getContainers().stream().filter(x -> x.getId().startsWith(id)).findFirst();
+        ContainerInfo containerInfo = getContainerInfo(id);
 
-        if (first.isPresent()) {
-            ContainerInfo containerInfo = first.get();
+        if (containerInfo != null) {
             LOG.debug("Stop Container: " + containerInfo);
             dockerClient.stopContainerCmd(containerInfo.getId()).exec();
             return true;

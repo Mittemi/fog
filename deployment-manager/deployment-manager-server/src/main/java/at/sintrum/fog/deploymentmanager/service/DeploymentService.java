@@ -57,9 +57,12 @@ public class DeploymentService {
             environment.addAll(imageMetadata.getEnvironment());
         }
 
-        addDynamicEnvironmentKey(environment, "EUREKA_SERVICE_URL", environmentInfoService.getEurekaServiceUrl());
-        addDynamicEnvironmentKey(environment, "EUREKA_CLIENT_IP", environmentInfoService.getEurekaClientIp());
+        if (imageMetadata.isEurekaEnabled()) {
+            addDynamicEnvironmentKey(environment, "EUREKA_SERVICE_URL", environmentInfoService.getEurekaServiceUrl());
+            addDynamicEnvironmentKey(environment, "EUREKA_CLIENT_IP", environmentInfoService.getEurekaClientIp());
+        }
         addDynamicEnvironmentKey(environment, "FOG_BASE_URL", environmentInfoService.getFogBaseUrl());
+        addDynamicEnvironmentKey(environment, "SERVICE_PROFILE", environmentInfoService.getServiceProfile());
 
         createContainerRequest.setEnvironment(environment);
     }

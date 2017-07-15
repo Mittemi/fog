@@ -27,3 +27,5 @@ fog.deploymentmanager:
     - "konradkleine/docker-registry-frontend:v2"
     - "registry:2"
     - "elasticsearch:5.3.0"
+    - "tenstartups/redis-commander"
+    - "redis"

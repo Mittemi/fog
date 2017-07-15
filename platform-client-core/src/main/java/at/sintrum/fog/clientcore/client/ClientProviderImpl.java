@@ -19,7 +19,7 @@ public class ClientProviderImpl implements at.sintrum.fog.clientcore.client.Clie
 
     private Logger LOG = LoggerFactory.getLogger(ClientProviderImpl.class);
 
-    private static final String[] KNOWN_APPLICATIONS = {"deployment-manager", "metadata-manager"};
+    private static final String[] KNOWN_APPLICATIONS = {"deployment-manager", "metadata-manager", "application-housing"};
 
 
     public ClientProviderImpl(DiscoveryClient discoveryClient, Client eurekaEnabledClient, Client basicClient) {

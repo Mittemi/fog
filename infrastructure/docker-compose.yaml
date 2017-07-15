@@ -8,6 +8,7 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8761:8761"
+    restart: always
   adminserver:
     container_name: infrastructure_adminserver
     build:
@@ -21,3 +22,4 @@ services:
       - EUREKA_SERVICE_URL=http://192.168.2.100:8761
       - EUREKA_CLIENT_IP=192.168.2.100
       - SERVER_PORT=40080
+    restart: always
