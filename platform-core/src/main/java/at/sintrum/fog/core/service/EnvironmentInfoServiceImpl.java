@@ -90,7 +90,7 @@ public class EnvironmentInfoServiceImpl implements EnvironmentInfoService {
 
     @Override
     public String getMetadataId() {
-        return null;
+        return metadataId;
     }
 
     @Override

@@ -270,8 +270,9 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
                 //copy data
                 //TODO: copy data
 
+                containerInfo = dockerService.getContainerInfo(applicationUpgradeRequest.getContainerId());
                 //stop old application
-                if (!stopApplication(applicationUpgradeRequest.getApplicationUrl(), applicationUpgradeRequest.getContainerId())) {
+                if (containerInfo != null && containerInfo.isRunning() & !stopApplication(applicationUpgradeRequest.getApplicationUrl(), applicationUpgradeRequest.getContainerId())) {
                     return new AsyncResult<>(new FogOperationResult(containerInfo.getId(), false, environmentInfoService.getFogBaseUrl(), "Failed to stop container"));
                 }
 

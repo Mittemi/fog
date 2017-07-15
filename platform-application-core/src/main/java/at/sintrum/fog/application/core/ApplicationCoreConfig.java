@@ -7,6 +7,7 @@ import at.sintrum.fog.applicationhousing.client.ApplicationHousingClientConfig;
 import at.sintrum.fog.core.PlatformCoreConfig;
 import at.sintrum.fog.core.service.EnvironmentInfoService;
 import at.sintrum.fog.deploymentmanager.client.DeploymentManagerClientConfig;
+import at.sintrum.fog.deploymentmanager.client.api.ApplicationManager;
 import at.sintrum.fog.deploymentmanager.client.factory.DeploymentManagerClientFactory;
 import at.sintrum.fog.hostinfo.HostInfoProviderConfig;
 import at.sintrum.fog.metadatamanager.client.MetadataManagerClientConfig;
@@ -19,6 +20,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import javax.annotation.PostConstruct;
 
@@ -29,6 +31,7 @@ import javax.annotation.PostConstruct;
 @ComponentScan(basePackageClasses = {ApplicationInfo.class})
 @Import({PlatformCoreConfig.class, HostInfoProviderConfig.class, ApplicationHousingClientConfig.class, DeploymentManagerClientConfig.class, MetadataManagerClientConfig.class})
 @EnableDiscoveryClient
+@EnableScheduling
 public class ApplicationCoreConfig {
 
     @Value("${EUREKA_SERVICE_URL:UNKNOWN}")
@@ -52,5 +55,10 @@ public class ApplicationCoreConfig {
     @Bean
     public MoveApplicationService moveApplicationService(EnvironmentInfoService environmentInfoService, DeploymentManagerClientFactory deploymentManagerClientFactory, MetadataManagerClientFactory metadataManagerClientFactory) {
         return new MoveApplicationServiceImpl(environmentInfoService, deploymentManagerClientFactory, metadataManagerClientFactory);
+    }
+
+    @Bean
+    public ApplicationManager applicationManager(DeploymentManagerClientFactory deploymentManagerClientFactory, EnvironmentInfoService environmentInfoService) {
+        return deploymentManagerClientFactory.createApplicationManagerClient(environmentInfoService.getFogBaseUrl());
     }
 }
