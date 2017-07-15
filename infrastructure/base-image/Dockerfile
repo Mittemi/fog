@@ -42,9 +42,9 @@ RUN \
 
 
 COPY docker-entrypoint.sh /
-RUN chmod +x docker-entrypoint.sh && mkdir -p /beat && \
-    echo "java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=50050 -Dspring.profiles.active=\"docker,$SERVICE_PROFILE\" -jar /usr/share/app.jar" > /usr/share/run_app.sh && \
-    chmod +x /usr/share/run_app.sh
+COPY run_app.sh /usr/share/
+RUN chmod +x docker-entrypoint.sh && mkdir -p /beat && chmod +x /usr/share/run_app.sh
+
 EXPOSE 50050
 ENTRYPOINT ["/docker-entrypoint.sh"]
 WORKDIR /

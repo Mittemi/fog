@@ -13,7 +13,8 @@ services:
       - "49200:9200"
       - "49300:9300"
     environment:
-      ES_JAVA_OPTS: "-Xmx256m -Xms256m"
+#      - "ES_JAVA_OPTS=\"-Xmx256m -Xms256m\""
+      - "xpack.security.enabled=false"
     stdin_open: true
     tty: true
     networks:
@@ -51,6 +52,8 @@ services:
       - ./kibana/config/:/usr/share/kibana/config
     ports:
       - "45601:5601"
+    environment:
+      - "xpack.security.enabled=false"
     networks:
       - elk
     depends_on:

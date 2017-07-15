@@ -5,6 +5,7 @@ redis:
     - ./data:/data
   ports:
    - "46379:6379"
+  restart: always
 redisCommander:
   container_name: metadata_rediscommander
   image: tenstartups/redis-commander
@@ -13,3 +14,4 @@ redisCommander:
     - redis:redis
   ports:
     - "48081:8081"
+  restart: always
