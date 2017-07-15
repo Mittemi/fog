@@ -25,6 +25,7 @@ public class EnvironmentInfoServiceImpl implements EnvironmentInfoService {
     private final String serverPort;
     private final String applicationName;
     private final String serviceProfile;
+    private final String metadataId;
     private final Environment environment;
 
     public EnvironmentInfoServiceImpl(FogApplicationConfigProperties fogApplicationConfigProperties,
@@ -34,6 +35,7 @@ public class EnvironmentInfoServiceImpl implements EnvironmentInfoService {
                                       @Value("${server.port}") String serverPort,
                                       @Value("${spring.application.name}") String applicationName,
                                       @Value("${SERVICE_PROFILE:UNKNOWN}") String serviceProfile,
+                                      @Value("${METADATA_ID:UNKNOWN}") String metadataId,
                                       Environment environment) {
         this.fogApplicationConfigProperties = fogApplicationConfigProperties;
         this.eurekaServiceUrl = eurekaServiceUrl;
@@ -41,6 +43,7 @@ public class EnvironmentInfoServiceImpl implements EnvironmentInfoService {
         this.serverPort = serverPort;
         this.applicationName = applicationName;
         this.serviceProfile = serviceProfile;
+        this.metadataId = metadataId;
         this.environment = environment;
 
         String activeProfiles = String.join(", ", environment.getActiveProfiles());
@@ -83,6 +86,11 @@ public class EnvironmentInfoServiceImpl implements EnvironmentInfoService {
     @Override
     public String getServiceProfile() {
         return serviceProfile;
+    }
+
+    @Override
+    public String getMetadataId() {
+        return null;
     }
 
     @Override

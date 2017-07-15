@@ -4,6 +4,7 @@ import at.sintrum.fog.applicationhousing.api.dto.AppIdentification;
 import at.sintrum.fog.applicationhousing.api.dto.AppUpdateInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -15,7 +16,7 @@ public class AppEvolution implements AppEvolutionApi {
     private Logger LOG = LoggerFactory.getLogger(AppEvolution.class);
 
     @Override
-    public AppUpdateInfo isUpdateRequired(AppIdentification appIdentification) {
+    public AppUpdateInfo checkForUpdate(@RequestBody AppIdentification appIdentification) {
         LOG.debug("Check update for: " + appIdentification.getImageMetadataId());
         return new AppUpdateInfo();
     }

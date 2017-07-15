@@ -6,9 +6,10 @@
     <property name="FILE_LOG_PATTERN" value="%date{ISO8601} %-5p [%t] --- %c{1}: %m%n"/>
     <include resource="org/springframework/boot/logging/logback/file-appender.xml"/>
 
-    <root level="WARN">
-        <appender-ref ref="FILE"/>
-    </root>
+    <!--<root level="WARN">-->
+    <!--<appender-ref ref="FILE"/>-->
+    <!--</root>-->
+    <logger name="at.sintrum.fog" level="DEBUG"/>
 
     <appender name="JSON" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_FILE}.json</file>
@@ -23,7 +24,7 @@
         </encoder>
     </appender>
 
-    <root level="WARN">
+    <root level="INFO">
         <appender-ref ref="JSON"/>
     </root>
 </included>

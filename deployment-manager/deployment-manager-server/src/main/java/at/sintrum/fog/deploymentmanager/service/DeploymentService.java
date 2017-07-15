@@ -63,6 +63,7 @@ public class DeploymentService {
         }
         addDynamicEnvironmentKey(environment, "FOG_BASE_URL", environmentInfoService.getFogBaseUrl());
         addDynamicEnvironmentKey(environment, "SERVICE_PROFILE", environmentInfoService.getServiceProfile());
+        addDynamicEnvironmentKey(environment, "METADATA_ID", imageMetadata.getId());
 
         createContainerRequest.setEnvironment(environment);
     }

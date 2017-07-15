@@ -20,4 +20,6 @@ public interface EnvironmentInfoService {
     String getOwnUrl();
 
     String getServiceProfile();
+
+    String getMetadataId();
 }

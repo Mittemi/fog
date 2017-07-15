@@ -5,6 +5,13 @@ package at.sintrum.fog.applicationhousing.api.dto;
  */
 public class AppIdentification {
 
+    public AppIdentification() {
+    }
+
+    public AppIdentification(String imageMetadataId) {
+        this.imageMetadataId = imageMetadataId;
+    }
+
     private String imageMetadataId;
 
     public String getImageMetadataId() {

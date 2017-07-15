@@ -12,6 +12,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @RequestMapping(value = "evolution/")
 public interface AppEvolutionApi {
 
-    @RequestMapping(value = "isUpdateRequired", method = RequestMethod.GET)
-    AppUpdateInfo isUpdateRequired(@RequestBody AppIdentification appIdentification);
+    @RequestMapping(value = "checkForUpdate", method = RequestMethod.POST)
+    AppUpdateInfo checkForUpdate(@RequestBody AppIdentification appIdentification);
 }
