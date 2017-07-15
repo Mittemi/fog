@@ -39,8 +39,9 @@ public class DeploymentService {
         Optional<String> first = createContainerRequest.getEnvironment().stream().filter(x -> x.startsWith(SERVICE_PROFILE)).findFirst();
 
         if (first.isPresent()) {
-            String profileStr = first.get().substring(SERVICE_PROFILE.length() + 1);
-            createContainerRequest.getEnvironment().remove(profileStr);
+            String originalString = first.get();
+            createContainerRequest.getEnvironment().remove(originalString);
+            String profileStr = originalString.substring(SERVICE_PROFILE.length() + 1);
 
             if (!StringUtils.isEmpty(profileStr)) {
                 profileStr = profileStr + "," + profile;

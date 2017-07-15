@@ -1,5 +1,6 @@
 package at.sintrum.fog.deploymentmanager;
 
+import at.sintrum.fog.applicationhousing.client.ApplicationHousingClientConfig;
 import at.sintrum.fog.core.PlatformCoreConfig;
 import at.sintrum.fog.deploymentmanager.client.DeploymentManagerClientConfig;
 import at.sintrum.fog.deploymentmanager.config.DeploymentManagerConfigProperties;
@@ -22,7 +23,7 @@ import org.springframework.context.annotation.Import;
 @EnableAutoConfiguration
 @SpringBootApplication
 @EnableConfigurationProperties(DeploymentManagerConfigProperties.class)
-@Import({DockerConfig.class, RedissonConfig.class, SwaggerConfig.class, PlatformCoreConfig.class, ServerCoreConfig.class, MetadataManagerClientConfig.class, DeploymentManagerClientConfig.class})
+@Import({DockerConfig.class, RedissonConfig.class, SwaggerConfig.class, PlatformCoreConfig.class, ServerCoreConfig.class, ApplicationHousingClientConfig.class, MetadataManagerClientConfig.class, DeploymentManagerClientConfig.class})
 public class DeploymentManagerApplication {
     public static void main(String[] args) {
         SpringApplication.run(DeploymentManagerApplication.class, args);

@@ -16,7 +16,6 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Created by Michael Mittermayr on 20.05.2017.
@@ -66,11 +65,15 @@ public class DockerServiceImpl implements DockerService {
 
     @Override
     public ContainerInfo getContainerInfo(String containerId) {
-        Stream<ContainerInfo> containerInfoStream = getContainers().stream().filter(x -> x.getId().startsWith(containerId));
-        if (containerInfoStream.count() > 1) {
+        List<ContainerInfo> containerInfos = getContainers().stream().filter(x -> x.getId().startsWith(containerId)).collect(Collectors.toList());
+
+        if (containerInfos.size() == 0) {
+            return null;
+        }
+        if (containerInfos.size() > 1) {
             LOG.error("Container ID was not unique: " + containerId);
         }
-        return containerInfoStream.findFirst().orElse(null);
+        return containerInfos.get(0);
     }
 
     public ImageInfo getImageInfo(String imageId) {

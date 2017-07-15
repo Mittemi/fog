@@ -2,6 +2,7 @@ package at.sintrum.fog.deploymentmanager.api;
 
 import at.sintrum.fog.deploymentmanager.api.dto.ApplicationMoveRequest;
 import at.sintrum.fog.deploymentmanager.api.dto.ApplicationStartRequest;
+import at.sintrum.fog.deploymentmanager.api.dto.ApplicationUpgradeRequest;
 import at.sintrum.fog.deploymentmanager.api.dto.FogOperationResult;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,4 +19,7 @@ public interface ApplicationManagerApi {
 
     @RequestMapping(value = "move", method = RequestMethod.POST)
     FogOperationResult moveApplication(@RequestBody ApplicationMoveRequest applicationMoveRequest);
+
+    @RequestMapping(value = "upgrade", method = RequestMethod.POST)
+    FogOperationResult upgradeApplication(@RequestBody ApplicationUpgradeRequest applicationUpgradeRequest);
 }

@@ -53,6 +53,11 @@
             <artifactId>deployment-manager-client</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>at.sintrum.fog</groupId>
+            <artifactId>application-housing-client</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

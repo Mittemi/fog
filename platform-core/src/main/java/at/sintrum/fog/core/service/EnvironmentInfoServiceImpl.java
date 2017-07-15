@@ -94,6 +94,11 @@ public class EnvironmentInfoServiceImpl implements EnvironmentInfoService {
     }
 
     @Override
+    public boolean isCloud() {
+        return getServiceProfile().contains("cloud");
+    }
+
+    @Override
     public String getEurekaServiceUrl() {
         return eurekaServiceUrl;
     }

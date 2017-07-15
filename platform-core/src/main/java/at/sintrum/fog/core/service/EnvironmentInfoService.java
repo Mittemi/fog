@@ -22,4 +22,6 @@ public interface EnvironmentInfoService {
     String getServiceProfile();
 
     String getMetadataId();
+
+    boolean isCloud();
 }
