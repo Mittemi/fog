@@ -1,27 +1,19 @@
 package at.sintrum.fog.application.model;
 
+import at.sintrum.fog.core.dto.FogIdentification;
+
 /**
  * Created by Michael Mittermayr on 24.05.2017.
  */
 public class MoveApplicationRequest {
 
-    private String targetIp;
+    private FogIdentification target;
 
-    private int targetPort;
-
-    public String getTargetIp() {
-        return targetIp;
+    public FogIdentification getTarget() {
+        return target;
     }
 
-    public void setTargetIp(String targetIp) {
-        this.targetIp = targetIp;
-    }
-
-    public int getTargetPort() {
-        return targetPort;
-    }
-
-    public void setTargetPort(int targetPort) {
-        this.targetPort = targetPort;
+    public void setTarget(FogIdentification target) {
+        this.target = target;
     }
 }

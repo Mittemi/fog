@@ -154,4 +154,8 @@ public class EnvironmentInfoServiceImpl implements EnvironmentInfoService {
         }
         return null;
     }
+
+    public String getApplicationName() {
+        return applicationName;
+    }
 }

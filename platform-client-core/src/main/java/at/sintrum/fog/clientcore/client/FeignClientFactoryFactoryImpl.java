@@ -1,6 +1,7 @@
 package at.sintrum.fog.clientcore.client;
 
 import at.sintrum.fog.clientcore.annotation.EnableRetry;
+import at.sintrum.fog.core.dto.FogIdentification;
 import feign.Contract;
 import feign.Feign;
 import feign.Logger;
@@ -35,6 +36,11 @@ public class FeignClientFactoryFactoryImpl implements ClientFactoryFactory {
     @Override
     public String buildUrl(String ip, int port) {
         return "http://" + ip + ":" + port;
+    }
+
+    @Override
+    public String buildUrl(FogIdentification fogIdentification) {
+        return buildUrl(fogIdentification.getIp(), fogIdentification.getPort());
     }
 
     public <T> T buildClient(Class<T> apiInterface, String url) {
@@ -74,7 +80,13 @@ public class FeignClientFactoryFactoryImpl implements ClientFactoryFactory {
         return factoryInterface.cast(Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class[]{factoryInterface}, (proxy, method, args) -> {
 
             if (method.getName().equals("buildUrl")) {
-                return buildUrl((String) args[0], (Integer) args[1]);
+                if (args.length == 2) {
+                    return buildUrl((String) args[0], (Integer) args[1]);
+                } else if (args.length == 1) {
+                    return buildUrl((FogIdentification) args[0]);
+                } else {
+                    throw new Exception("Invalid amount of arguments.");
+                }
             }
 
             String url = null;

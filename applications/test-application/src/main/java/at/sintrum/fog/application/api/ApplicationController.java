@@ -22,7 +22,7 @@ public class ApplicationController {
 
     @RequestMapping(value = "move", method = RequestMethod.POST)
     public void moveApplication(MoveApplicationRequest moveApplicationRequest) {
-        moveApplicationService.moveApplication(moveApplicationRequest.getTargetIp(), moveApplicationRequest.getTargetPort());
+        moveApplicationService.moveApplication(moveApplicationRequest.getTarget());
     }
 
 }

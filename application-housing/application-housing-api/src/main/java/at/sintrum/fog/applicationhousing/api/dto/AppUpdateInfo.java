@@ -9,6 +9,14 @@ public class AppUpdateInfo {
 
     private String imageMetadataId;
 
+    public AppUpdateInfo() {
+    }
+
+    public AppUpdateInfo(boolean updateRequired, String imageMetadataId) {
+        this.updateRequired = updateRequired;
+        this.imageMetadataId = imageMetadataId;
+    }
+
     public boolean isUpdateRequired() {
         return updateRequired;
     }

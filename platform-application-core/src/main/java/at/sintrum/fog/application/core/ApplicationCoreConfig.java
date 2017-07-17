@@ -1,6 +1,7 @@
 package at.sintrum.fog.application.core;
 
 import at.sintrum.fog.application.core.api.ApplicationInfo;
+import at.sintrum.fog.application.core.api.RequestAppController;
 import at.sintrum.fog.application.core.service.MoveApplicationService;
 import at.sintrum.fog.application.core.service.MoveApplicationServiceImpl;
 import at.sintrum.fog.applicationhousing.client.ApplicationHousingClientConfig;
@@ -12,6 +13,7 @@ import at.sintrum.fog.deploymentmanager.client.factory.DeploymentManagerClientFa
 import at.sintrum.fog.hostinfo.HostInfoProviderConfig;
 import at.sintrum.fog.metadatamanager.client.MetadataManagerClientConfig;
 import at.sintrum.fog.metadatamanager.client.factory.MetadataManagerClientFactory;
+import at.sintrum.fog.redis.RedissonConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,8 +30,8 @@ import javax.annotation.PostConstruct;
  * Created by Michael Mittermayr on 24.05.2017.
  */
 @Configuration
-@ComponentScan(basePackageClasses = {ApplicationInfo.class})
-@Import({PlatformCoreConfig.class, HostInfoProviderConfig.class, ApplicationHousingClientConfig.class, DeploymentManagerClientConfig.class, MetadataManagerClientConfig.class})
+@ComponentScan(basePackageClasses = {ApplicationInfo.class, RequestAppController.class})
+@Import({PlatformCoreConfig.class, HostInfoProviderConfig.class, ApplicationHousingClientConfig.class, DeploymentManagerClientConfig.class, MetadataManagerClientConfig.class, RedissonConfig.class})
 @EnableDiscoveryClient
 @EnableScheduling
 public class ApplicationCoreConfig {

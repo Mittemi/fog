@@ -1,5 +1,6 @@
 package at.sintrum.fog.application.core.service;
 
+import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.core.service.EnvironmentInfoService;
 import at.sintrum.fog.deploymentmanager.api.dto.ApplicationMoveRequest;
 import at.sintrum.fog.deploymentmanager.client.api.ApplicationManager;
@@ -27,9 +28,9 @@ public class MoveApplicationServiceImpl implements MoveApplicationService {
     }
 
     @Override
-    public void moveApplication(String targetIp, int targetPort) {
+    public void moveApplication(FogIdentification target) {
         String containerId = environmentInfoService.getOwnContainerId();
-        String targetDeploymentMangerUrl = deploymentManagerClientFactory.buildUrl(targetIp, targetPort);
+        String targetDeploymentMangerUrl = deploymentManagerClientFactory.buildUrl(target.getIp(), target.getPort());
 
         String sourceDeploymentManagerUrl = environmentInfoService.getFogBaseUrl();
 
