@@ -35,6 +35,7 @@ public class DemoDataController {
         imageMetadata.setEurekaEnabled(true);
         imageMetadata.setEnvironment(Collections.singletonList("SERVER_PORT=10000"));
         imageMetadata.setPorts(Collections.singletonList(10000));
+        imageMetadata.setAppStorageDirectory("/logs");
 
         return imageMetadataService.store(imageMetadata);
     }

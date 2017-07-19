@@ -40,6 +40,8 @@ RUN \
   apt-get install -y nano net-tools curl htop dnsutils && \
   rm -rf /var/lib/apt/lists/*
 
+# app directory
+RUN mkdir -p /app/storage
 
 COPY docker-entrypoint.sh /
 COPY run_app.sh /usr/share/

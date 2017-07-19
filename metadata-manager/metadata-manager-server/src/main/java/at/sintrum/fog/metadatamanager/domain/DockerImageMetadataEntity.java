@@ -26,6 +26,8 @@ public class DockerImageMetadataEntity extends BaseEntity {
 
     private boolean isStateless;
 
+    private String appStorageDirectory;
+
     public String getId() {
         return id;
     }
@@ -80,5 +82,13 @@ public class DockerImageMetadataEntity extends BaseEntity {
 
     public void setStateless(boolean stateless) {
         isStateless = stateless;
+    }
+
+    public String getAppStorageDirectory() {
+        return appStorageDirectory;
+    }
+
+    public void setAppStorageDirectory(String appStorageDirectory) {
+        this.appStorageDirectory = appStorageDirectory;
     }
 }

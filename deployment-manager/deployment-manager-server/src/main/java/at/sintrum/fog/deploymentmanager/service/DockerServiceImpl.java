@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -273,6 +274,54 @@ public class DockerServiceImpl implements DockerService {
             LOG.error("Remove container failed", ex);
             return false;
         }
+    }
+
+    @Override
+    public boolean copyOrMergeDirectory(String sourceContainerId, String sourceDirectory, String targetContainerId, String targetDirectory) {
+
+        try {
+            ContainerInfo sourceContainerInfo = getContainerInfo(sourceContainerId);
+            ContainerInfo targetContainerInfo = getContainerInfo(targetContainerId);
+
+            if (sourceContainerInfo == null) {
+                LOG.error("Source container doesn't exist: " + sourceContainerId);
+                return false;
+            }
+            if (targetContainerInfo == null) {
+                LOG.error("Target container doesn't exist: " + targetContainerId);
+                return false;
+            }
+            if (sourceContainerInfo.isRunning()) {
+                LOG.error("Source container is running: " + sourceContainerId);
+                return false;
+            }
+            if (targetContainerInfo.isRunning()) {
+                LOG.error("Target container is running: " + targetContainerId);
+                return false;
+            }
+
+
+            //TODO: impl. merge archives
+
+            try (InputStream exec = dockerClient.copyArchiveFromContainerCmd(sourceContainerInfo.getId(), sourceDirectory).withHostPath(sourceDirectory).exec()) {
+
+                dockerClient.copyArchiveToContainerCmd(targetContainerInfo.getId())
+                        .withTarInputStream(exec)
+                        .withNoOverwriteDirNonDir(false)
+                        .withDirChildrenOnly(true)
+                        .withRemotePath(targetDirectory)
+                        .exec();
+//                try (FileOutputStream fo = new FileOutputStream("C:\\temp\\test.tar")) {
+//                    StreamUtils.copy(exec, fo);
+//                }
+            }
+
+            return true;
+        } catch (Exception ex) {
+            LOG.error("Failed to copy data between containers");
+            return false;
+        }
+
     }
 
     private static ContainerInfo mapToDto(Container container) {

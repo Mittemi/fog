@@ -21,6 +21,8 @@ public class DockerImageMetadata extends MetadataBase {
 
     private List<String> environment;
 
+    private String appStorageDirectory;
+
     public String getId() {
         return id;
     }
@@ -75,5 +77,13 @@ public class DockerImageMetadata extends MetadataBase {
 
     public void setStateless(boolean stateless) {
         isStateless = stateless;
+    }
+
+    public String getAppStorageDirectory() {
+        return appStorageDirectory;
+    }
+
+    public void setAppStorageDirectory(String appStorageDirectory) {
+        this.appStorageDirectory = appStorageDirectory;
     }
 }

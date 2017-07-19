@@ -90,7 +90,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
             }
             return true;
         } else {
-            LOG.info("Move container failed. Restart original container");
+            LOG.info("Operation failed. Restart original container");
             if (!dockerService.startContainer(originalContainerId)) {
                 LOG.error("Houston, we have a problem! Failed to restart original container!");
             }
@@ -254,10 +254,16 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
                     return new AsyncResult<>(new FogOperationResult(containerInfo.getId(), false, environmentInfoService.getFogBaseUrl(), "No update available for this application"));
                 }
 
+                DockerImageMetadata oldImageMetadata = imageMetadataApi.getById(containerMetadata.getImageMetadataId());
+                if (oldImageMetadata == null) {
+                    LOG.error("Image metadata for old, currently running app version is missing!");
+                    return new AsyncResult<>(new FogOperationResult(containerInfo.getId(), false, environmentInfoService.getFogBaseUrl(), "Image metadata for old, currently running app version is missing"));
+                }
+
                 // metadata: new version
                 DockerImageMetadata imageMetadata = imageMetadataApi.getById(appUpdateInfo.getImageMetadataId());
                 if (imageMetadata == null) {
-                    LOG.error("Image metadata for new app version missing!");
+                    LOG.error("Image metadata for new app version is missing!");
                     return new AsyncResult<>(new FogOperationResult(containerInfo.getId(), false, environmentInfoService.getFogBaseUrl(), "Image metadata for new app version missing"));
                 }
 
@@ -267,13 +273,23 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
                     return new AsyncResult<>(fogOperationResult);
                 }
 
-                //copy data
-                //TODO: copy data
-
-                containerInfo = dockerService.getContainerInfo(applicationUpgradeRequest.getContainerId());
                 //stop old application
-                if (containerInfo != null && containerInfo.isRunning() & !stopApplication(applicationUpgradeRequest.getApplicationUrl(), applicationUpgradeRequest.getContainerId())) {
+                if (containerInfo.isRunning() & !stopApplication(applicationUpgradeRequest.getApplicationUrl(), applicationUpgradeRequest.getContainerId())) {
                     return new AsyncResult<>(new FogOperationResult(containerInfo.getId(), false, environmentInfoService.getFogBaseUrl(), "Failed to stop container"));
+                }
+
+                //copy data
+                if (StringUtils.isEmpty(oldImageMetadata.getAppStorageDirectory())) {
+                    LOG.debug("No data to migrate");
+                } else {
+                    if (StringUtils.isEmpty(imageMetadata.getAppStorageDirectory())) {
+                        LOG.warn("Can't migrate data. The new app has no storage directory specified!");
+                    } else {
+                        LOG.debug("Migrating data from old to new container");
+                        if (dockerService.copyOrMergeDirectory(applicationUpgradeRequest.getContainerId(), oldImageMetadata.getAppStorageDirectory(), fogOperationResult.getContainerId(), imageMetadata.getAppStorageDirectory())) {
+                            LOG.warn("Failed to copy data to new container");
+                        }
+                    }
                 }
 
                 //start new application, delete old container
@@ -281,8 +297,8 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
                 if (!finalizeReplaceContainerOperation(startNewAppSuccessful, applicationUpgradeRequest.getContainerId())) {
                     return new AsyncResult<>(new FogOperationResult(applicationUpgradeRequest.getContainerId(), false, environmentInfoService.getFogBaseUrl(), "upgrade failed, recovered"));
                 }
+                return new AsyncResult<>(new FogOperationResult(fogOperationResult.getContainerId(), true, environmentInfoService.getFogBaseUrl()));
             }
         }
-        return new AsyncResult<>(new FogOperationResult(null /*todo*/, true, environmentInfoService.getFogBaseUrl()));
     }
 }
