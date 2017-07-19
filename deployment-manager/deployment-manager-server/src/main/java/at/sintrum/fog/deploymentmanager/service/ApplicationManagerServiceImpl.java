@@ -11,6 +11,8 @@ import at.sintrum.fog.metadatamanager.api.ContainerMetadataApi;
 import at.sintrum.fog.metadatamanager.api.ImageMetadataApi;
 import at.sintrum.fog.metadatamanager.api.dto.DockerContainerMetadata;
 import at.sintrum.fog.metadatamanager.api.dto.DockerImageMetadata;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -20,6 +22,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.Collections;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 /**
@@ -35,8 +38,8 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
     private final EnvironmentInfoService environmentInfoService;
     private final ShutdownApplicationService shutdownApplicationService;
     private final DeploymentService deploymentService;
-    private final MetadataServiceImpl metadataService;
     private final AppEvolution appEvolutionClient;
+    private final RedissonClient redissonClient;
 
     public ApplicationManagerServiceImpl(DockerService dockerService,
                                          ImageMetadataApi imageMetadataApi,
@@ -45,8 +48,8 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
                                          EnvironmentInfoService environmentInfoService,
                                          ShutdownApplicationService shutdownApplicationService,
                                          DeploymentService deploymentService,
-                                         MetadataServiceImpl metadataService,
-                                         AppEvolution appEvolutionClient) {
+                                         AppEvolution appEvolutionClient,
+                                         RedissonClient redissonClient) {
         this.dockerService = dockerService;
         this.imageMetadataApi = imageMetadataApi;
         this.containerMetadataApi = containerMetadataApi;
@@ -54,8 +57,8 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
         this.environmentInfoService = environmentInfoService;
         this.shutdownApplicationService = shutdownApplicationService;
         this.deploymentService = deploymentService;
-        this.metadataService = metadataService;
         this.appEvolutionClient = appEvolutionClient;
+        this.redissonClient = redissonClient;
     }
 
     private static final Logger LOG = LoggerFactory.getLogger(ApplicationManagerServiceImpl.class);
@@ -101,6 +104,10 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
     @Async
     @Override
     public Future<FogOperationResult> start(ApplicationStartRequest applicationStartRequest) {
+        return new AsyncResult<>(performStart(applicationStartRequest));
+    }
+
+    private FogOperationResult performStart(ApplicationStartRequest applicationStartRequest) {
         String metadataId = applicationStartRequest.getMetadataId();
 
         LOG.info("Request application start: " + metadataId);
@@ -109,20 +116,20 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
 
         if (imageMetadata == null) {
             LOG.error("Image metadata missing for: " + metadataId);
-            return new AsyncResult<>(new FogOperationResult(null, false, environmentInfoService.getFogBaseUrl(), "Image metadata missing."));
+            return new FogOperationResult(null, false, environmentInfoService.getFogBaseUrl(), "Image metadata missing.");
         } else {
             FogOperationResult fogOperationResult = createContainer(applicationStartRequest, imageMetadata);
 
             if (!fogOperationResult.isSuccessful()) {
-                return new AsyncResult<>(fogOperationResult);
+                return fogOperationResult;
             }
 
             //TODO: logging
             if (!dockerService.startContainer(fogOperationResult.getContainerId())) {
-                return new AsyncResult<>(new FogOperationResult(fogOperationResult.getContainerId(), false, environmentInfoService.getFogBaseUrl(), "Failed to start container"));
+                return new FogOperationResult(fogOperationResult.getContainerId(), false, environmentInfoService.getFogBaseUrl(), "Failed to start container");
             }
             //   metadataService.finishStartup(applicationStartRequest);
-            return new AsyncResult<>(new FogOperationResult(fogOperationResult.getContainerId(), true, environmentInfoService.getFogBaseUrl()));
+            return new FogOperationResult(fogOperationResult.getContainerId(), true, environmentInfoService.getFogBaseUrl());
         }
     }
 
@@ -168,50 +175,56 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
     @Async
     @Override
     public Future<FogOperationResult> move(ApplicationMoveRequest applicationMoveRequest) {
+
         ContainerInfo containerInfo = dockerService.getContainerInfo(applicationMoveRequest.getContainerId());
 
         if (containerInfo == null) {
             LOG.warn("Can't move container. Unknown container '" + applicationMoveRequest.getContainerId() + "'");
-            return new AsyncResult<>(new FogOperationResult(null, false, environmentInfoService.getFogBaseUrl(), "unknown container"));
+            return new AsyncResult<>(new FogOperationResult(applicationMoveRequest.getContainerId(), false, environmentInfoService.getFogBaseUrl(), "unknown container"));
         } else {
-            DockerContainerMetadata containerMetadata = containerMetadataApi.getById(containerInfo.getId());
+            return new AsyncResult<>(performOperationIfPossible(containerInfo, () -> performMove(applicationMoveRequest, containerInfo)));
+        }
+    }
 
-            if (containerMetadata == null) {
-                LOG.error("ContainerMetadata missing for container: " + containerInfo.getId());
-                return new AsyncResult<>(new FogOperationResult(null, false, environmentInfoService.getFogBaseUrl(), "missing container metadata"));
-            } else {
+    private FogOperationResult performMove(ApplicationMoveRequest applicationMoveRequest, ContainerInfo containerInfo) {
 
-                if (!stopApplication(applicationMoveRequest.getApplicationUrl(), applicationMoveRequest.getContainerId())) {
-                    return new AsyncResult<>(new FogOperationResult(containerInfo.getId(), false, environmentInfoService.getFogBaseUrl(), "Failed to stop container"));
-                }
-                DockerImageMetadata imageMetadata = imageMetadataApi.getById(containerMetadata.getImageMetadataId());
+        DockerContainerMetadata containerMetadata = containerMetadataApi.getById(containerInfo.getId());
 
-                if (imageMetadata == null) {
-                    LOG.error("ImageMetadata was null for ID: " + containerMetadata.getImageMetadataId());
-                    return new AsyncResult<>(new FogOperationResult(containerMetadata.getContainerId(), false, environmentInfoService.getFogBaseUrl(), "Image metadata missing"));
-                }
+        if (containerMetadata == null) {
+            LOG.error("ContainerMetadata missing for container: " + containerInfo.getId());
+            return new FogOperationResult(null, false, environmentInfoService.getFogBaseUrl(), "missing container metadata");
+        } else {
 
-                if (!imageMetadata.isStateless()) {
-                    String tag = "checkpoint_" + UUID.randomUUID().toString();
-
-                    CommitContainerResult checkpoint = dockerService.commitContainer(new CommitContainerRequest(applicationMoveRequest.getContainerId(), Collections.singletonList(tag)));
-
-                    if (checkpoint == null) {
-                        return new AsyncResult<>(new FogOperationResult(containerInfo.getId(), false, environmentInfoService.getFogBaseUrl(), "Failed to create checkpoint"));
-                    }
-
-                    if (!dockerService.pushImage(new PushImageRequest(checkpoint.getImage(), tag))) {
-                        return new AsyncResult<>(new FogOperationResult(containerInfo.getId(), false, environmentInfoService.getFogBaseUrl(), "Failed to push checkpoint"));
-                    }
-
-                    imageMetadata.setImage(checkpoint.getImage());
-                    imageMetadata.setTag(tag);
-                    imageMetadata.setId(null);  //create new/no update
-                    imageMetadata = imageMetadataApi.store(imageMetadata);
-                }
-
-                return new AsyncResult<>(moveContainerToRemote(applicationMoveRequest, imageMetadata));
+            if (!stopApplication(applicationMoveRequest.getApplicationUrl(), applicationMoveRequest.getContainerId())) {
+                return new FogOperationResult(containerInfo.getId(), false, environmentInfoService.getFogBaseUrl(), "Failed to stop container");
             }
+            DockerImageMetadata imageMetadata = imageMetadataApi.getById(containerMetadata.getImageMetadataId());
+
+            if (imageMetadata == null) {
+                LOG.error("ImageMetadata was null for ID: " + containerMetadata.getImageMetadataId());
+                return new FogOperationResult(containerMetadata.getContainerId(), false, environmentInfoService.getFogBaseUrl(), "Image metadata missing");
+            }
+
+            if (!imageMetadata.isStateless()) {
+                String tag = "checkpoint_" + UUID.randomUUID().toString();
+
+                CommitContainerResult checkpoint = dockerService.commitContainer(new CommitContainerRequest(applicationMoveRequest.getContainerId(), Collections.singletonList(tag)));
+
+                if (checkpoint == null) {
+                    return new FogOperationResult(containerInfo.getId(), false, environmentInfoService.getFogBaseUrl(), "Failed to create checkpoint");
+                }
+
+                if (!dockerService.pushImage(new PushImageRequest(checkpoint.getImage(), tag))) {
+                    return new FogOperationResult(containerInfo.getId(), false, environmentInfoService.getFogBaseUrl(), "Failed to push checkpoint");
+                }
+
+                imageMetadata.setImage(checkpoint.getImage());
+                imageMetadata.setTag(tag);
+                imageMetadata.setId(null);  //create new/no update
+                imageMetadata = imageMetadataApi.store(imageMetadata);
+            }
+
+            return moveContainerToRemote(applicationMoveRequest, imageMetadata);
         }
     }
 
@@ -233,72 +246,102 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
     @Async
     @Override
     public Future<FogOperationResult> upgrade(ApplicationUpgradeRequest applicationUpgradeRequest) {
-
         ContainerInfo containerInfo = dockerService.getContainerInfo(applicationUpgradeRequest.getContainerId());
 
         if (containerInfo == null) {
             LOG.warn("Can't upgrade container. Unknown container '" + applicationUpgradeRequest.getContainerId() + "'");
             return new AsyncResult<>(new FogOperationResult(null, false, environmentInfoService.getFogBaseUrl(), "unknown container"));
         } else {
-            DockerContainerMetadata containerMetadata = containerMetadataApi.getById(containerInfo.getId());
+            return new AsyncResult<>(performOperationIfPossible(containerInfo, () -> performUpgrade(applicationUpgradeRequest, containerInfo)));
+        }
+    }
 
-            if (containerMetadata == null) {
-                LOG.error("ContainerMetadata missing for container: " + containerInfo.getId());
-                return new AsyncResult<>(new FogOperationResult(null, false, environmentInfoService.getFogBaseUrl(), "missing container metadata"));
+    private FogOperationResult performUpgrade(ApplicationUpgradeRequest applicationUpgradeRequest, ContainerInfo containerInfo) {
+
+        DockerContainerMetadata containerMetadata = containerMetadataApi.getById(containerInfo.getId());
+
+        if (containerMetadata == null) {
+            LOG.error("ContainerMetadata missing for container: " + containerInfo.getId());
+            return new FogOperationResult(null, false, environmentInfoService.getFogBaseUrl(), "missing container metadata");
+        } else {
+
+            // get update infos
+            AppUpdateInfo appUpdateInfo = appEvolutionClient.checkForUpdate(new AppIdentification(containerMetadata.getImageMetadataId()));
+            if (!appUpdateInfo.isUpdateRequired()) {
+                LOG.warn("There is no update for container: " + containerInfo.getId());
+                return new FogOperationResult(containerInfo.getId(), false, environmentInfoService.getFogBaseUrl(), "No update available for this application");
+            }
+
+            DockerImageMetadata oldImageMetadata = imageMetadataApi.getById(containerMetadata.getImageMetadataId());
+            if (oldImageMetadata == null) {
+                LOG.error("Image metadata for old, currently running app version is missing!");
+                return new FogOperationResult(containerInfo.getId(), false, environmentInfoService.getFogBaseUrl(), "Image metadata for old, currently running app version is missing");
+            }
+
+            // metadata: new version
+            DockerImageMetadata imageMetadata = imageMetadataApi.getById(appUpdateInfo.getImageMetadataId());
+            if (imageMetadata == null) {
+                LOG.error("Image metadata for new app version is missing!");
+                return new FogOperationResult(containerInfo.getId(), false, environmentInfoService.getFogBaseUrl(), "Image metadata for new app version missing");
+            }
+
+            // create image for new version
+            FogOperationResult fogOperationResult = createContainer(new ApplicationStartRequest(imageMetadata.getId()), imageMetadata);
+            if (!fogOperationResult.isSuccessful()) {
+                return fogOperationResult;
+            }
+
+            //stop old application
+            if (containerInfo.isRunning() & !stopApplication(applicationUpgradeRequest.getApplicationUrl(), applicationUpgradeRequest.getContainerId())) {
+                return new FogOperationResult(containerInfo.getId(), false, environmentInfoService.getFogBaseUrl(), "Failed to stop container");
+            }
+
+            //copy data
+            if (StringUtils.isEmpty(oldImageMetadata.getAppStorageDirectory())) {
+                LOG.debug("No data to migrate");
             } else {
-
-                // get update infos
-                AppUpdateInfo appUpdateInfo = appEvolutionClient.checkForUpdate(new AppIdentification(containerMetadata.getImageMetadataId()));
-                if (!appUpdateInfo.isUpdateRequired()) {
-                    LOG.warn("There is no update for container: " + containerInfo.getId());
-                    return new AsyncResult<>(new FogOperationResult(containerInfo.getId(), false, environmentInfoService.getFogBaseUrl(), "No update available for this application"));
-                }
-
-                DockerImageMetadata oldImageMetadata = imageMetadataApi.getById(containerMetadata.getImageMetadataId());
-                if (oldImageMetadata == null) {
-                    LOG.error("Image metadata for old, currently running app version is missing!");
-                    return new AsyncResult<>(new FogOperationResult(containerInfo.getId(), false, environmentInfoService.getFogBaseUrl(), "Image metadata for old, currently running app version is missing"));
-                }
-
-                // metadata: new version
-                DockerImageMetadata imageMetadata = imageMetadataApi.getById(appUpdateInfo.getImageMetadataId());
-                if (imageMetadata == null) {
-                    LOG.error("Image metadata for new app version is missing!");
-                    return new AsyncResult<>(new FogOperationResult(containerInfo.getId(), false, environmentInfoService.getFogBaseUrl(), "Image metadata for new app version missing"));
-                }
-
-                // create image for new version
-                FogOperationResult fogOperationResult = createContainer(new ApplicationStartRequest(imageMetadata.getId()), imageMetadata);
-                if (!fogOperationResult.isSuccessful()) {
-                    return new AsyncResult<>(fogOperationResult);
-                }
-
-                //stop old application
-                if (containerInfo.isRunning() & !stopApplication(applicationUpgradeRequest.getApplicationUrl(), applicationUpgradeRequest.getContainerId())) {
-                    return new AsyncResult<>(new FogOperationResult(containerInfo.getId(), false, environmentInfoService.getFogBaseUrl(), "Failed to stop container"));
-                }
-
-                //copy data
-                if (StringUtils.isEmpty(oldImageMetadata.getAppStorageDirectory())) {
-                    LOG.debug("No data to migrate");
+                if (StringUtils.isEmpty(imageMetadata.getAppStorageDirectory())) {
+                    LOG.warn("Can't migrate data. The new app has no storage directory specified!");
                 } else {
-                    if (StringUtils.isEmpty(imageMetadata.getAppStorageDirectory())) {
-                        LOG.warn("Can't migrate data. The new app has no storage directory specified!");
-                    } else {
-                        LOG.debug("Migrating data from old to new container");
-                        if (dockerService.copyOrMergeDirectory(applicationUpgradeRequest.getContainerId(), oldImageMetadata.getAppStorageDirectory(), fogOperationResult.getContainerId(), imageMetadata.getAppStorageDirectory())) {
-                            LOG.warn("Failed to copy data to new container");
-                        }
+                    LOG.debug("Migrating data from old to new container");
+                    if (dockerService.copyOrMergeDirectory(applicationUpgradeRequest.getContainerId(), oldImageMetadata.getAppStorageDirectory(), fogOperationResult.getContainerId(), imageMetadata.getAppStorageDirectory())) {
+                        LOG.warn("Failed to copy data to new container");
                     }
                 }
-
-                //start new application, delete old container
-                boolean startNewAppSuccessful = dockerService.startContainer(fogOperationResult.getContainerId());
-                if (!finalizeReplaceContainerOperation(startNewAppSuccessful, applicationUpgradeRequest.getContainerId())) {
-                    return new AsyncResult<>(new FogOperationResult(applicationUpgradeRequest.getContainerId(), false, environmentInfoService.getFogBaseUrl(), "upgrade failed, recovered"));
-                }
-                return new AsyncResult<>(new FogOperationResult(fogOperationResult.getContainerId(), true, environmentInfoService.getFogBaseUrl()));
             }
+
+            //start new application, delete old container
+            boolean startNewAppSuccessful = dockerService.startContainer(fogOperationResult.getContainerId());
+            if (!finalizeReplaceContainerOperation(startNewAppSuccessful, applicationUpgradeRequest.getContainerId())) {
+                return new FogOperationResult(applicationUpgradeRequest.getContainerId(), false, environmentInfoService.getFogBaseUrl(), "upgrade failed, recovered");
+            }
+            return new FogOperationResult(fogOperationResult.getContainerId(), true, environmentInfoService.getFogBaseUrl());
+        }
+    }
+
+    private RLock getContainerLock(ContainerInfo containerInfo) {
+        return redissonClient.getFairLock(environmentInfoService.getFogId() + "_ContainerLock_" + containerInfo.getId());
+    }
+
+    private FogOperationResult performOperationIfPossible(ContainerInfo containerInfo, Callable<FogOperationResult> operation) {
+        RLock containerLock = getContainerLock(containerInfo);
+        LOG.debug("Locking Container: " + containerInfo.getId());
+        if (containerLock.tryLock()) {
+            LOG.debug("Container locked: " + containerInfo.getId());
+            try {
+                FogOperationResult result = operation.call();
+                LOG.debug("Container operation finished: " + containerInfo.getId());
+                return result;
+            } catch (Exception e) {
+                LOG.error("performOperation", e);
+                return new FogOperationResult(containerInfo.getId(), false, environmentInfoService.getFogBaseUrl(), "Operation failed");
+            } finally {
+                containerLock.unlock();
+                LOG.debug("Container unlocked: " + containerInfo.getId());
+            }
+        } else {
+            LOG.debug("Failed to acquire lock for container: " + containerInfo.getId());
+            return new FogOperationResult(containerInfo.getId(), false, environmentInfoService.getFogBaseUrl(), "Pending operation! Could not acquire lock for container");
         }
     }
 }

@@ -30,8 +30,6 @@ public class ApplicationManager implements ApplicationManagerApi {
         this.environmentInfoService = environmentInfoService;
     }
 
-    //TODO: prevent concurrent start/move/upgrade calls for the same application
-
     @Override
     public FogOperationResult requestApplicationStart(@RequestBody ApplicationStartRequest applicationStartRequest) {
         try {
