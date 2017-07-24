@@ -2,7 +2,7 @@ package at.sintrum.fog.metadatamanager;
 
 import at.sintrum.fog.core.PlatformCoreConfig;
 import at.sintrum.fog.metadatamanager.config.MetadataManagerConfigProperties;
-import at.sintrum.fog.metadatamanager.config.RedisConfiguration;
+import at.sintrum.fog.redis.RedissonConfig;
 import at.sintrum.fog.servercore.ServerCoreConfig;
 import at.sintrum.fog.swagger.SwaggerConfig;
 import org.springframework.boot.SpringApplication;
@@ -19,7 +19,7 @@ import org.springframework.context.annotation.Import;
 @EnableAutoConfiguration
 @SpringBootApplication
 @EnableConfigurationProperties(MetadataManagerConfigProperties.class)
-@Import({SwaggerConfig.class, PlatformCoreConfig.class, ServerCoreConfig.class, RedisConfiguration.class})
+@Import({SwaggerConfig.class, PlatformCoreConfig.class, ServerCoreConfig.class, RedissonConfig.class})
 public class MetadataManagerApplication {
 
     public static void main(String[] args) {

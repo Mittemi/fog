@@ -155,7 +155,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
             LOG.warn("Warnings during container creation. ID: " + container.getId() + "\n" + String.join("\n, ", container.getWarnings()));
         }
 
-        DockerContainerMetadata containerMetadata = new DockerContainerMetadata(container.getId(), imageMetadata.getId());
+        DockerContainerMetadata containerMetadata = new DockerContainerMetadata(container.getId(), imageMetadata.getId(), environmentInfoService.getFogId());
         containerMetadataApi.store(containerMetadata);
 
         return new FogOperationResult(container.getId(), true, environmentInfoService.getFogBaseUrl());

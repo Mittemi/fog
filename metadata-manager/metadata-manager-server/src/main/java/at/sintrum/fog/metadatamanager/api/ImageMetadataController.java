@@ -21,7 +21,6 @@ public class ImageMetadataController implements ImageMetadataApi {
     }
 
     @Override
-    //TODO: check why this is required (otherwise the mapping isn't registered)
     public List<DockerImageMetadata> getAll() {
         return metadataService.getAll();
     }

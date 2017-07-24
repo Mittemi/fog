@@ -5,7 +5,6 @@ import at.sintrum.fog.core.service.EnvironmentInfoService;
 import at.sintrum.fog.deploymentmanager.api.dto.ApplicationMoveRequest;
 import at.sintrum.fog.deploymentmanager.client.api.ApplicationManager;
 import at.sintrum.fog.deploymentmanager.client.factory.DeploymentManagerClientFactory;
-import at.sintrum.fog.metadatamanager.client.factory.MetadataManagerClientFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,14 +16,12 @@ public class MoveApplicationServiceImpl implements MoveApplicationService {
 
     private final EnvironmentInfoService environmentInfoService;
     private final DeploymentManagerClientFactory deploymentManagerClientFactory;
-    private MetadataManagerClientFactory metadataManagerClientFactory;
 
     private final Logger LOGGER = LoggerFactory.getLogger(MoveApplicationServiceImpl.class);
 
-    public MoveApplicationServiceImpl(EnvironmentInfoService environmentInfoService, DeploymentManagerClientFactory deploymentManagerClientFactory, MetadataManagerClientFactory metadataManagerClientFactory) {
+    public MoveApplicationServiceImpl(EnvironmentInfoService environmentInfoService, DeploymentManagerClientFactory deploymentManagerClientFactory) {
         this.environmentInfoService = environmentInfoService;
         this.deploymentManagerClientFactory = deploymentManagerClientFactory;
-        this.metadataManagerClientFactory = metadataManagerClientFactory;
     }
 
     @Override

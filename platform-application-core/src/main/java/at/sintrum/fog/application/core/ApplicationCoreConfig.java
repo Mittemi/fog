@@ -12,7 +12,6 @@ import at.sintrum.fog.deploymentmanager.client.api.ApplicationManager;
 import at.sintrum.fog.deploymentmanager.client.factory.DeploymentManagerClientFactory;
 import at.sintrum.fog.hostinfo.HostInfoProviderConfig;
 import at.sintrum.fog.metadatamanager.client.MetadataManagerClientConfig;
-import at.sintrum.fog.metadatamanager.client.factory.MetadataManagerClientFactory;
 import at.sintrum.fog.redis.RedissonConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,8 +54,8 @@ public class ApplicationCoreConfig {
     }
 
     @Bean
-    public MoveApplicationService moveApplicationService(EnvironmentInfoService environmentInfoService, DeploymentManagerClientFactory deploymentManagerClientFactory, MetadataManagerClientFactory metadataManagerClientFactory) {
-        return new MoveApplicationServiceImpl(environmentInfoService, deploymentManagerClientFactory, metadataManagerClientFactory);
+    public MoveApplicationService moveApplicationService(EnvironmentInfoService environmentInfoService, DeploymentManagerClientFactory deploymentManagerClientFactory) {
+        return new MoveApplicationServiceImpl(environmentInfoService, deploymentManagerClientFactory);
     }
 
     @Bean
