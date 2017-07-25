@@ -1,14 +1,13 @@
 package at.sintrum.fog.clientcore;
 
 import at.sintrum.fog.clientcore.annotation.DoNotRegister;
-import at.sintrum.fog.clientcore.client.ClientFactoryFactory;
-import at.sintrum.fog.clientcore.client.ClientProvider;
-import at.sintrum.fog.clientcore.client.ClientProviderImpl;
-import at.sintrum.fog.clientcore.client.FeignClientFactoryFactoryImpl;
+import at.sintrum.fog.clientcore.client.*;
 import at.sintrum.fog.clientcore.service.ShutdownApplicationServiceImpl;
+import at.sintrum.fog.core.service.EnvironmentInfoService;
 import feign.Client;
 import feign.Contract;
 import feign.codec.Decoder;
+import feign.codec.Encoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -43,8 +42,13 @@ public class ClientCoreConfig {
     }
 
     @Bean
-    public ClientFactoryFactory feignClientFactoryFactory(ClientProvider clientProvider, feign.codec.Encoder encoder, Decoder decoder, Contract contract) {
-        return new FeignClientFactoryFactoryImpl(clientProvider, decoder, contract, encoder);
+    public FogRequestInterceptor fogRequestInterceptor(EnvironmentInfoService environmentInfoService) {
+        return new FogRequestInterceptor(environmentInfoService);
+    }
+
+    @Bean
+    public ClientFactoryFactory feignClientFactoryFactory(ClientProvider clientProvider, Encoder encoder, Decoder decoder, Contract contract, FogRequestInterceptor fogRequestInterceptor) {
+        return new FeignClientFactoryFactoryImpl(clientProvider, decoder, contract, encoder, fogRequestInterceptor);
     }
 
     @Bean

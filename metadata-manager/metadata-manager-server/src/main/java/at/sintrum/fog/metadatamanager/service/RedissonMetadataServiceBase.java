@@ -25,7 +25,7 @@ public abstract class RedissonMetadataServiceBase<TModel extends MetadataBase> i
 
     @Override
     public TModel store(TModel metadata) {
-        RMap<String, TModel> map = getMap(DEFAULT_FOG_NAME);
+        RMap<String, TModel> map = getMap(getFogName(metadata));
 
         TModel existing = map.getOrDefault(getOrGenerateId(metadata), null);
 
@@ -42,7 +42,11 @@ public abstract class RedissonMetadataServiceBase<TModel extends MetadataBase> i
     }
 
     private RMap<String, TModel> getMap(String fogName) {
-        return redissonClient.getMap("Metadata.Map." + fogName + modelClazz.getTypeName());
+        return redissonClient.getMap(getListName(fogName));
+    }
+
+    String getListName(String fogName) {
+        return "Metadata.Map." + fogName + modelClazz.getTypeName();
     }
 
     @Override
@@ -65,4 +69,8 @@ public abstract class RedissonMetadataServiceBase<TModel extends MetadataBase> i
     }
 
     abstract String getOrGenerateId(TModel model);
+
+    String getFogName(TModel model) {
+        return DEFAULT_FOG_NAME;
+    }
 }

@@ -28,4 +28,9 @@ public class ContainerMetadataService extends RedissonMetadataServiceBase<Docker
 
         return dockerContainerMetadata.getContainerId();
     }
+
+    @Override
+    String getFogName(DockerContainerMetadata dockerContainerMetadata) {
+        return dockerContainerMetadata.getFogId();
+    }
 }

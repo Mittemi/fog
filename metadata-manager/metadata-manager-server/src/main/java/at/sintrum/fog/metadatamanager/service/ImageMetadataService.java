@@ -31,4 +31,9 @@ public class ImageMetadataService extends RedissonMetadataServiceBase<DockerImag
 
         return metadata.getId();
     }
+
+    @Override
+    String getListName(String fogName) {
+        return super.getListName("");
+    }
 }

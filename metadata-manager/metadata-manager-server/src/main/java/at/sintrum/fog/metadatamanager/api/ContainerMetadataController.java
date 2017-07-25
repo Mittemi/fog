@@ -2,6 +2,7 @@ package at.sintrum.fog.metadatamanager.api;
 
 import at.sintrum.fog.metadatamanager.api.dto.DockerContainerMetadata;
 import at.sintrum.fog.metadatamanager.service.ContainerMetadataService;
+import at.sintrum.fog.servercore.service.RequestInfoService;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,9 +16,11 @@ import java.util.List;
 public class ContainerMetadataController implements ContainerMetadataApi {
 
     private final ContainerMetadataService metadataService;
+    private final RequestInfoService requestInfoService;
 
-    public ContainerMetadataController(ContainerMetadataService dockerContainerMetadataMetadataService) {
+    public ContainerMetadataController(ContainerMetadataService dockerContainerMetadataMetadataService, RequestInfoService requestInfoService) {
         metadataService = dockerContainerMetadataMetadataService;
+        this.requestInfoService = requestInfoService;
     }
 
     @Override
