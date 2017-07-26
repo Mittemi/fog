@@ -23,10 +23,15 @@ public class PlatformCoreConfig {
 
     @Bean
     public ObjectMapper objectMapper() {
+        return createObjectMapper();
+    }
 
+    public static ObjectMapper createObjectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JodaModule());
-
+        objectMapper.disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+//        objectMapper.configure(com.fasterxml.jackson.databind.SerializationFeature.
+//                WRITE_DATES_AS_TIMESTAMPS, false);
         //objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
         return objectMapper;

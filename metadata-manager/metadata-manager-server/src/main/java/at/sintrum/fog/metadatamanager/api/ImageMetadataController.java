@@ -22,7 +22,7 @@ public class ImageMetadataController implements ImageMetadataApi {
 
     @Override
     public List<DockerImageMetadata> getAll() {
-        return metadataService.getAll();
+        return metadataService.getAll(null);
     }
 
     @Override
@@ -32,11 +32,11 @@ public class ImageMetadataController implements ImageMetadataApi {
 
     @Override
     public DockerImageMetadata getById(@PathVariable("id") String id) {
-        return metadataService.get(id);
+        return metadataService.get(null, id);
     }
 
     @Override
     public void delete(@PathVariable("id") String id) {
-        metadataService.delete(id);
+        metadataService.delete(null, id);
     }
 }

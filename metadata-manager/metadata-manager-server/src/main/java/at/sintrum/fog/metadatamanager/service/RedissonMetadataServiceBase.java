@@ -3,6 +3,7 @@ package at.sintrum.fog.metadatamanager.service;
 import at.sintrum.fog.metadatamanager.api.dto.MetadataBase;
 import org.joda.time.DateTime;
 import org.redisson.api.RMap;
+import org.redisson.api.RSet;
 import org.redisson.api.RedissonClient;
 
 import java.util.ArrayList;
@@ -45,27 +46,35 @@ public abstract class RedissonMetadataServiceBase<TModel extends MetadataBase> i
         return redissonClient.getMap(getListName(fogName));
     }
 
+    private RSet<String> getFogNames() {
+        return redissonClient.getSet("Metadata.Map.Fogs");
+    }
+
     String getListName(String fogName) {
+        if (fogName == null) fogName = "";
+        getFogNames().add(fogName);
         return "Metadata.Map." + fogName + modelClazz.getTypeName();
     }
 
     @Override
-    public TModel get(String id) {
-        return getMap(DEFAULT_FOG_NAME).get(id);
+    public TModel get(String fogId, String id) {
+        return getMap(fogId).get(id);
     }
 
     @Override
-    public void delete(String id) {
-        getMap(DEFAULT_FOG_NAME).remove(id);
+    public void delete(String fogId, String id) {
+        getMap(fogId).remove(id);
     }
 
     public void deleteAll() {
-        getMap(DEFAULT_FOG_NAME).clear();
+        for (String name : getFogNames()) {
+            getMap(name).clear();
+        }
     }
 
     @Override
-    public List<TModel> getAll() {
-        return new ArrayList<>(getMap(DEFAULT_FOG_NAME).values());
+    public List<TModel> getAll(String fogId) {
+        return new ArrayList<>(getMap(fogId).values());
     }
 
     abstract String getOrGenerateId(TModel model);

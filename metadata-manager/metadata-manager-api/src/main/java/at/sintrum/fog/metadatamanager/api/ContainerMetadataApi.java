@@ -16,14 +16,14 @@ public interface ContainerMetadataApi {
     @RequestMapping(value = "", method = RequestMethod.PUT)
     DockerContainerMetadata store(@RequestBody DockerContainerMetadata metadata);
 
-    @RequestMapping(value = "getById/{id}", method = RequestMethod.GET)
-    DockerContainerMetadata getById(@PathVariable("id") String id);
+    @RequestMapping(value = "getById/{fogId}/{id}/", method = RequestMethod.GET)
+    DockerContainerMetadata getById(@PathVariable("fogId") String fogId, @PathVariable("id") String id);
 
-    @RequestMapping(value = "{id}", method = RequestMethod.DELETE)
-    void delete(@PathVariable("id") String id);
+    @RequestMapping(value = "{fogId}/{id}", method = RequestMethod.DELETE)
+    void delete(@PathVariable("fogId") String fogId, @PathVariable("id") String id);
 
-    @RequestMapping(value = "", method = RequestMethod.GET)
-    List<DockerContainerMetadata> getAll();
+    @RequestMapping(value = "{fogId}", method = RequestMethod.GET)
+    List<DockerContainerMetadata> getAll(@PathVariable("fogId") String fogId);
 
     @RequestMapping(value = "reset", method = RequestMethod.POST)
     void reset();

@@ -11,9 +11,9 @@ public interface MetadataService<TModel extends MetadataBase> {
 
     TModel store(TModel metadata);
 
-    TModel get(String id);
+    TModel get(String fogId, String id);
 
-    void delete(String id);
+    void delete(String fogId, String id);
 
-    List<TModel> getAll();
+    List<TModel> getAll(String fogId);
 }

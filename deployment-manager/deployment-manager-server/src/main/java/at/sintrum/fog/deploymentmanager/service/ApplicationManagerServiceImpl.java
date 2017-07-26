@@ -87,7 +87,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
 
     private boolean finalizeReplaceContainerOperation(boolean isSuccessful, String originalContainerId) {
         if (isSuccessful) {
-            containerMetadataApi.delete(originalContainerId);
+            containerMetadataApi.delete(environmentInfoService.getFogId(), originalContainerId);
             if (!dockerService.removeContainer(originalContainerId)) {
                 LOG.error("Failed to delete moved container. Unnecessary resources!");
             }
@@ -188,7 +188,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
 
     private FogOperationResult performMove(ApplicationMoveRequest applicationMoveRequest, ContainerInfo containerInfo) {
 
-        DockerContainerMetadata containerMetadata = containerMetadataApi.getById(containerInfo.getId());
+        DockerContainerMetadata containerMetadata = containerMetadataApi.getById(environmentInfoService.getFogId(), containerInfo.getId());
 
         if (containerMetadata == null) {
             LOG.error("ContainerMetadata missing for container: " + containerInfo.getId());
@@ -258,7 +258,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
 
     private FogOperationResult performUpgrade(ApplicationUpgradeRequest applicationUpgradeRequest, ContainerInfo containerInfo) {
 
-        DockerContainerMetadata containerMetadata = containerMetadataApi.getById(containerInfo.getId());
+        DockerContainerMetadata containerMetadata = containerMetadataApi.getById(environmentInfoService.getFogId(), containerInfo.getId());
 
         if (containerMetadata == null) {
             LOG.error("ContainerMetadata missing for container: " + containerInfo.getId());
