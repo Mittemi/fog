@@ -17,6 +17,8 @@ public class DockerImageMetadata extends MetadataBase {
 
     private boolean isStateless;
 
+    private String baseImageId;
+
     private List<Integer> ports;
 
     private List<String> environment;
@@ -85,5 +87,13 @@ public class DockerImageMetadata extends MetadataBase {
 
     public void setAppStorageDirectory(String appStorageDirectory) {
         this.appStorageDirectory = appStorageDirectory;
+    }
+
+    public String getBaseImageId() {
+        return baseImageId;
+    }
+
+    public void setBaseImageId(String baseImageId) {
+        this.baseImageId = baseImageId;
     }
 }

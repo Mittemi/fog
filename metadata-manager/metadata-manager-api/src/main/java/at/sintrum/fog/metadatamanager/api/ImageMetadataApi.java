@@ -17,6 +17,9 @@ public interface ImageMetadataApi {
     @RequestMapping(value = "", method = RequestMethod.PUT)
     DockerImageMetadata store(@RequestBody DockerImageMetadata metadata);
 
+    @RequestMapping(value = "checkpoint/{id}/{tag}", method = RequestMethod.PUT)
+    DockerImageMetadata createCheckpoint(@PathVariable("id") String id, @PathVariable("tag") String tag);
+
     @RequestMapping(value = "getById/{id}", method = RequestMethod.GET)
     DockerImageMetadata getById(@PathVariable("id") String id);
 

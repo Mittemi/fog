@@ -218,10 +218,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
                     return new FogOperationResult(containerInfo.getId(), false, environmentInfoService.getFogBaseUrl(), "Failed to push checkpoint");
                 }
 
-                imageMetadata.setImage(checkpoint.getImage());
-                imageMetadata.setTag(tag);
-                imageMetadata.setId(null);  //create new/no update
-                imageMetadata = imageMetadataApi.store(imageMetadata);
+                imageMetadata = imageMetadataApi.createCheckpoint(imageMetadata.getId(), tag);
             }
 
             return moveContainerToRemote(applicationMoveRequest, imageMetadata);

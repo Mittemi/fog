@@ -31,6 +31,11 @@ public class ImageMetadataController implements ImageMetadataApi {
     }
 
     @Override
+    public DockerImageMetadata createCheckpoint(@PathVariable("id") String id, @PathVariable("tag") String tag) {
+        return metadataService.checkpoint(id, tag);
+    }
+
+    @Override
     public DockerImageMetadata getById(@PathVariable("id") String id) {
         return metadataService.get(null, id);
     }

@@ -36,4 +36,24 @@ public class ImageMetadataService extends RedissonMetadataServiceBase<DockerImag
     String getListName(String fogName) {
         return super.getListName("");
     }
+
+    public DockerImageMetadata checkpoint(String id, String tag) {
+
+        DockerImageMetadata dockerImageMetadata = get(null, id);
+
+        if (dockerImageMetadata == null) {
+            LOG.error("Base image metadata not found! Can't create checkpoint.");
+            return null;
+        }
+
+        dockerImageMetadata.setId(null);        //create new one
+        dockerImageMetadata.setTag(tag);
+        if (StringUtils.isEmpty(dockerImageMetadata.getBaseImageId())) {
+            LOG.debug("Create first checkpoint for image " + id);
+            dockerImageMetadata.setBaseImageId(id);
+        }
+
+        store(dockerImageMetadata);
+        return dockerImageMetadata;
+    }
 }
