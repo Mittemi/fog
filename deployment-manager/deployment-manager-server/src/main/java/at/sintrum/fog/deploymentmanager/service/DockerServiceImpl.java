@@ -9,6 +9,7 @@ import com.github.dockerjava.core.command.PullImageResultCallback;
 import com.github.dockerjava.core.command.PushImageResultCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -24,13 +25,15 @@ import java.util.stream.Collectors;
 @Service
 public class DockerServiceImpl implements DockerService {
 
+    private final boolean disableRegistry;
     private final DockerClient dockerClient;
     private DeploymentManagerConfigProperties deploymentManagerConfigProperties;
     private final DeploymentService deploymentService;
 
     private final Logger LOG = LoggerFactory.getLogger(DockerServiceImpl.class);
 
-    public DockerServiceImpl(DockerClient dockerClient, DeploymentManagerConfigProperties deploymentManagerConfigProperties, DeploymentService deploymentService) {
+    public DockerServiceImpl(@Value("${DISABLE_REGISTRY:false}") boolean disableRegistry, DockerClient dockerClient, DeploymentManagerConfigProperties deploymentManagerConfigProperties, DeploymentService deploymentService) {
+        this.disableRegistry = disableRegistry;
         this.dockerClient = dockerClient;
         this.deploymentManagerConfigProperties = deploymentManagerConfigProperties;
         this.deploymentService = deploymentService;
@@ -211,6 +214,12 @@ public class DockerServiceImpl implements DockerService {
 
     @Override
     public boolean pullImage(PullImageRequest pullImageRequest) {
+
+        if (disableRegistry) {
+            LOG.warn("Docker registry is disabled");
+            return true;
+        }
+
         try {
             String repository = deploymentService.getRepositoryName(pullImageRequest.getName());
             PullImageCmd pullImageCmd = dockerClient.pullImageCmd(repository);
@@ -236,6 +245,11 @@ public class DockerServiceImpl implements DockerService {
 
     @Override
     public boolean pushImage(PushImageRequest pushImageRequest) {
+
+        if (disableRegistry) {
+            LOG.warn("Docker registry is disabled");
+            return true;
+        }
 
         try {
             PushImageCmd pushImageCmd = dockerClient.pushImageCmd(pushImageRequest.getName());
