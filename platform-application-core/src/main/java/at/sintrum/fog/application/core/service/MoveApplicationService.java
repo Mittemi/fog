@@ -8,4 +8,6 @@ import at.sintrum.fog.core.dto.FogIdentification;
 public interface MoveApplicationService {
 
     void moveApplication(FogIdentification target);
+
+    void moveAppIfRequired();
 }

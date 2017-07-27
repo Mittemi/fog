@@ -6,13 +6,15 @@ import org.redisson.api.RQueue;
 import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 
 /**
  * Created by Michael Mittermayr on 17.07.2017.
  */
 @Service
-public class TravelingCoordinationServiceImpl implements TravelingCoordinationService {
+public class TravelingCoordinationServiceImpl implements TravelingCoordinationService, ApplicationListener<ApplicationReadyEvent> {
 
     private static final Logger LOG = LoggerFactory.getLogger(TravelingCoordinationServiceImpl.class);
 
@@ -59,5 +61,30 @@ public class TravelingCoordinationServiceImpl implements TravelingCoordinationSe
             LOG.error("Failed to get next travel target", ex);
             return null;
         }
+    }
+
+    @Override
+    public boolean finishMove(FogIdentification fogIdentification) {
+
+        try {
+            FogIdentification peek = getTravelQueue().peek();
+            if (peek != null && peek.isSameFog(fogIdentification)) {
+                if (!getTravelQueue().remove(peek)) {
+                    LOG.error("Element not removed from queue, even though it should have been in there");
+                    return false;
+                }
+            }
+            return true;
+        } catch (Exception ex) {
+            LOG.error("Failed to update travel requests queue", ex);
+            return false;
+        }
+    }
+
+    @Override
+    public void onApplicationEvent(ApplicationReadyEvent event) {
+        LOG.debug("App start finished. Let's finish the move operation");
+        FogIdentification fogIdentification = FogIdentification.parseFogBaseUrl(environmentInfoService.getFogBaseUrl());
+        finishMove(fogIdentification);
     }
 }

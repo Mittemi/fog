@@ -17,6 +17,8 @@ public class DockerImageMetadata extends MetadataBase {
 
     private boolean isStateless;
 
+    private boolean enableDebugging;
+
     private String baseImageId;
 
     private List<Integer> ports;
@@ -95,5 +97,13 @@ public class DockerImageMetadata extends MetadataBase {
 
     public void setBaseImageId(String baseImageId) {
         this.baseImageId = baseImageId;
+    }
+
+    public boolean isEnableDebugging() {
+        return enableDebugging;
+    }
+
+    public void setEnableDebugging(boolean enableDebugging) {
+        this.enableDebugging = enableDebugging;
     }
 }

@@ -1,6 +1,7 @@
 package at.sintrum.fog.application.core.api;
 
 import at.sintrum.fog.application.core.api.dto.AppInfo;
+import at.sintrum.fog.application.core.service.CloudLocatorService;
 import at.sintrum.fog.applicationhousing.api.dto.AppIdentification;
 import at.sintrum.fog.applicationhousing.api.dto.AppUpdateInfo;
 import at.sintrum.fog.applicationhousing.client.api.AppEvolution;
@@ -20,12 +21,14 @@ public class ApplicationInfo {
 
     private final AppEvolution appEvolution;
     private final EnvironmentInfoService environmentInfoService;
+    private final CloudLocatorService cloudLocatorService;
 
     private static final Logger LOG = LoggerFactory.getLogger(ApplicationInfo.class);
 
-    public ApplicationInfo(AppEvolution appEvolution, EnvironmentInfoService environmentInfoService) {
+    public ApplicationInfo(AppEvolution appEvolution, EnvironmentInfoService environmentInfoService, CloudLocatorService cloudLocatorService) {
         this.appEvolution = appEvolution;
         this.environmentInfoService = environmentInfoService;
+        this.cloudLocatorService = cloudLocatorService;
     }
 
 
@@ -44,6 +47,7 @@ public class ApplicationInfo {
 
         appInfo.setMetadataId(environmentInfoService.getMetadataId());
         appInfo.setActiveProfiles(environmentInfoService.getServiceProfile());
+        appInfo.setCloudBaseUrl(cloudLocatorService.getCloudBaseUrl());
         return appInfo;
     }
 }

@@ -1,6 +1,7 @@
 package at.sintrum.fog.servercore;
 
 import at.sintrum.fog.hostinfo.HostInfoProviderConfig;
+import at.sintrum.fog.servercore.environmentinfo.FogEnvironmentInfoContributor;
 import at.sintrum.fog.servercore.service.RequestInfoServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +20,7 @@ import javax.annotation.PostConstruct;
         @PropertySource("classpath:servercore-application.yml")
 )
 @EnableConfigurationProperties
-@ComponentScan(basePackageClasses = {RequestInfoServiceImpl.class})
+@ComponentScan(basePackageClasses = {RequestInfoServiceImpl.class, FogEnvironmentInfoContributor.class})
 @Import({HostInfoProviderConfig.class})
 @EnableDiscoveryClient
 public class ServerCoreConfig {

@@ -1,5 +1,6 @@
 package at.sintrum.fog.application.api;
 
+import at.sintrum.fog.application.core.service.MoveApplicationService;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -30,8 +31,16 @@ public class DoSomeWorkController {
             "If work was so good, the rich would have kept more of it for themselves."
     };
 
+    private final MoveApplicationService moveApplicationService;
+
+    public DoSomeWorkController(MoveApplicationService moveApplicationService) {
+        this.moveApplicationService = moveApplicationService;
+    }
+
     @RequestMapping(value = "", method = RequestMethod.GET)
     public String doSomeWork() {
+        // TODO: improve this impl.
+        moveApplicationService.moveAppIfRequired();     //should trigger in about 1 sec. therefore enough time to return the string
         return SAYINGS[random.nextInt(SAYINGS.length)];
     }
 }

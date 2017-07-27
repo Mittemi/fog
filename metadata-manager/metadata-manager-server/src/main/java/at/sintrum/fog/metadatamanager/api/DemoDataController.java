@@ -33,9 +33,10 @@ public class DemoDataController {
         imageMetadata.setImage("deb.hw.sintrum.at:5000/test-application");
         imageMetadata.setTag("latest");
         imageMetadata.setEurekaEnabled(true);
+        imageMetadata.setEnableDebugging(true);
         imageMetadata.setEnvironment(Collections.singletonList("SERVER_PORT=10000"));
         imageMetadata.setPorts(Collections.singletonList(10000));
-        imageMetadata.setAppStorageDirectory("/logs");
+        imageMetadata.setAppStorageDirectory("/app/storage");
 
         return imageMetadataService.store(imageMetadata);
     }

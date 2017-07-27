@@ -13,6 +13,8 @@ public class AppInfo {
 
     private String message;
 
+    private String cloudBaseUrl;
+
     public boolean isRequiresUpdate() {
         return requiresUpdate;
     }
@@ -43,5 +45,13 @@ public class AppInfo {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public String getCloudBaseUrl() {
+        return cloudBaseUrl;
+    }
+
+    public void setCloudBaseUrl(String cloudBaseUrl) {
+        this.cloudBaseUrl = cloudBaseUrl;
     }
 }

@@ -145,6 +145,18 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
             deploymentService.enableServiceProfile(createContainerRequest, "standby");
         }
 
+        if (imageMetadata.isEnableDebugging()) {
+            LOG.info("Enable debugging");
+            deploymentService.enableServiceProfile(createContainerRequest, "debug");
+
+            //TODO: find a better approach
+            int serverPort = 0;
+            if (imageMetadata.getPorts() != null && imageMetadata.getPorts().size() > 0) {
+                serverPort = imageMetadata.getPorts().get(0);
+            }
+            deploymentService.addPortMapping(createContainerRequest, 50050, 50050 - serverPort);
+        }
+
         CreateContainerResult container = dockerService.createContainer(createContainerRequest);
 
         if (container == null) {
