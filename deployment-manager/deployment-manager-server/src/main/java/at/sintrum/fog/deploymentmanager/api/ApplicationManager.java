@@ -53,6 +53,11 @@ public class ApplicationManager implements ApplicationManagerApi {
     @Override
     public FogOperationResult upgradeApplication(@RequestBody ApplicationUpgradeRequest applicationUpgradeRequest) {
         try {
+            if (!environmentInfoService.getServiceProfile().contains("cloud")) {
+                LOG.error("Upgrade application called in non cloud environment");
+                return new FogOperationResult(applicationUpgradeRequest.getContainerId(), false, environmentInfoService.getFogBaseUrl(), "Operation only allowed in clouds.");
+            }
+
             return applicationManagerService.upgrade(applicationUpgradeRequest).get();
         } catch (InterruptedException | ExecutionException e) {
             LOG.error("upgrade failed", e);

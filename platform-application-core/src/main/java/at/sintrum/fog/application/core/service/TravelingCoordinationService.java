@@ -12,4 +12,6 @@ public interface TravelingCoordinationService {
     boolean hasNextTarget();
 
     FogIdentification getNextTarget();
+
+    boolean finishMove(FogIdentification fogIdentification);
 }

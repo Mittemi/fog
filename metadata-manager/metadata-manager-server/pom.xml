@@ -35,8 +35,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis</artifactId>
+            <groupId>at.sintrum.fog</groupId>
+            <artifactId>platform-redis</artifactId>
         </dependency>
 
         <dependency>

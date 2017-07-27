@@ -5,9 +5,10 @@ package at.sintrum.fog.metadatamanager.api.dto;
  */
 public class DockerContainerMetadata extends MetadataBase {
 
-    public DockerContainerMetadata(String containerId, String imageMetadataId) {
+    public DockerContainerMetadata(String containerId, String imageMetadataId, String fogId) {
         this.containerId = containerId;
         this.imageMetadataId = imageMetadataId;
+        this.fogId = fogId;
     }
 
     public DockerContainerMetadata() {
@@ -17,6 +18,7 @@ public class DockerContainerMetadata extends MetadataBase {
     private String containerId;
 
     private String imageMetadataId;
+    private String fogId;
 
     public String getContainerId() {
         return containerId;
@@ -32,5 +34,13 @@ public class DockerContainerMetadata extends MetadataBase {
 
     public void setImageMetadataId(String imageMetadataId) {
         this.imageMetadataId = imageMetadataId;
+    }
+
+    public String getFogId() {
+        return fogId;
+    }
+
+    public void setFogId(String fogId) {
+        this.fogId = fogId;
     }
 }

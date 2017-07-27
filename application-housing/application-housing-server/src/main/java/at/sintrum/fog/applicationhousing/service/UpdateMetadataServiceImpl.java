@@ -2,8 +2,12 @@ package at.sintrum.fog.applicationhousing.service;
 
 import at.sintrum.fog.applicationhousing.api.dto.AppIdentification;
 import at.sintrum.fog.applicationhousing.api.dto.AppUpdateInfo;
+import at.sintrum.fog.metadatamanager.api.ImageMetadataApi;
+import at.sintrum.fog.metadatamanager.api.dto.DockerImageMetadata;
 import org.redisson.api.RMap;
 import org.redisson.api.RedissonClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -13,11 +17,15 @@ import org.springframework.util.StringUtils;
 @Service
 public class UpdateMetadataServiceImpl implements UpdateMetadataService {
 
-    private final RedissonClient redissonClient;
+    private static final Logger LOG = LoggerFactory.getLogger(UpdateMetadataServiceImpl.class);
 
-    public UpdateMetadataServiceImpl(RedissonClient redissonClient) {
+    private final RedissonClient redissonClient;
+    private final ImageMetadataApi imageMetadataApi;
+
+    public UpdateMetadataServiceImpl(RedissonClient redissonClient, ImageMetadataApi imageMetadataApi) {
 
         this.redissonClient = redissonClient;
+        this.imageMetadataApi = imageMetadataApi;
     }
 
     private RMap<String, String> getUpdateMetadata() {
@@ -36,9 +44,33 @@ public class UpdateMetadataServiceImpl implements UpdateMetadataService {
         String newVersionMetadataId = getUpdateMetadata().get(currentVersion.getImageMetadataId());
 
         if (StringUtils.isEmpty(newVersionMetadataId)) {
+            String baseImageId = getBaseImageId(currentVersion);
+            if (!currentVersion.getImageMetadataId().equals(baseImageId)) {
+                newVersionMetadataId = getUpdateMetadata().get(baseImageId);
+            }
+        }
+
+        if (StringUtils.isEmpty(newVersionMetadataId)) {
             return new AppUpdateInfo(false, null);
         }
         return new AppUpdateInfo(true, newVersionMetadataId);
+    }
+
+    private String getBaseImageId(AppIdentification currentVersion) {
+
+        DockerImageMetadata currentImageMetadata = imageMetadataApi.getById(currentVersion.getImageMetadataId());
+
+        if (currentImageMetadata == null) {
+            LOG.error("Metadata not found for the currentVersion: " + currentVersion.getImageMetadataId());
+            return currentVersion.getImageMetadataId();
+        }
+
+        if (StringUtils.isEmpty(currentImageMetadata.getBaseImageId())) {
+            return currentVersion.getImageMetadataId();
+        } else {
+            // image is a checkpoint
+            return currentImageMetadata.getBaseImageId();
+        }
     }
 
     @Override

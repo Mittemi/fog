@@ -21,8 +21,8 @@ public class ContainerMetadataController implements ContainerMetadataApi {
     }
 
     @Override
-    public List<DockerContainerMetadata> getAll() {
-        return metadataService.getAll();
+    public List<DockerContainerMetadata> getAll(@PathVariable("fogId") String fogId) {
+        return metadataService.getAll(fogId);
     }
 
     @Override
@@ -31,13 +31,13 @@ public class ContainerMetadataController implements ContainerMetadataApi {
     }
 
     @Override
-    public DockerContainerMetadata getById(@PathVariable("id") String id) {
-        return metadataService.get(id);
+    public DockerContainerMetadata getById(@PathVariable("fogId") String fogId, @PathVariable("id") String id) {
+        return metadataService.get(fogId, id);
     }
 
     @Override
-    public void delete(@PathVariable("id") String id) {
-        metadataService.delete(id);
+    public void delete(@PathVariable("fogId") String fogId, @PathVariable("id") String id) {
+        metadataService.delete(fogId, id);
     }
 
     @Override

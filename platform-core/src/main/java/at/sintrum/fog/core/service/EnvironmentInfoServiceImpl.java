@@ -115,7 +115,7 @@ public class EnvironmentInfoServiceImpl implements EnvironmentInfoService {
 
     @Override
     public String getFogId() {
-        return fogBaseUrl;      //TODO: check if this could get trimmed
+        return eurekaClientIP + ":" + serverPort;      //TODO: check if this could get trimmed
     }
 
     private String getHostname() {

@@ -3,12 +3,15 @@ package at.sintrum.fog.application.core.service;
 import at.sintrum.fog.applicationhousing.api.dto.AppIdentification;
 import at.sintrum.fog.applicationhousing.api.dto.AppUpdateInfo;
 import at.sintrum.fog.applicationhousing.client.api.AppEvolution;
+import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.core.service.EnvironmentInfoService;
+import at.sintrum.fog.deploymentmanager.api.dto.ApplicationMoveRequest;
 import at.sintrum.fog.deploymentmanager.api.dto.ApplicationUpgradeRequest;
 import at.sintrum.fog.deploymentmanager.client.api.ApplicationManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -18,20 +21,24 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @Profile("standby")
-public class StandbyServiceImpl implements StandbyService {
+public class StandbyServiceImpl implements StandbyService, ApplicationListener<ApplicationReadyEvent> {
 
     private final ApplicationManager applicationManager;
     private final AppEvolution appEvolution;
     private final EnvironmentInfoService environmentInfoService;
+    private final TravelingCoordinationService travelingCoordinationService;
+    private final MoveApplicationService moveApplicationService;
 
     private boolean disableAppServicing;
 
     private static final Logger LOG = LoggerFactory.getLogger(StandbyServiceImpl.class);
 
-    public StandbyServiceImpl(ApplicationManager applicationManager, AppEvolution appEvolution, EnvironmentInfoService environmentInfoService) {
+    public StandbyServiceImpl(ApplicationManager applicationManager, AppEvolution appEvolution, EnvironmentInfoService environmentInfoService, TravelingCoordinationService travelingCoordinationService, MoveApplicationService moveApplicationService) {
         this.applicationManager = applicationManager;
         this.appEvolution = appEvolution;
         this.environmentInfoService = environmentInfoService;
+        this.travelingCoordinationService = travelingCoordinationService;
+        this.moveApplicationService = moveApplicationService;
         if (!environmentInfoService.isCloud()) {
             LOG.error("This service should not run in non cloud environments");
         }
@@ -53,12 +60,25 @@ public class StandbyServiceImpl implements StandbyService {
         disableAppServicing = true;
         LOG.debug("Execute application servicing tasks!");
 
-        upgradeAppIfRequired();
-
+        if (!upgradeAppIfRequired()) {
+            // no upgrade --> check if we should move
+            moveApplicationService.moveAppIfRequired();
+        }
         disableAppServicing = false;
     }
 
-    private void upgradeAppIfRequired() {
+    private void moveAppIfRequired() {
+        if (travelingCoordinationService.hasNextTarget()) {
+            LOG.debug("New application target, let's move");
+            FogIdentification nextTarget = travelingCoordinationService.getNextTarget();
+            if (nextTarget != null) {
+                LOG.debug("Request application move to fog: " + nextTarget.toUrl());
+                applicationManager.moveApplication(new ApplicationMoveRequest(environmentInfoService.getOwnContainerId(), nextTarget.toUrl()));
+            }
+        }
+    }
+
+    private boolean upgradeAppIfRequired() {
         try {
             AppUpdateInfo appUpdateInfo = appEvolution.checkForUpdate(new AppIdentification(environmentInfoService.getMetadataId()));
 
@@ -68,10 +88,12 @@ public class StandbyServiceImpl implements StandbyService {
                 applicationUpgradeRequest.setContainerId(environmentInfoService.getOwnContainerId());
                 applicationUpgradeRequest.setApplicationUrl(environmentInfoService.getOwnUrl());
                 applicationManager.upgradeApplication(applicationUpgradeRequest);
+                return true;
             }
 
         } catch (Exception ex) {
             LOG.error("Check for updates failed", ex);
         }
+        return false;
     }
 }

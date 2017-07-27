@@ -1,7 +1,10 @@
 package at.sintrum.fog.redis;
 
+import at.sintrum.fog.core.PlatformCoreConfig;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
+import org.redisson.codec.DefaultCodecProvider;
+import org.redisson.codec.JsonJacksonCodec;
 import org.redisson.config.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +39,9 @@ public class RedissonConfig {
 
         Config config = new Config();
         config.useSingleServer().setAddress(address);
+        config.setCodec(new JsonJacksonCodec(PlatformCoreConfig.createObjectMapper()));
+
+        config.setCodecProvider(new DefaultCodecProvider());
 
         return config;
     }

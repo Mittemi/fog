@@ -87,7 +87,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
 
     private boolean finalizeReplaceContainerOperation(boolean isSuccessful, String originalContainerId) {
         if (isSuccessful) {
-            containerMetadataApi.delete(originalContainerId);
+            containerMetadataApi.delete(environmentInfoService.getFogId(), originalContainerId);
             if (!dockerService.removeContainer(originalContainerId)) {
                 LOG.error("Failed to delete moved container. Unnecessary resources!");
             }
@@ -145,6 +145,18 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
             deploymentService.enableServiceProfile(createContainerRequest, "standby");
         }
 
+        if (imageMetadata.isEnableDebugging()) {
+            LOG.info("Enable debugging");
+            deploymentService.enableServiceProfile(createContainerRequest, "debug");
+
+            //TODO: find a better approach
+            int serverPort = 0;
+            if (imageMetadata.getPorts() != null && imageMetadata.getPorts().size() > 0) {
+                serverPort = imageMetadata.getPorts().get(0);
+            }
+            deploymentService.addPortMapping(createContainerRequest, 50050, 50050 - serverPort);
+        }
+
         CreateContainerResult container = dockerService.createContainer(createContainerRequest);
 
         if (container == null) {
@@ -155,7 +167,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
             LOG.warn("Warnings during container creation. ID: " + container.getId() + "\n" + String.join("\n, ", container.getWarnings()));
         }
 
-        DockerContainerMetadata containerMetadata = new DockerContainerMetadata(container.getId(), imageMetadata.getId());
+        DockerContainerMetadata containerMetadata = new DockerContainerMetadata(container.getId(), imageMetadata.getId(), environmentInfoService.getFogId());
         containerMetadataApi.store(containerMetadata);
 
         return new FogOperationResult(container.getId(), true, environmentInfoService.getFogBaseUrl());
@@ -188,7 +200,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
 
     private FogOperationResult performMove(ApplicationMoveRequest applicationMoveRequest, ContainerInfo containerInfo) {
 
-        DockerContainerMetadata containerMetadata = containerMetadataApi.getById(containerInfo.getId());
+        DockerContainerMetadata containerMetadata = containerMetadataApi.getById(environmentInfoService.getFogId(), containerInfo.getId());
 
         if (containerMetadata == null) {
             LOG.error("ContainerMetadata missing for container: " + containerInfo.getId());
@@ -218,10 +230,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
                     return new FogOperationResult(containerInfo.getId(), false, environmentInfoService.getFogBaseUrl(), "Failed to push checkpoint");
                 }
 
-                imageMetadata.setImage(checkpoint.getImage());
-                imageMetadata.setTag(tag);
-                imageMetadata.setId(null);  //create new/no update
-                imageMetadata = imageMetadataApi.store(imageMetadata);
+                imageMetadata = imageMetadataApi.createCheckpoint(imageMetadata.getId(), tag);
             }
 
             return moveContainerToRemote(applicationMoveRequest, imageMetadata);
@@ -258,7 +267,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
 
     private FogOperationResult performUpgrade(ApplicationUpgradeRequest applicationUpgradeRequest, ContainerInfo containerInfo) {
 
-        DockerContainerMetadata containerMetadata = containerMetadataApi.getById(containerInfo.getId());
+        DockerContainerMetadata containerMetadata = containerMetadataApi.getById(environmentInfoService.getFogId(), containerInfo.getId());
 
         if (containerMetadata == null) {
             LOG.error("ContainerMetadata missing for container: " + containerInfo.getId());

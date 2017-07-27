@@ -11,6 +11,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * Created by Michael Mittermayr on 14.07.2017.
@@ -19,7 +20,7 @@ import org.springframework.context.annotation.Import;
 @EnableAutoConfiguration
 @SpringBootApplication
 @Import({RedissonConfig.class, SwaggerConfig.class, PlatformCoreConfig.class, ServerCoreConfig.class, MetadataManagerClientConfig.class, DeploymentManagerClientConfig.class})
-
+@EnableScheduling
 public class AppHousingApplication {
 
     public static void main(String[] args) {

@@ -2,8 +2,6 @@ package at.sintrum.fog.application.core;
 
 import at.sintrum.fog.application.core.api.ApplicationInfo;
 import at.sintrum.fog.application.core.api.RequestAppController;
-import at.sintrum.fog.application.core.service.MoveApplicationService;
-import at.sintrum.fog.application.core.service.MoveApplicationServiceImpl;
 import at.sintrum.fog.applicationhousing.client.ApplicationHousingClientConfig;
 import at.sintrum.fog.core.PlatformCoreConfig;
 import at.sintrum.fog.core.service.EnvironmentInfoService;
@@ -12,7 +10,6 @@ import at.sintrum.fog.deploymentmanager.client.api.ApplicationManager;
 import at.sintrum.fog.deploymentmanager.client.factory.DeploymentManagerClientFactory;
 import at.sintrum.fog.hostinfo.HostInfoProviderConfig;
 import at.sintrum.fog.metadatamanager.client.MetadataManagerClientConfig;
-import at.sintrum.fog.metadatamanager.client.factory.MetadataManagerClientFactory;
 import at.sintrum.fog.redis.RedissonConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,11 +49,6 @@ public class ApplicationCoreConfig {
 
         logger.info("EurekaUrl: " + eurekaUrl);
         logger.info("EurekaClientIP: " + eurekaClientIp);
-    }
-
-    @Bean
-    public MoveApplicationService moveApplicationService(EnvironmentInfoService environmentInfoService, DeploymentManagerClientFactory deploymentManagerClientFactory, MetadataManagerClientFactory metadataManagerClientFactory) {
-        return new MoveApplicationServiceImpl(environmentInfoService, deploymentManagerClientFactory, metadataManagerClientFactory);
     }
 
     @Bean

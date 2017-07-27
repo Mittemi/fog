@@ -67,13 +67,18 @@ public class DeploymentService {
 
 
     private void setPortInfos(DockerImageMetadata imageMetadata, CreateContainerRequest createContainerRequest) {
-        List<PortInfo> portInfos = new LinkedList<>();
         if (imageMetadata.getPorts() != null) {
             for (Integer port : imageMetadata.getPorts()) {
-                portInfos.add(new PortInfo(port, port));
+                addPortMapping(createContainerRequest, port, port);
             }
         }
-        createContainerRequest.setPortInfos(portInfos);
+    }
+
+    public void addPortMapping(CreateContainerRequest createContainerRequest, int containerPort, int hostPort) {
+        if (createContainerRequest.getPortInfos() == null) {
+            createContainerRequest.setPortInfos(new LinkedList<>());
+        }
+        createContainerRequest.getPortInfos().add(new PortInfo(containerPort, hostPort));
     }
 
     private void setEnvironment(DockerImageMetadata imageMetadata, CreateContainerRequest createContainerRequest) {

@@ -23,14 +23,16 @@ public class FeignClientFactoryFactoryImpl implements ClientFactoryFactory {
     private ClientProvider clientProvider;
     private final Decoder decoder;
     private final Encoder encoder;
+    private final FogRequestInterceptor fogRequestInterceptor;
     private final Contract contract;
     private final org.slf4j.Logger LOG = LoggerFactory.getLogger(FeignClientFactoryFactoryImpl.class);
 
-    public FeignClientFactoryFactoryImpl(ClientProvider clientProvider, Decoder decoder, Contract contract, Encoder encoder) {
+    public FeignClientFactoryFactoryImpl(ClientProvider clientProvider, Decoder decoder, Contract contract, Encoder encoder, FogRequestInterceptor fogRequestInterceptor) {
         this.clientProvider = clientProvider;
         this.decoder = decoder;
         this.contract = contract;
         this.encoder = encoder;
+        this.fogRequestInterceptor = fogRequestInterceptor;
     }
 
     @Override
@@ -60,6 +62,7 @@ public class FeignClientFactoryFactoryImpl implements ClientFactoryFactory {
                 .contract(contract)
                 .encoder(encoder)
                 .decoder(decoder)
+                .requestInterceptor(fogRequestInterceptor)
                 .logger(new Slf4jLogger(apiInterface.getName()))
                 .logLevel(Logger.Level.FULL)
                 .errorDecoder(new ErrorDecoder.Default())

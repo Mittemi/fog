@@ -1,5 +1,7 @@
 package at.sintrum.fog.metadatamanager.api.dto;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.joda.ser.DateTimeSerializer;
 import org.joda.time.DateTime;
 
 /**
@@ -7,7 +9,9 @@ import org.joda.time.DateTime;
  */
 public abstract class MetadataBase {
 
+    @JsonSerialize(using = DateTimeSerializer.class)
     private DateTime lastUpdate;
+    @JsonSerialize(using = DateTimeSerializer.class)
     private DateTime creationDate;
 
     public DateTime getLastUpdate() {

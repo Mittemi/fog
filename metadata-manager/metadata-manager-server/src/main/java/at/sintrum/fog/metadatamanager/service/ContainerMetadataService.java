@@ -1,23 +1,36 @@
 package at.sintrum.fog.metadatamanager.service;
 
 import at.sintrum.fog.metadatamanager.api.dto.DockerContainerMetadata;
-import at.sintrum.fog.metadatamanager.domain.DockerContainerMetadataEntity;
-import at.sintrum.fog.metadatamanager.repository.ContainerMetadataRepository;
-import org.modelmapper.ModelMapper;
+import org.apache.commons.lang.StringUtils;
+import org.redisson.api.RedissonClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
  * Created by Michael Mittermayr on 03.06.2017.
  */
 @Service
-public class ContainerMetadataService extends MetadataServiceBase<DockerContainerMetadata, DockerContainerMetadataEntity, ContainerMetadataRepository> {
+public class ContainerMetadataService extends RedissonMetadataServiceBase<DockerContainerMetadata> {
 
-    public ContainerMetadataService(ContainerMetadataRepository repository, ModelMapper modelMapper) {
-        super(repository, modelMapper, DockerContainerMetadata.class, DockerContainerMetadataEntity.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ContainerMetadataService.class);
+
+    ContainerMetadataService(RedissonClient redissonClient) {
+        super(redissonClient, DockerContainerMetadata.class);
     }
 
     @Override
-    String getId(DockerContainerMetadata metadata) {
-        return metadata.getContainerId();
+    String getOrGenerateId(DockerContainerMetadata dockerContainerMetadata) {
+
+        if (StringUtils.isEmpty(dockerContainerMetadata.getContainerId())) {
+            LOG.error("ContainerId required. This field must not be null.");
+        }
+
+        return dockerContainerMetadata.getContainerId();
+    }
+
+    @Override
+    String getFogName(DockerContainerMetadata dockerContainerMetadata) {
+        return dockerContainerMetadata.getFogId();
     }
 }

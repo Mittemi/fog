@@ -16,6 +16,11 @@
 
     <logger name="org.springframework.boot.SpringApplication" level="DEBUG"/>
 
+    <springProfile name="!debug">
+        <logger name="com.netflix.discovery" level="ERROR"/>
+        <logger name="org.springframework.cloud.netflix.eureka" level="ERROR"/>
+    </springProfile>
+
     <!--<springProfile name="!local">-->
     <!--<logger name="AccessLog" level="TRACE" additivity="false">-->
     <!--<appender-ref ref="JSON"/>-->
