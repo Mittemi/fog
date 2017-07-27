@@ -10,6 +10,8 @@ public class CreateContainerRequest {
 
     private String image;
 
+    private String name;
+
     private List<PortInfo> portInfos = new LinkedList<>();
 
     private List<String> environment = new LinkedList<>();
@@ -66,5 +68,13 @@ public class CreateContainerRequest {
 
     public void setVolumes(List<VolumeInfo> volumes) {
         this.volumes = volumes;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

@@ -11,6 +11,8 @@ public class DockerImageMetadata extends MetadataBase {
 
     private String image;
 
+    private String applicationName;
+
     private String tag;
 
     private boolean isEurekaEnabled;
@@ -105,5 +107,13 @@ public class DockerImageMetadata extends MetadataBase {
 
     public void setEnableDebugging(boolean enableDebugging) {
         this.enableDebugging = enableDebugging;
+    }
+
+    public String getApplicationName() {
+        return applicationName;
+    }
+
+    public void setApplicationName(String applicationName) {
+        this.applicationName = applicationName;
     }
 }
