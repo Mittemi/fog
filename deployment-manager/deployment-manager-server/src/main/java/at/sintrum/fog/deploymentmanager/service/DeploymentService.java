@@ -13,6 +13,7 @@ import org.springframework.util.StringUtils;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Created by Michael Mittermayr on 02.06.2017.
@@ -25,6 +26,8 @@ public class DeploymentService {
     public static final String EUREKA_CLIENT_IP = "EUREKA_CLIENT_IP";
     public static final String FOG_BASE_URL = "FOG_BASE_URL";
     public static final String METADATA_ID = "METADATA_ID";
+    public static final String APP_NAME = "APP_NAME";
+
     private Logger LOG = LoggerFactory.getLogger(DeploymentService.class);
 
     private final EnvironmentInfoService environmentInfoService;
@@ -57,6 +60,8 @@ public class DeploymentService {
 
     public CreateContainerRequest buildCreateContainerRequest(DockerImageMetadata imageMetadata) {
         CreateContainerRequest createContainerRequest = new CreateContainerRequest();
+
+        createContainerRequest.setName(imageMetadata.getApplicationName() + "_" + UUID.randomUUID());
 
         setEnvironment(imageMetadata, createContainerRequest);
         enableServiceProfile(createContainerRequest, environmentInfoService.getServiceProfile());
@@ -95,6 +100,7 @@ public class DeploymentService {
         }
         addDynamicEnvironmentKey(environment, FOG_BASE_URL, environmentInfoService.getFogBaseUrl());
         addDynamicEnvironmentKey(environment, METADATA_ID, imageMetadata.getId());
+        addDynamicEnvironmentKey(environment, APP_NAME, imageMetadata.getApplicationName());
 
         createContainerRequest.setEnvironment(environment);
     }

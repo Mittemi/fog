@@ -116,6 +116,9 @@ public class DockerServiceImpl implements DockerService {
             CreateContainerCmd createContainerCmd = dockerClient.createContainerCmd(createContainerRequest.getImage());
             createContainerCmd.withTty(createContainerRequest.isWithTty());
             createContainerCmd.withEnv(createContainerRequest.getEnvironment());
+            if (!StringUtils.isEmpty(createContainerRequest.getName())) {
+                createContainerCmd.withName(createContainerRequest.getName());
+            }
             if (!StringUtils.isEmpty(createContainerRequest.getRestartPolicy())) {
                 createContainerCmd.withRestartPolicy(RestartPolicy.parse(createContainerRequest.getRestartPolicy()));
             }

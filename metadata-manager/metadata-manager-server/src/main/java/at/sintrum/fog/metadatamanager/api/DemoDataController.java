@@ -7,7 +7,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Created by Michael Mittermayr on 08.07.2017.
@@ -25,17 +27,24 @@ public class DemoDataController {
     }
 
     @RequestMapping(value = "reset", method = RequestMethod.POST)
-    public DockerImageMetadata reset() {
+    public List<DockerImageMetadata> reset() {
         containerMetadataService.deleteAll();
         imageMetadataService.deleteAll();
+        return Arrays.asList(
+                createImageMetadata("test-application", 10000, true),
+                createImageMetadata("test-application", 10000, false),
+                createImageMetadata("another-application", 10001, false));
+    }
 
+    private DockerImageMetadata createImageMetadata(String name, int port, boolean enableDebug) {
         DockerImageMetadata imageMetadata = new DockerImageMetadata();
         imageMetadata.setImage("deb.hw.sintrum.at:5000/test-application");
+        imageMetadata.setApplicationName(name);
         imageMetadata.setTag("latest");
         imageMetadata.setEurekaEnabled(true);
-        imageMetadata.setEnableDebugging(true);
-        imageMetadata.setEnvironment(Collections.singletonList("SERVER_PORT=10000"));
-        imageMetadata.setPorts(Collections.singletonList(10000));
+        imageMetadata.setEnableDebugging(enableDebug);
+        imageMetadata.setEnvironment(Collections.singletonList("SERVER_PORT=" + port));
+        imageMetadata.setPorts(Collections.singletonList(port));
         imageMetadata.setAppStorageDirectory("/app/storage");
 
         return imageMetadataService.store(imageMetadata);
