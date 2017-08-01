@@ -2,6 +2,7 @@ package at.sintrum.fog.deploymentmanager.service;
 
 import at.sintrum.fog.deploymentmanager.api.dto.*;
 import at.sintrum.fog.deploymentmanager.config.DeploymentManagerConfigProperties;
+import at.sintrum.fog.deploymentmanager.utils.TarUtils;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.*;
 import com.github.dockerjava.api.model.*;
@@ -13,6 +14,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -317,20 +320,38 @@ public class DockerServiceImpl implements DockerService {
                 return false;
             }
 
+            try (InputStream sourceFileStream = dockerClient.copyArchiveFromContainerCmd(sourceContainerInfo.getId(), sourceDirectory).withHostPath(sourceDirectory).exec()) {
 
-            //TODO: impl. merge archives
+                if (sourceFileStream == null) {
+                    LOG.warn("Failed to get source files");
+                    return false;
+                }
 
-            try (InputStream exec = dockerClient.copyArchiveFromContainerCmd(sourceContainerInfo.getId(), sourceDirectory).withHostPath(sourceDirectory).exec()) {
+                try (InputStream targetFileStream = dockerClient.copyArchiveFromContainerCmd(targetContainerInfo.getId(), targetDirectory).withHostPath(targetDirectory).exec()) {
 
-                dockerClient.copyArchiveToContainerCmd(targetContainerInfo.getId())
-                        .withTarInputStream(exec)
-                        .withNoOverwriteDirNonDir(false)
-                        .withDirChildrenOnly(true)
-                        .withRemotePath(targetDirectory)
-                        .exec();
-//                try (FileOutputStream fo = new FileOutputStream("C:\\temp\\test.tar")) {
-//                    StreamUtils.copy(exec, fo);
-//                }
+                    if (targetFileStream == null) {
+                        LOG.warn("Failed to get target files");
+                        return false;
+                    }
+
+                    try (ByteArrayOutputStream mergedOutput = TarUtils.mergeArchives(sourceFileStream, targetFileStream)) {
+
+                        if (mergedOutput == null) {
+                            LOG.warn("Failed to merge archives");
+                            return false;
+                        }
+
+                        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(mergedOutput.toByteArray())) {
+                            dockerClient.copyArchiveToContainerCmd(targetContainerInfo.getId())
+                                    .withTarInputStream(inputStream)
+                                    .withNoOverwriteDirNonDir(false)
+                                    .withDirChildrenOnly(true)
+                                    .withRemotePath(targetDirectory)
+                                    .exec();
+
+                        }
+                    }
+                }
             }
 
             return true;

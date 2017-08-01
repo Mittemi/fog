@@ -119,7 +119,6 @@ public class DeploymentService {
 
     private void setImage(DockerImageMetadata imageMetadata, CreateContainerRequest createContainerRequest) {
 
-        //TODO: use same method as in dockerClient
         String prefix = getRepositoryName(imageMetadata.getImage());
 
         if (!StringUtils.isEmpty(imageMetadata.getTag())) {
@@ -136,8 +135,11 @@ public class DeploymentService {
             if (imageName.contains("/")) {
                 LOG.error("Invalid repository link");
             }
-            //TODO: prevent double /
-            imageName = deploymentManagerConfigProperties.getRegistry() + "/" + imageName;
+            String result = deploymentManagerConfigProperties.getRegistry();
+            if (!result.endsWith("/")) {
+                result = result + "/";
+            }
+            imageName = result + imageName;
         }
 
         int idx = imageName.lastIndexOf("/");
