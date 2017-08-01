@@ -79,6 +79,14 @@
                 <version>4.9</version>
             </dependency>
 
+            <!--Archive-->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-compress</artifactId>
+                <version>1.14</version>
+            </dependency>
+
+
             <!--Docker-->
             <dependency>
                 <groupId>com.github.docker-java</groupId>
