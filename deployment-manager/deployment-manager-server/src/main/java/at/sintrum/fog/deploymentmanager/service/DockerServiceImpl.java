@@ -131,7 +131,7 @@ public class DockerServiceImpl implements DockerService {
             //TODO: bind exposed ports dynamically
 
             CreateContainerResponse response = createContainerCmd.exec();
-            return new CreateContainerResult(response.getId(), response.getWarnings());
+            return new CreateContainerResult(response.getId(), response.getWarnings(), createContainerRequest.getInstanceId());
         } catch (Exception ex) {
             LOG.error("Create container failed", ex);
             return null;

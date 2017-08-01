@@ -64,12 +64,12 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
     private static final Logger LOG = LoggerFactory.getLogger(ApplicationManagerServiceImpl.class);
 
 
-    private FogOperationResult moveContainerToRemote(ApplicationMoveRequest applicationMoveRequest, DockerImageMetadata imageMetadata) {
+    private FogOperationResult moveContainerToRemote(ApplicationMoveRequest applicationMoveRequest, DockerImageMetadata imageMetadata, String instanceId) {
         at.sintrum.fog.deploymentmanager.client.api.ApplicationManager applicationManagerClient = clientFactory.createApplicationManagerClient(applicationMoveRequest.getTargetFog());
         FogOperationResult fogOperationResult = null;
 
         try {
-            ApplicationStartRequest startRequest = new ApplicationStartRequest(imageMetadata.getId());
+            ApplicationStartRequest startRequest = new ApplicationStartRequest(imageMetadata.getId(), instanceId);
             startRequest.setSkipPull(false);
 
             fogOperationResult = applicationManagerClient.requestApplicationStart(startRequest);
@@ -104,6 +104,13 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
     @Async
     @Override
     public Future<FogOperationResult> start(ApplicationStartRequest applicationStartRequest) {
+
+        if (StringUtils.isEmpty(applicationStartRequest.getInstanceId())) {
+            String instanceId = UUID.randomUUID().toString();
+            LOG.debug("Generate new instance id for application: " + instanceId);
+            applicationStartRequest.setInstanceId(instanceId);
+        }
+
         return new AsyncResult<>(performStart(applicationStartRequest));
     }
 
@@ -138,7 +145,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
             return new FogOperationResult(null, false, environmentInfoService.getFogBaseUrl(), "Failed to pull image");
         }
 
-        CreateContainerRequest createContainerRequest = deploymentService.buildCreateContainerRequest(imageMetadata);
+        CreateContainerRequest createContainerRequest = deploymentService.buildCreateContainerRequest(imageMetadata, applicationStartRequest.getInstanceId());
 
         if (environmentInfoService.isCloud()) {
             LOG.info("Cloud environment: Start application in standby mode!");
@@ -167,7 +174,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
             LOG.warn("Warnings during container creation. ID: " + container.getId() + "\n" + String.join("\n, ", container.getWarnings()));
         }
 
-        DockerContainerMetadata containerMetadata = new DockerContainerMetadata(container.getId(), imageMetadata.getId(), environmentInfoService.getFogId());
+        DockerContainerMetadata containerMetadata = new DockerContainerMetadata(container.getId(), imageMetadata.getId(), environmentInfoService.getFogId(), container.getInstanceId());
         containerMetadataApi.store(containerMetadata);
 
         return new FogOperationResult(container.getId(), true, environmentInfoService.getFogBaseUrl());
@@ -220,6 +227,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
             if (!imageMetadata.isStateless()) {
                 String tag = "checkpoint_" + UUID.randomUUID().toString();
 
+                //TODO: merge filesystem layers for the commit.
                 CommitContainerResult checkpoint = dockerService.commitContainer(new CommitContainerRequest(applicationMoveRequest.getContainerId(), Collections.singletonList(tag)));
 
                 if (checkpoint == null) {
@@ -233,7 +241,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
                 imageMetadata = imageMetadataApi.createCheckpoint(imageMetadata.getId(), tag);
             }
 
-            return moveContainerToRemote(applicationMoveRequest, imageMetadata);
+            return moveContainerToRemote(applicationMoveRequest, imageMetadata, containerMetadata.getInstanceId());
         }
     }
 
@@ -295,7 +303,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
             }
 
             // create image for new version
-            FogOperationResult fogOperationResult = createContainer(new ApplicationStartRequest(imageMetadata.getId()), imageMetadata);
+            FogOperationResult fogOperationResult = createContainer(new ApplicationStartRequest(imageMetadata.getId(), containerMetadata.getInstanceId()), imageMetadata);
             if (!fogOperationResult.isSuccessful()) {
                 return fogOperationResult;
             }

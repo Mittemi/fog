@@ -7,11 +7,14 @@ public class CreateContainerResult {
 
     private String id;
 
+    private String instanceId;
+
     private String[] warnings;
 
-    public CreateContainerResult(String id, String[] warnings) {
+    public CreateContainerResult(String id, String[] warnings, String instanceId) {
         this.id = id;
         this.warnings = warnings;
+        this.instanceId = instanceId;
     }
 
     public CreateContainerResult() {
@@ -31,5 +34,13 @@ public class CreateContainerResult {
 
     public void setWarnings(String[] warnings) {
         this.warnings = warnings;
+    }
+
+    public String getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(String instanceId) {
+        this.instanceId = instanceId;
     }
 }

@@ -26,6 +26,7 @@ public class EnvironmentInfoServiceImpl implements EnvironmentInfoService {
     private final String applicationName;
     private final String serviceProfile;
     private final String metadataId;
+    private final String instanceId;
     private final Environment environment;
 
     public EnvironmentInfoServiceImpl(FogApplicationConfigProperties fogApplicationConfigProperties,
@@ -36,6 +37,7 @@ public class EnvironmentInfoServiceImpl implements EnvironmentInfoService {
                                       @Value("${spring.application.name}") String applicationName,
                                       @Value("${SERVICE_PROFILE:UNKNOWN}") String serviceProfile,
                                       @Value("${METADATA_ID:UNKNOWN}") String metadataId,
+                                      @Value("${INSTANCE_ID:UNKNOWN}") String instanceId,
                                       Environment environment) {
         this.fogApplicationConfigProperties = fogApplicationConfigProperties;
         this.eurekaServiceUrl = eurekaServiceUrl;
@@ -44,6 +46,7 @@ public class EnvironmentInfoServiceImpl implements EnvironmentInfoService {
         this.applicationName = applicationName;
         this.serviceProfile = serviceProfile;
         this.metadataId = metadataId;
+        this.instanceId = instanceId;
         this.environment = environment;
 
         String activeProfiles = String.join(", ", environment.getActiveProfiles());
@@ -89,6 +92,11 @@ public class EnvironmentInfoServiceImpl implements EnvironmentInfoService {
     }
 
     @Override
+    public boolean hasServiceProfile(String profile) {
+        return getServiceProfile().contains(profile);
+    }
+
+    @Override
     public String getMetadataId() {
         return metadataId;
     }
@@ -115,7 +123,7 @@ public class EnvironmentInfoServiceImpl implements EnvironmentInfoService {
 
     @Override
     public String getFogId() {
-        return eurekaClientIP + ":" + serverPort;      //TODO: check if this could get trimmed
+        return eurekaClientIP + ":" + serverPort;
     }
 
     private String getHostname() {
@@ -157,5 +165,10 @@ public class EnvironmentInfoServiceImpl implements EnvironmentInfoService {
 
     public String getApplicationName() {
         return applicationName;
+    }
+
+    @Override
+    public String getInstanceId() {
+        return instanceId;
     }
 }

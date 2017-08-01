@@ -1,6 +1,7 @@
 package at.sintrum.fog.metadatamanager.api;
 
 import at.sintrum.fog.metadatamanager.api.dto.DockerImageMetadata;
+import at.sintrum.fog.metadatamanager.service.ApplicationStateMetadataService;
 import at.sintrum.fog.metadatamanager.service.ContainerMetadataService;
 import at.sintrum.fog.metadatamanager.service.ImageMetadataService;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,16 +21,20 @@ public class DemoDataController {
 
     private final ContainerMetadataService containerMetadataService;
     private final ImageMetadataService imageMetadataService;
+    private final ApplicationStateMetadataService applicationStateMetadataService;
 
-    public DemoDataController(ContainerMetadataService containerMetadataService, ImageMetadataService imageMetadataService) {
+    public DemoDataController(ContainerMetadataService containerMetadataService, ImageMetadataService imageMetadataService, ApplicationStateMetadataService applicationStateMetadataService) {
         this.containerMetadataService = containerMetadataService;
         this.imageMetadataService = imageMetadataService;
+        this.applicationStateMetadataService = applicationStateMetadataService;
     }
 
     @RequestMapping(value = "reset", method = RequestMethod.POST)
     public List<DockerImageMetadata> reset() {
         containerMetadataService.deleteAll();
         imageMetadataService.deleteAll();
+        applicationStateMetadataService.deleteAll();
+
         return Arrays.asList(
                 createImageMetadata("test-application", 10000, true),
                 createImageMetadata("test-application", 10000, false),

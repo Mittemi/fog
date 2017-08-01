@@ -13,5 +13,7 @@ public interface TravelingCoordinationService {
 
     FogIdentification getNextTarget();
 
-    boolean finishMove(FogIdentification fogIdentification);
+    boolean startMove(FogIdentification target);
+
+    boolean finishMove(FogIdentification currentFog);
 }

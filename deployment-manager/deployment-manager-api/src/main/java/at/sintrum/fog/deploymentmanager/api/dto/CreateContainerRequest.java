@@ -12,6 +12,8 @@ public class CreateContainerRequest {
 
     private String name;
 
+    private String instanceId;
+
     private List<PortInfo> portInfos = new LinkedList<>();
 
     private List<String> environment = new LinkedList<>();
@@ -76,5 +78,13 @@ public class CreateContainerRequest {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(String instanceId) {
+        this.instanceId = instanceId;
     }
 }

@@ -7,10 +7,13 @@ public class ApplicationStartRequest {
 
     private String metadataId;
 
+    private String instanceId;
+
     private boolean skipPull;
 
-    public ApplicationStartRequest(String metadataId) {
+    public ApplicationStartRequest(String metadataId, String instanceId) {
         this.metadataId = metadataId;
+        this.instanceId = instanceId;
     }
 
     public ApplicationStartRequest() {
@@ -30,5 +33,13 @@ public class ApplicationStartRequest {
 
     public void setSkipPull(boolean skipPull) {
         this.skipPull = skipPull;
+    }
+
+    public String getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(String instanceId) {
+        this.instanceId = instanceId;
     }
 }

@@ -1,6 +1,6 @@
 package at.sintrum.fog.application.api;
 
-import at.sintrum.fog.application.core.service.MoveApplicationService;
+import at.sintrum.fog.application.core.service.ApplicationLifecycleService;
 import at.sintrum.fog.application.model.MoveApplicationRequest;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -13,16 +13,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(value = "/app")
 public class ApplicationController {
 
-    private final MoveApplicationService moveApplicationService;
+    private final ApplicationLifecycleService applicationLifecycleService;
 
-    public ApplicationController(MoveApplicationService moveApplicationService) {
-        this.moveApplicationService = moveApplicationService;
+    public ApplicationController(ApplicationLifecycleService applicationLifecycleService) {
+        this.applicationLifecycleService = applicationLifecycleService;
     }
 
 
     @RequestMapping(value = "move", method = RequestMethod.POST)
     public void moveApplication(MoveApplicationRequest moveApplicationRequest) {
-        moveApplicationService.moveApplication(moveApplicationRequest.getTarget());
+        applicationLifecycleService.moveApplication(moveApplicationRequest.getTarget());
     }
 
 }

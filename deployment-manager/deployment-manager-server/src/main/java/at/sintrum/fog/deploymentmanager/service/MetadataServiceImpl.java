@@ -52,13 +52,13 @@ public class MetadataServiceImpl {
     public List<ApplicationStartRequest> getUnfinishedStartupRequests() {
         List<ApplicationStartRequest> startRequestList = new LinkedList<>();
         for (String id : getStartQueue().readAll()) {
-            ApplicationStartRequest applicationStartRequest = new ApplicationStartRequest(id);
-            RAtomicLong startRequestState = getStartRequestState(applicationStartRequest);
-            if (startRequestState.isExists()) {
-                if (startRequestState.get() != AppState.Done.value) {
-                    startRequestList.add(applicationStartRequest);
-                }
-            }
+//            ApplicationStartRequest applicationStartRequest = new ApplicationStartRequest(id);
+//            RAtomicLong startRequestState = getStartRequestState(applicationStartRequest);
+//            if (startRequestState.isExists()) {
+//                if (startRequestState.get() != AppState.Done.value) {
+//                    startRequestList.add(applicationStartRequest);
+//                }
+//            }
         }
         return startRequestList;
     }

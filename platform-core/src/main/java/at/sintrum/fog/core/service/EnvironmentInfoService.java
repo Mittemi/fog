@@ -21,9 +21,13 @@ public interface EnvironmentInfoService {
 
     String getServiceProfile();
 
+    boolean hasServiceProfile(String profile);
+
     String getMetadataId();
 
     boolean isCloud();
 
     String getApplicationName();
+
+    String getInstanceId();
 }

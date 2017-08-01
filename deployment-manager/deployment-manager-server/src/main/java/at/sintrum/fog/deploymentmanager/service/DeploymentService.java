@@ -27,6 +27,7 @@ public class DeploymentService {
     public static final String FOG_BASE_URL = "FOG_BASE_URL";
     public static final String METADATA_ID = "METADATA_ID";
     public static final String APP_NAME = "APP_NAME";
+    public static final String INSTANCE_ID = "INSTANCE_ID";
 
     private Logger LOG = LoggerFactory.getLogger(DeploymentService.class);
 
@@ -58,10 +59,11 @@ public class DeploymentService {
         }
     }
 
-    public CreateContainerRequest buildCreateContainerRequest(DockerImageMetadata imageMetadata) {
+    public CreateContainerRequest buildCreateContainerRequest(DockerImageMetadata imageMetadata, String instanceId) {
         CreateContainerRequest createContainerRequest = new CreateContainerRequest();
 
         createContainerRequest.setName(imageMetadata.getApplicationName() + "_" + UUID.randomUUID());
+        createContainerRequest.setInstanceId(instanceId);
 
         setEnvironment(imageMetadata, createContainerRequest);
         enableServiceProfile(createContainerRequest, environmentInfoService.getServiceProfile());
@@ -101,6 +103,7 @@ public class DeploymentService {
         addDynamicEnvironmentKey(environment, FOG_BASE_URL, environmentInfoService.getFogBaseUrl());
         addDynamicEnvironmentKey(environment, METADATA_ID, imageMetadata.getId());
         addDynamicEnvironmentKey(environment, APP_NAME, imageMetadata.getApplicationName());
+        addDynamicEnvironmentKey(environment, INSTANCE_ID, createContainerRequest.getInstanceId());
 
         createContainerRequest.setEnvironment(environment);
     }
