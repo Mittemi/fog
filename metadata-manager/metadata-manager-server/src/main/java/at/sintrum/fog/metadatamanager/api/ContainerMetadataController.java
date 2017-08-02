@@ -44,4 +44,9 @@ public class ContainerMetadataController implements ContainerMetadataApi {
     public void reset() {
         metadataService.deleteAll();
     }
+
+    @Override
+    public List<DockerContainerMetadata> getByInstanceId(@PathVariable("instanceId") String instanceId) {
+        return metadataService.getByInstance(instanceId);
+    }
 }

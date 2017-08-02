@@ -1,6 +1,6 @@
 package at.sintrum.fog.applicationhousing.service;
 
-import com.netflix.appinfo.EurekaInstanceConfig;
+import at.sintrum.fog.metadatamanager.api.ApplicationStateMetadataApi;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,11 +23,13 @@ public class ApplicationRecoveryImpl {
 
     private boolean isCheckRunning = false;
     private DiscoveryClient discoveryClient;
+    private final ApplicationStateMetadataApi applicationStateMetadataApi;
 
     private final Map<String, AppRuntimeMetadata> appRuntimeMetadata;
 
-    public ApplicationRecoveryImpl(DiscoveryClient discoveryClient, EurekaInstanceConfig instanceConfig) {
+    public ApplicationRecoveryImpl(DiscoveryClient discoveryClient, ApplicationStateMetadataApi applicationStateMetadataApi) {
         this.discoveryClient = discoveryClient;
+        this.applicationStateMetadataApi = applicationStateMetadataApi;
         appRuntimeMetadata = new HashMap<>();
     }
 

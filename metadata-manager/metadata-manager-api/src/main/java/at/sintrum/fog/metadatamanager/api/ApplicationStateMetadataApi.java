@@ -1,5 +1,6 @@
 package at.sintrum.fog.metadatamanager.api;
 
+import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.metadatamanager.api.dto.AppState;
 import at.sintrum.fog.metadatamanager.api.dto.ApplicationStateMetadata;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,7 +25,7 @@ public interface ApplicationStateMetadataApi {
     @RequestMapping(value = "{id}", method = RequestMethod.DELETE)
     void delete(@PathVariable("id") String id);
 
-    @RequestMapping(value = "{fogId}", method = RequestMethod.GET)
+    @RequestMapping(value = "", method = RequestMethod.GET)
     List<ApplicationStateMetadata> getAll();
 
     @RequestMapping(value = "setState/{id}/{state}", method = RequestMethod.POST)
@@ -32,4 +33,7 @@ public interface ApplicationStateMetadataApi {
 
     @RequestMapping(value = "reset", method = RequestMethod.POST)
     void reset();
+
+    @RequestMapping(value = "getByFog", method = RequestMethod.POST)
+    List<ApplicationStateMetadata> getByFog(@RequestBody FogIdentification fogIdentification);
 }

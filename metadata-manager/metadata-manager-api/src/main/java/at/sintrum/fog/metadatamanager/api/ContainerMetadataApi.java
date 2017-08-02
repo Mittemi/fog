@@ -27,4 +27,7 @@ public interface ContainerMetadataApi {
 
     @RequestMapping(value = "reset", method = RequestMethod.POST)
     void reset();
+
+    @RequestMapping(value = "getByInstanceId/{instanceId}", method = RequestMethod.GET)
+    List<DockerContainerMetadata> getByInstanceId(@PathVariable("instanceId") String instanceId);
 }

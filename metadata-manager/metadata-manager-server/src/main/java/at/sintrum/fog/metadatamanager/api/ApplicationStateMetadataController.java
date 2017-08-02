@@ -1,5 +1,6 @@
 package at.sintrum.fog.metadatamanager.api;
 
+import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.metadatamanager.api.dto.AppState;
 import at.sintrum.fog.metadatamanager.api.dto.ApplicationStateMetadata;
 import at.sintrum.fog.metadatamanager.service.ApplicationStateMetadataService;
@@ -49,5 +50,10 @@ public class ApplicationStateMetadataController implements ApplicationStateMetad
     @Override
     public void reset() {
         applicationStateMetadataService.deleteAll();
+    }
+
+    @Override
+    public List<ApplicationStateMetadata> getByFog(FogIdentification fogIdentification) {
+        return applicationStateMetadataService.getManagedByFog(fogIdentification);
     }
 }

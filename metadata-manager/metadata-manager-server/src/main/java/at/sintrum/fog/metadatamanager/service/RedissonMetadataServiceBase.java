@@ -8,6 +8,7 @@ import org.redisson.api.RedissonClient;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by Michael Mittermayr on 22.07.2017.
@@ -18,6 +19,10 @@ public abstract class RedissonMetadataServiceBase<TModel extends MetadataBase> i
 
     private final RedissonClient redissonClient;
     private final Class<TModel> modelClazz;
+
+    protected RedissonClient getRedissonClient() {
+        return redissonClient;
+    }
 
     RedissonMetadataServiceBase(RedissonClient redissonClient, Class<TModel> modelClazz) {
         this.redissonClient = redissonClient;
@@ -48,6 +53,10 @@ public abstract class RedissonMetadataServiceBase<TModel extends MetadataBase> i
 
     private RSet<String> getFogNames() {
         return redissonClient.getSet("Metadata.Map.Fogs");
+    }
+
+    protected List<TModel> toFlatList() {
+        return getFogNames().stream().map(this::getAll).flatMap(List::stream).collect(Collectors.toList());
     }
 
     String getListName(String fogName) {
