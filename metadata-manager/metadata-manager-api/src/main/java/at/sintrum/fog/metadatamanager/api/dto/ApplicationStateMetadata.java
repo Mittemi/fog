@@ -8,6 +8,7 @@ import at.sintrum.fog.core.dto.FogIdentification;
 public class ApplicationStateMetadata extends MetadataBase {
 
     private String instanceId;
+    private int port;
     private FogIdentification runningAt;
     private FogIdentification nextTarget;
     private AppState state;
@@ -19,8 +20,9 @@ public class ApplicationStateMetadata extends MetadataBase {
         this.instanceId = instanceId;
     }
 
-    public ApplicationStateMetadata(String instanceId, FogIdentification runningAt, AppState state) {
+    public ApplicationStateMetadata(String instanceId, int port, FogIdentification runningAt, AppState state) {
         this.instanceId = instanceId;
+        this.port = port;
         this.runningAt = runningAt;
         this.state = state;
     }
@@ -55,5 +57,13 @@ public class ApplicationStateMetadata extends MetadataBase {
 
     public void setNextTarget(FogIdentification nextTarget) {
         this.nextTarget = nextTarget;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
     }
 }

@@ -33,6 +33,12 @@ public class ApplicationStateMetadataController implements ApplicationStateMetad
     }
 
     @Override
+    public FogIdentification getApplicationUrl(@PathVariable("id") String id) {
+        ApplicationStateMetadata state = getById(id);
+        return new FogIdentification(state.getRunningAt().getIp(), state.getPort());
+    }
+
+    @Override
     public void delete(@PathVariable("id") String id) {
         applicationStateMetadataService.delete(null, id);
     }

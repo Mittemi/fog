@@ -19,4 +19,4 @@ management.security.enabled: false
 endpoints.shutdown.enabled: true
 
 fog.app:
-  deploymentManagerUrl: ${FOG_BASE_URL:http://deployment-manager}
+  enable-simulation-mode: false

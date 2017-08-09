@@ -32,16 +32,24 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
     private final AppEvolution appEvolution;
 
     private final ApplicationStateMetadataApi applicationStateMetadataClient;
+    private final SimulationClientService simulationClientService;
 
     private final Logger LOG = LoggerFactory.getLogger(ApplicationLifecycleServiceImpl.class);
 
-    public ApplicationLifecycleServiceImpl(EnvironmentInfoService environmentInfoService, ApplicationManager applicationManager, TravelingCoordinationService travelingCoordinationService, CloudLocatorService cloudLocatorService, AppEvolution appEvolution, ApplicationStateMetadataApi applicationStateMetadataClient) {
+    public ApplicationLifecycleServiceImpl(EnvironmentInfoService environmentInfoService,
+                                           ApplicationManager applicationManager,
+                                           TravelingCoordinationService travelingCoordinationService,
+                                           CloudLocatorService cloudLocatorService,
+                                           AppEvolution appEvolution,
+                                           ApplicationStateMetadataApi applicationStateMetadataClient,
+                                           SimulationClientService simulationClientService) {
         this.environmentInfoService = environmentInfoService;
         this.applicationManager = applicationManager;
         this.travelingCoordinationService = travelingCoordinationService;
         this.cloudLocatorService = cloudLocatorService;
         this.appEvolution = appEvolution;
         this.applicationStateMetadataClient = applicationStateMetadataClient;
+        this.simulationClientService = simulationClientService;
     }
 
     @Override
@@ -50,6 +58,9 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
 
         setMovingStateMetadata(target);
         travelingCoordinationService.startMove(target);
+        // BEGIN Simulation
+        simulationClientService.notifyMove(target);
+        // END Simulation
         applicationManager.moveApplication(new ApplicationMoveRequest(environmentInfoService.getOwnContainerId(), target.toUrl()));
     }
 
@@ -115,26 +126,42 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
+        //TODO: pass right fogIdentification to simulation client (currently it is only the DM but we want the app itself sometimes)
         FogIdentification fogIdentification = getFogIdentification();
         ApplicationStateMetadata stateMetadata = applicationStateMetadataClient.getById(environmentInfoService.getInstanceId());
 
         if (stateMetadata == null) {
             LOG.debug("First app start. Create state metadata for instance: " + environmentInfoService.getInstanceId());
-            applicationStateMetadataClient.store(new ApplicationStateMetadata(environmentInfoService.getInstanceId(), fogIdentification, getAppState()));
+            applicationStateMetadataClient.store(new ApplicationStateMetadata(environmentInfoService.getInstanceId(), environmentInfoService.getPort(), fogIdentification, getAppState()));
+            // BEGIN Simulation
+            simulationClientService.notifyStarting();
+            // END Simulation
         } else {
             switch (stateMetadata.getState()) {
                 case Running:
+                    // BEGIN Simulation
+                    simulationClientService.notifyRunning();
+                    // END Simulation
                     break;
                 case Standby:
+                    // BEGIN Simulation
+                    simulationClientService.notifyStandby();
+                    // END Simulation
                     break;
                 case Upgrade:
                     LOG.debug("App upgrade finished for instanceId: " + environmentInfoService.getInstanceId());
                     updateAppState(fogIdentification, null, stateMetadata);
+                    // BEGIN Simulation
+                    simulationClientService.notifyUpgrade();
+                    // END Simulation
                     break;
                 case Moving:
                     LOG.debug("App move finished for instanceId: " + environmentInfoService.getInstanceId());
                     travelingCoordinationService.finishMove(fogIdentification);
                     updateAppState(fogIdentification, null, stateMetadata);
+                    // BEGIN Simulation
+                    simulationClientService.notifyMoved();
+                    // END Simulation
                     break;
             }
         }

@@ -22,6 +22,11 @@
             <groupId>at.sintrum.fog</groupId>
             <artifactId>platform-swagger</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>at.sintrum.fog</groupId>
+            <artifactId>test-application-api</artifactId>
+        </dependency>
     </dependencies>
 
 

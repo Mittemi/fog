@@ -32,7 +32,14 @@ public class TravelingCoordinationServiceImpl implements TravelingCoordinationSe
     public boolean requestMove(FogIdentification fogIdentification) {
 
         try {
-            getTravelQueue().add(fogIdentification);
+            RQueue<FogIdentification> travelQueue = getTravelQueue();
+
+            if (travelQueue.readAll().stream().anyMatch(x -> x.isSameFog(fogIdentification))) {
+                LOG.warn("Travel-Queue already contains this a move request from fog: " + fogIdentification.toFogId());
+                return false;
+            }
+
+            travelQueue.add(fogIdentification);
             return true;
         } catch (Exception ex) {
             LOG.error("Failed to add to request queue", ex);

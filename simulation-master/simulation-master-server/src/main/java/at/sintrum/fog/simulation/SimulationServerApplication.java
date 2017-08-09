@@ -1,6 +1,10 @@
 package at.sintrum.fog.simulation;
 
+import at.sintrum.fog.application.client.TestApplicationClientConfig;
+import at.sintrum.fog.applicationhousing.client.ApplicationHousingClientConfig;
 import at.sintrum.fog.core.PlatformCoreConfig;
+import at.sintrum.fog.deploymentmanager.client.DeploymentManagerClientConfig;
+import at.sintrum.fog.metadatamanager.client.MetadataManagerClientConfig;
 import at.sintrum.fog.redis.RedissonConfig;
 import at.sintrum.fog.servercore.ServerCoreConfig;
 import at.sintrum.fog.swagger.SwaggerConfig;
@@ -16,7 +20,17 @@ import org.springframework.context.annotation.Import;
 @Configuration
 @EnableAutoConfiguration
 @SpringBootApplication
-@Import({RedissonConfig.class, SwaggerConfig.class, PlatformCoreConfig.class, ServerCoreConfig.class})
+@Import({
+        RedissonConfig.class,
+        SwaggerConfig.class,
+        PlatformCoreConfig.class,
+        ServerCoreConfig.class,
+
+        DeploymentManagerClientConfig.class,
+        MetadataManagerClientConfig.class,
+        ApplicationHousingClientConfig.class,
+        TestApplicationClientConfig.class
+})
 public class SimulationServerApplication {
 
     public static void main(String[] args) {

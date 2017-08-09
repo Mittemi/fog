@@ -1,6 +1,6 @@
 package at.sintrum.fog.core.service;
 
-import at.sintrum.fog.core.config.FogApplicationConfigProperties;
+import at.sintrum.fog.core.dto.FogIdentification;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
@@ -18,7 +18,6 @@ import java.util.Scanner;
 public class EnvironmentInfoServiceImpl implements EnvironmentInfoService {
 
     private final org.slf4j.Logger LOG = LoggerFactory.getLogger(EnvironmentInfoServiceImpl.class);
-    private final FogApplicationConfigProperties fogApplicationConfigProperties;
     private final String fogBaseUrl;
     private final String eurekaServiceUrl;
     private final String eurekaClientIP;
@@ -27,10 +26,8 @@ public class EnvironmentInfoServiceImpl implements EnvironmentInfoService {
     private final String serviceProfile;
     private final String metadataId;
     private final String instanceId;
-    private final Environment environment;
 
-    public EnvironmentInfoServiceImpl(FogApplicationConfigProperties fogApplicationConfigProperties,
-                                      @Value("${FOG_BASE_URL:UNKNOWN}") String fogBaseUrl,
+    public EnvironmentInfoServiceImpl(@Value("${FOG_BASE_URL:UNKNOWN}") String fogBaseUrl,
                                       @Value("${EUREKA_SERVICE_URL:UNKNOWN}") String eurekaServiceUrl,
                                       @Value("${EUREKA_CLIENT_IP:UNKNOWN}") String eurekaClientIP,
                                       @Value("${server.port}") String serverPort,
@@ -39,7 +36,6 @@ public class EnvironmentInfoServiceImpl implements EnvironmentInfoService {
                                       @Value("${METADATA_ID:UNKNOWN}") String metadataId,
                                       @Value("${INSTANCE_ID:UNKNOWN}") String instanceId,
                                       Environment environment) {
-        this.fogApplicationConfigProperties = fogApplicationConfigProperties;
         this.eurekaServiceUrl = eurekaServiceUrl;
         this.eurekaClientIP = eurekaClientIP;
         this.serverPort = serverPort;
@@ -47,11 +43,9 @@ public class EnvironmentInfoServiceImpl implements EnvironmentInfoService {
         this.serviceProfile = serviceProfile;
         this.metadataId = metadataId;
         this.instanceId = instanceId;
-        this.environment = environment;
 
         String activeProfiles = String.join(", ", environment.getActiveProfiles());
         LOG.info("Active Profiles: " + activeProfiles);
-
 
         if ("deployment-manager".equals(applicationName) && "UNKNOWN".equals(fogBaseUrl)) {
             fogBaseUrl = "http://" + eurekaClientIP + ":" + serverPort;
@@ -84,6 +78,10 @@ public class EnvironmentInfoServiceImpl implements EnvironmentInfoService {
 
     public String getOwnUrl() {
         return "http://" + getEurekaClientIp() + ":" + serverPort;
+    }
+
+    public int getPort() {
+        return Integer.parseInt(serverPort);
     }
 
     @Override
@@ -123,7 +121,7 @@ public class EnvironmentInfoServiceImpl implements EnvironmentInfoService {
 
     @Override
     public String getFogId() {
-        return eurekaClientIP + ":" + serverPort;
+        return new FogIdentification(eurekaClientIP, Integer.parseInt(serverPort)).toFogId();
     }
 
     private String getHostname() {

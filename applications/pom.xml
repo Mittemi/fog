@@ -12,8 +12,31 @@
     <packaging>pom</packaging>
     <modules>
         <module>test-application</module>
+        <module>test-application-client</module>
+        <module>test-application-api</module>
     </modules>
     <artifactId>applications-parent</artifactId>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>at.sintrum.fog</groupId>
+                <artifactId>test-application-api</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+
+            <dependency>
+                <groupId>at.sintrum.fog</groupId>
+                <artifactId>test-application-client</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+
+            <dependency>
+                <groupId>at.sintrum.fog</groupId>
+                <artifactId>test-application</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
 </project>

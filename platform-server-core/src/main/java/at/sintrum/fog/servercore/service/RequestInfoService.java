@@ -5,4 +5,6 @@ package at.sintrum.fog.servercore.service;
  */
 public interface RequestInfoService {
     String getCallerFogId();
+
+    String getCallerServiceUrl();
 }

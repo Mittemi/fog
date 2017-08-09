@@ -22,4 +22,8 @@ public class RequestInfoServiceImpl implements RequestInfoService {
     public String getCallerFogId() {
         return servletRequest.getHeader("CallerFogId");
     }
+
+    public String getCallerServiceUrl() {
+        return "http://" + getCallerFogId();
+    }
 }

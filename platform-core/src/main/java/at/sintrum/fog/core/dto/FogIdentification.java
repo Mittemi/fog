@@ -62,6 +62,10 @@ public class FogIdentification {
         return Objects.equals(this.ip, identification.ip) && Objects.equals(this.port, identification.port);
     }
 
+    public String toFogId() {
+        return ip + ":" + port;
+    }
+
     public String toUrl() {
         return "http://" + ip + ":" + port;
     }

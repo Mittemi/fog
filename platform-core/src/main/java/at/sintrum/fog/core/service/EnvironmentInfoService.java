@@ -13,6 +13,8 @@ public interface EnvironmentInfoService {
 
     String getEurekaClientIp();
 
+    int getPort();
+
     String getFogBaseUrl();
 
     String getFogId();

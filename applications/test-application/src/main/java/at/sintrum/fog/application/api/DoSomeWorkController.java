@@ -11,9 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
  * Created by Michael Mittermayr on 15.07.2017.
  */
 @RestController
-@RequestMapping(value = "work")
 @Profile("!standby")
-public class DoSomeWorkController {
+public class DoSomeWorkController implements WorkApi {
 
     private final WorkService workService;
 

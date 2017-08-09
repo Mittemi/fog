@@ -15,13 +15,15 @@ import org.springframework.stereotype.Service;
 public class StandbyServiceImpl implements StandbyService {
 
     private final ApplicationLifecycleService applicationLifecycleService;
+    private final SimulationClientService simulationClientService;
 
     private boolean disableAppServicing;
 
     private static final Logger LOG = LoggerFactory.getLogger(StandbyServiceImpl.class);
 
-    public StandbyServiceImpl(EnvironmentInfoService environmentInfoService, ApplicationLifecycleService applicationLifecycleService) {
+    public StandbyServiceImpl(EnvironmentInfoService environmentInfoService, ApplicationLifecycleService applicationLifecycleService, SimulationClientService simulationClientService) {
         this.applicationLifecycleService = applicationLifecycleService;
+        this.simulationClientService = simulationClientService;
         if (!environmentInfoService.isCloud()) {
             LOG.error("This service should not run in non cloud environments");
         }
@@ -38,10 +40,16 @@ public class StandbyServiceImpl implements StandbyService {
         disableAppServicing = true;
         LOG.debug("Execute application servicing tasks!");
 
-        if (!applicationLifecycleService.upgradeAppIfRequired()) {
-            // no upgrade --> check if we should move
-            applicationLifecycleService.moveAppIfRequired();
+        try {
+            if (!applicationLifecycleService.upgradeAppIfRequired()) {
+                // no upgrade --> check if we should move
+                applicationLifecycleService.moveAppIfRequired();
+            }
+            // BEGIN Simulation
+            simulationClientService.sendHeartbeat();
+            // END Simulation
+        } finally {
+            disableAppServicing = false;
         }
-        disableAppServicing = false;
     }
 }

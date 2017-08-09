@@ -73,6 +73,11 @@ public class FeignClientFactoryFactoryImpl implements ClientFactoryFactory {
 
     private String fixUrl(String url, String serviceName) {
         if (StringUtils.isEmpty(url)) {
+            if (StringUtils.isEmpty(serviceName)) {
+                LOG.error("An url is required since this client doesn't support automated resolving.");
+                throw new RuntimeException("This client doesn't support automated url resolving. Please provide an URL");
+            }
+
             return "http://" + serviceName;
         }
         return url;

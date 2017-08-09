@@ -22,6 +22,9 @@ public interface ApplicationStateMetadataApi {
     @RequestMapping(value = "getById/{id}/", method = RequestMethod.GET)
     ApplicationStateMetadata getById(@PathVariable("id") String id);
 
+    @RequestMapping(value = "getUrl/{id}/", method = RequestMethod.GET)
+    FogIdentification getApplicationUrl(@PathVariable("id") String id);
+
     @RequestMapping(value = "{id}", method = RequestMethod.DELETE)
     void delete(@PathVariable("id") String id);
 
