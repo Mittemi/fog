@@ -59,6 +59,11 @@
         </dependency>
 
         <dependency>
+            <groupId>at.sintrum.fog</groupId>
+            <artifactId>simulation-master-client</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
         </dependency>
