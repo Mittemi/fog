@@ -66,7 +66,7 @@ public class WorkService {
                     String path = "/app/storage/" + UUID.randomUUID().toString();
                     file = new File(path);
                 }
-                while (!file.exists());
+                while (file.exists());
 
                 try (FileOutputStream outputStream = new FileOutputStream(file)) {
                     outputStream.write(Strings.toByteArray(result));
