@@ -49,7 +49,7 @@ public class ApplicationStateMetadataController implements ApplicationStateMetad
     }
 
     @Override
-    public ApplicationStateMetadata setState(String id, AppState state) {
+    public ApplicationStateMetadata setState(@PathVariable("id") String id, @PathVariable("state") AppState state) {
         return applicationStateMetadataService.setState(id, state);
     }
 
@@ -59,7 +59,7 @@ public class ApplicationStateMetadataController implements ApplicationStateMetad
     }
 
     @Override
-    public List<ApplicationStateMetadata> getByFog(FogIdentification fogIdentification) {
+    public List<ApplicationStateMetadata> getByFog(@RequestBody FogIdentification fogIdentification) {
         return applicationStateMetadataService.getManagedByFog(fogIdentification);
     }
 }

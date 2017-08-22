@@ -303,36 +303,45 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
             }
 
             // create image for new version
-            FogOperationResult fogOperationResult = createContainer(new ApplicationStartRequest(imageMetadata.getId(), containerMetadata.getInstanceId()), imageMetadata);
+            String newInstanceId = UUID.randomUUID().toString();
+
+            FogOperationResult fogOperationResult = createContainer(new ApplicationStartRequest(imageMetadata.getId(), newInstanceId), imageMetadata);
             if (!fogOperationResult.isSuccessful()) {
                 return fogOperationResult;
             }
 
+            String oldContainerId = applicationUpgradeRequest.getContainerId();
+            String newContainerId = fogOperationResult.getContainerId();
+
             //stop old application
-            if (containerInfo.isRunning() & !stopApplication(applicationUpgradeRequest.getApplicationUrl(), applicationUpgradeRequest.getContainerId())) {
+            if (containerInfo.isRunning() & !stopApplication(applicationUpgradeRequest.getApplicationUrl(), oldContainerId)) {
                 return new FogOperationResult(containerInfo.getId(), false, environmentInfoService.getFogBaseUrl(), "Failed to stop container");
             }
 
             //copy data
-            if (StringUtils.isEmpty(oldImageMetadata.getAppStorageDirectory())) {
-                LOG.debug("No data to migrate");
-            } else {
-                if (StringUtils.isEmpty(imageMetadata.getAppStorageDirectory())) {
-                    LOG.warn("Can't migrate data. The new app has no storage directory specified!");
-                } else {
-                    LOG.debug("Migrating data from old to new container");
-                    if (dockerService.copyOrMergeDirectory(applicationUpgradeRequest.getContainerId(), oldImageMetadata.getAppStorageDirectory(), fogOperationResult.getContainerId(), imageMetadata.getAppStorageDirectory())) {
-                        LOG.warn("Failed to copy data to new container");
-                    }
-                }
-            }
+            migrateData(oldContainerId, oldImageMetadata, newContainerId, imageMetadata);
 
             //start new application, delete old container
-            boolean startNewAppSuccessful = dockerService.startContainer(fogOperationResult.getContainerId());
-            if (!finalizeReplaceContainerOperation(startNewAppSuccessful, applicationUpgradeRequest.getContainerId())) {
-                return new FogOperationResult(applicationUpgradeRequest.getContainerId(), false, environmentInfoService.getFogBaseUrl(), "upgrade failed, recovered");
+            boolean startNewAppSuccessful = dockerService.startContainer(newContainerId);
+            if (!finalizeReplaceContainerOperation(startNewAppSuccessful, oldContainerId)) {
+                return new FogOperationResult(oldContainerId, false, environmentInfoService.getFogBaseUrl(), "upgrade failed, recovered");
             }
-            return new FogOperationResult(fogOperationResult.getContainerId(), true, environmentInfoService.getFogBaseUrl());
+            return new FogOperationResult(newContainerId, true, environmentInfoService.getFogBaseUrl());
+        }
+    }
+
+    private void migrateData(String oldContainerId, DockerImageMetadata oldImageMetadata, String newContainerId, DockerImageMetadata newImageMetadata) {
+        if (StringUtils.isEmpty(oldImageMetadata.getAppStorageDirectory())) {
+            LOG.debug("No data to migrate");
+        } else {
+            if (StringUtils.isEmpty(newImageMetadata.getAppStorageDirectory())) {
+                LOG.warn("Can't migrate data. The new app has no storage directory specified!");
+            } else {
+                LOG.debug("Migrating data from old to new container");
+                if (dockerService.copyOrMergeDirectory(oldContainerId, oldImageMetadata.getAppStorageDirectory(), newContainerId, newImageMetadata.getAppStorageDirectory())) {
+                    LOG.warn("Failed to copy data to new container");
+                }
+            }
         }
     }
 
