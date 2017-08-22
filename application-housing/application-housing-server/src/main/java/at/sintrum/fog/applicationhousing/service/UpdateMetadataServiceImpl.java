@@ -77,4 +77,9 @@ public class UpdateMetadataServiceImpl implements UpdateMetadataService {
     public void removeUpdate(AppIdentification appIdentification) {
         getUpdateMetadata().remove(appIdentification.getImageMetadataId());
     }
+
+    @Override
+    public void reset() {
+        getUpdateMetadata().clear();
+    }
 }

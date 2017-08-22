@@ -214,7 +214,8 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
             return new FogOperationResult(null, false, environmentInfoService.getFogBaseUrl(), "missing container metadata");
         } else {
 
-            if (!stopApplication(applicationMoveRequest.getApplicationUrl(), applicationMoveRequest.getContainerId())) {
+            String originalContainerId = applicationMoveRequest.getContainerId();
+            if (!stopApplication(applicationMoveRequest.getApplicationUrl(), originalContainerId)) {
                 return new FogOperationResult(containerInfo.getId(), false, environmentInfoService.getFogBaseUrl(), "Failed to stop container");
             }
             DockerImageMetadata imageMetadata = imageMetadataApi.getById(containerMetadata.getImageMetadataId());
@@ -227,18 +228,37 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
             if (!imageMetadata.isStateless()) {
                 String tag = "checkpoint_" + UUID.randomUUID().toString();
 
+                //TODO: use baseimagemetadata if required (check this)
+                LOG.debug("Create temp container for checkpoint.");
+                DockerImageMetadata baseImageMetadata = imageMetadata;
+                if (!StringUtils.isEmpty(imageMetadata.getBaseImageId())) {
+                    baseImageMetadata = imageMetadataApi.getById(imageMetadata.getBaseImageId());
+                }
+
+                FogOperationResult fogOperationResult = createContainer(new ApplicationStartRequest(imageMetadata.getBaseImageId(), containerMetadata.getInstanceId()), baseImageMetadata);
+                if (!fogOperationResult.isSuccessful()) {
+                    return fogOperationResult;
+                }
+                String newContainerId = fogOperationResult.getContainerId();
+                //copy data
+                migrateData(originalContainerId, imageMetadata, newContainerId, baseImageMetadata);
+
                 //TODO: merge filesystem layers for the commit.
-                CommitContainerResult checkpoint = dockerService.commitContainer(new CommitContainerRequest(applicationMoveRequest.getContainerId(), Collections.singletonList(tag)));
+                CommitContainerResult checkpoint = dockerService.commitContainer(new CommitContainerRequest(newContainerId, Collections.singletonList(tag)));
 
                 if (checkpoint == null) {
                     return new FogOperationResult(containerInfo.getId(), false, environmentInfoService.getFogBaseUrl(), "Failed to create checkpoint");
                 }
 
+                //remove temporary container
+                LOG.debug("Remove temp container");
+                dockerService.removeContainer(newContainerId);
+
                 if (!dockerService.pushImage(new PushImageRequest(checkpoint.getImage(), tag))) {
                     return new FogOperationResult(containerInfo.getId(), false, environmentInfoService.getFogBaseUrl(), "Failed to push checkpoint");
                 }
 
-                imageMetadata = imageMetadataApi.createCheckpoint(imageMetadata.getId(), tag);
+                imageMetadata = imageMetadataApi.createCheckpoint(baseImageMetadata.getId(), tag);
             }
 
             return moveContainerToRemote(applicationMoveRequest, imageMetadata, containerMetadata.getInstanceId());
@@ -338,7 +358,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
                 LOG.warn("Can't migrate data. The new app has no storage directory specified!");
             } else {
                 LOG.debug("Migrating data from old to new container");
-                if (dockerService.copyOrMergeDirectory(oldContainerId, oldImageMetadata.getAppStorageDirectory(), newContainerId, newImageMetadata.getAppStorageDirectory())) {
+                if (!dockerService.copyOrMergeDirectory(oldContainerId, oldImageMetadata.getAppStorageDirectory(), newContainerId, newImageMetadata.getAppStorageDirectory())) {
                     LOG.warn("Failed to copy data to new container");
                 }
             }

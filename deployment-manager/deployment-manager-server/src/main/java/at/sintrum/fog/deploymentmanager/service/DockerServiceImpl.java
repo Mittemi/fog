@@ -14,9 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -341,12 +339,25 @@ public class DockerServiceImpl implements DockerService {
                             return false;
                         }
 
-                        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(mergedOutput.toByteArray())) {
+                        byte[] resultingArchive = mergedOutput.toByteArray();
+
+                        // save debug output
+                        File resultFile = File.createTempFile("fog_result", ".tar");
+                        try (FileOutputStream outputStream = new FileOutputStream(resultFile)) {
+                            outputStream.write(resultingArchive);
+                        }
+                        LOG.debug("Result temp file can be found at: " + resultFile.getPath());
+
+                        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(resultingArchive)) {
+                            // workaround
+                            // archive contains folder with the name of the last folder
+                            String remotePath = getParentDir(targetDirectory);
+
                             dockerClient.copyArchiveToContainerCmd(targetContainerInfo.getId())
                                     .withTarInputStream(inputStream)
                                     .withNoOverwriteDirNonDir(false)
                                     .withDirChildrenOnly(true)
-                                    .withRemotePath(targetDirectory)
+                                    .withRemotePath(remotePath)
                                     .exec();
 
                         }
@@ -360,6 +371,15 @@ public class DockerServiceImpl implements DockerService {
             return false;
         }
 
+    }
+
+    private String getParentDir(String targetDirectory) {
+        String parent = targetDirectory;
+        if (parent.endsWith("/")) {
+            parent = parent.substring(0, parent.length() - 1);
+        }
+
+        return parent.substring(0, parent.lastIndexOf("/") + 1);
     }
 
     private static ContainerInfo mapToDto(Container container) {

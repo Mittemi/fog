@@ -13,4 +13,6 @@ public interface UpdateMetadataService {
     AppUpdateInfo getUpdateInfo(AppIdentification currentVersion);
 
     void removeUpdate(AppIdentification appIdentification);
+
+    void reset();
 }

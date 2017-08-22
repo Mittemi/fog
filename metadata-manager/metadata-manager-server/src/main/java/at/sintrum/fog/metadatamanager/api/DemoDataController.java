@@ -38,7 +38,9 @@ public class DemoDataController {
         return Arrays.asList(
                 createImageMetadata("test-application", 10000, true),
                 createImageMetadata("test-application", 10000, false),
-                createImageMetadata("another-application", 10001, false));
+                createImageMetadata("another-application", 10001, true),
+                createImageMetadata("another-application", 10001, false)
+        );
     }
 
     private DockerImageMetadata createImageMetadata(String name, int port, boolean enableDebug) {
@@ -50,7 +52,7 @@ public class DemoDataController {
         imageMetadata.setEnableDebugging(enableDebug);
         imageMetadata.setEnvironment(Collections.singletonList("SERVER_PORT=" + port));
         imageMetadata.setPorts(Collections.singletonList(port));
-        imageMetadata.setAppStorageDirectory("/app/storage");
+        imageMetadata.setAppStorageDirectory("/app/storage/");
 
         return imageMetadataService.store(imageMetadata);
     }
