@@ -3,6 +3,7 @@ package at.sintrum.fog.metadatamanager.service;
 import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.metadatamanager.api.dto.AppState;
 import at.sintrum.fog.metadatamanager.api.dto.ApplicationStateMetadata;
+import org.redisson.api.RMap;
 import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,5 +53,19 @@ public class ApplicationStateMetadataService extends RedissonMetadataServiceBase
 
     private boolean isStateManagedByFog(FogIdentification fog, ApplicationStateMetadata state) {
         return state.getRunningAt() != null && state.getRunningAt().isSameFog(fog) || state.getNextTarget() != null && (state.getState().equals(AppState.Moving) && state.getNextTarget().isSameFog(fog));
+    }
+
+
+    private RMap<String, Boolean> getInstanceDeprecatedMap() {
+        return getRedissonClient().getMap("MetadataManager.InstanceDeprecated_Map");
+    }
+
+    public boolean markInstanceAsDeprecated(String instanceId) {
+        getInstanceDeprecatedMap().put(instanceId, true);
+        return true;
+    }
+
+    public boolean isInstanceDeprecated(String instanceId) {
+        return getInstanceDeprecatedMap().getOrDefault(instanceId, false);
     }
 }

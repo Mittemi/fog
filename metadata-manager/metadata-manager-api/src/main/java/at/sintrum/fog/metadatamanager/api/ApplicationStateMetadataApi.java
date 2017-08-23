@@ -39,4 +39,10 @@ public interface ApplicationStateMetadataApi {
 
     @RequestMapping(value = "getByFog", method = RequestMethod.POST)
     List<ApplicationStateMetadata> getByFog(@RequestBody FogIdentification fogIdentification);
+
+    @RequestMapping(value = "deprecateInstance/{instanceId}", method = RequestMethod.POST)
+    boolean deprecateInstance(@PathVariable("instanceId") String instanceId);
+
+    @RequestMapping(value = "isActiveInstance/{instanceId}", method = RequestMethod.POST)
+    boolean isActiveInstance(@PathVariable("instanceId") String instanceId);
 }

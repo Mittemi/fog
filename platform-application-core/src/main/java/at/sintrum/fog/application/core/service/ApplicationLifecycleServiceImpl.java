@@ -25,6 +25,9 @@ import org.springframework.util.StringUtils;
 @Service
 public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleService, ApplicationListener<ApplicationReadyEvent> {
 
+    // public calls to this service have to be synchronized
+    // this allows calls from e.g. the standby service in a scheduled way without concurrency problems
+
     private final EnvironmentInfoService environmentInfoService;
     private final ApplicationManager applicationManager;
     private final TravelingCoordinationService travelingCoordinationService;
@@ -54,14 +57,16 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
 
     @Override
     public void moveApplication(FogIdentification target) {
-        LOG.debug("Request application move to fog: " + target.toUrl());
+        synchronized (this) {
+            LOG.debug("Request application move to fog: " + target.toUrl());
 
-        setMovingStateMetadata(target);
-        travelingCoordinationService.startMove(target);
-        // BEGIN Simulation
-        simulationClientService.notifyMove(target);
-        // END Simulation
-        applicationManager.moveApplication(new ApplicationMoveRequest(environmentInfoService.getOwnContainerId(), target.toUrl()));
+            setMovingStateMetadata(target);
+            travelingCoordinationService.startMove(target);
+            // BEGIN Simulation
+            simulationClientService.notifyMove(target);
+            // END Simulation
+            applicationManager.moveApplication(new ApplicationMoveRequest(environmentInfoService.getOwnContainerId(), target.toUrl()));
+        }
     }
 
     private void setMovingStateMetadata(FogIdentification target) {
@@ -73,66 +78,80 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
     }
 
     public void moveAppIfRequired() {
-        // we assume work has been finished and we are ready to move somewhere else
-        if (travelingCoordinationService.hasNextTarget()) {
-            LOG.debug("New application target, let's move");
-            FogIdentification nextTarget = travelingCoordinationService.getNextTarget();
-            if (nextTarget != null) {
-                moveApplication(nextTarget);
-            } else {
-                LOG.error("Move target is null. Can't move!");
-            }
-        } else {
-            if (!environmentInfoService.isCloud()) {
-                LOG.info("Let's move to the cloud, there is no target in queue right now");
-                String cloudBaseUrl = cloudLocatorService.getCloudBaseUrl();
-                if (!StringUtils.isEmpty(cloudBaseUrl)) {
-                    moveApplication(FogIdentification.parseFogBaseUrl(cloudBaseUrl));
+        synchronized (this) {
+            // we assume work has been finished and we are ready to move somewhere else
+            if (travelingCoordinationService.hasNextTarget()) {
+                LOG.debug("New application target, let's move");
+                FogIdentification nextTarget = travelingCoordinationService.getNextTarget();
+                if (nextTarget != null) {
+                    moveApplication(nextTarget);
                 } else {
-                    LOG.warn("We can't move! Cloud was not found.");
+                    LOG.error("Move target is null. Can't move!");
+                }
+            } else {
+                if (!environmentInfoService.isCloud()) {
+                    LOG.info("Let's move to the cloud, there is no target in queue right now");
+                    String cloudBaseUrl = cloudLocatorService.getCloudBaseUrl();
+                    if (!StringUtils.isEmpty(cloudBaseUrl)) {
+                        moveApplication(FogIdentification.parseFogBaseUrl(cloudBaseUrl));
+                    } else {
+                        LOG.warn("We can't move! Cloud was not found.");
+                    }
                 }
             }
         }
     }
 
     public boolean upgradeAppIfRequired() {
-        try {
-            AppUpdateInfo appUpdateInfo = appEvolution.checkForUpdate(new AppIdentification(environmentInfoService.getMetadataId()));
+        synchronized (this) {
+            try {
+                AppUpdateInfo appUpdateInfo = appEvolution.checkForUpdate(new AppIdentification(environmentInfoService.getMetadataId()));
 
-            if (appUpdateInfo.isUpdateRequired()) {
-                LOG.debug("Update is required. Request upgrade!");
-                ApplicationUpgradeRequest applicationUpgradeRequest = new ApplicationUpgradeRequest();
-                applicationUpgradeRequest.setContainerId(environmentInfoService.getOwnContainerId());
-                applicationUpgradeRequest.setApplicationUrl(environmentInfoService.getOwnUrl());
+                if (appUpdateInfo.isUpdateRequired()) {
+                    LOG.debug("Update is required. Request upgrade!");
+                    ApplicationUpgradeRequest applicationUpgradeRequest = new ApplicationUpgradeRequest();
+                    applicationUpgradeRequest.setContainerId(environmentInfoService.getOwnContainerId());
+                    applicationUpgradeRequest.setApplicationUrl(environmentInfoService.getOwnUrl());
 
-                ApplicationStateMetadata stateMetadata = applicationStateMetadataClient.setState(environmentInfoService.getInstanceId(), AppState.Upgrade);
+                    ApplicationStateMetadata stateMetadata = applicationStateMetadataClient.setState(environmentInfoService.getInstanceId(), AppState.Upgrade);
 
-                FogOperationResult fogOperationResult = applicationManager.upgradeApplication(applicationUpgradeRequest);
+                    FogOperationResult fogOperationResult = applicationManager.upgradeApplication(applicationUpgradeRequest);
 
-                if (!fogOperationResult.isSuccessful()) {
-                    LOG.debug("Update failed, continue with normal execution");
-                    updateAppState(getFogIdentification(), null, stateMetadata);        //TODO: test it...
-                    return false;
+                    if (!fogOperationResult.isSuccessful()) {
+                        LOG.debug("Update failed, continue with normal execution");
+                        updateAppState(getFogIdentification(), null, stateMetadata);        //TODO: test it...
+                        return false;
+                    }
+
+                    return true;
                 }
 
-                return true;
+            } catch (Exception ex) {
+                LOG.error("Check for updates failed", ex);
             }
-
-        } catch (Exception ex) {
-            LOG.error("Check for updates failed", ex);
+            return false;
         }
-        return false;
     }
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         //TODO: pass right fogIdentification to simulation client (currently it is only the DM but we want the app itself sometimes)
         FogIdentification fogIdentification = getFogIdentification();
-        ApplicationStateMetadata stateMetadata = applicationStateMetadataClient.getById(environmentInfoService.getInstanceId());
+        String instanceId = environmentInfoService.getInstanceId();
+
+        synchronized (this) {
+            performStartupWork(fogIdentification, instanceId);
+        }
+    }
+
+    private void performStartupWork(FogIdentification fogIdentification, String instanceId) {
+        activeInstanceCheck(instanceId);
+
+        ApplicationStateMetadata stateMetadata = applicationStateMetadataClient.getById(instanceId);
 
         if (stateMetadata == null) {
-            LOG.debug("First app start. Create state metadata for instance: " + environmentInfoService.getInstanceId());
-            applicationStateMetadataClient.store(new ApplicationStateMetadata(environmentInfoService.getInstanceId(), environmentInfoService.getPort(), fogIdentification, getAppState()));
+            LOG.debug("First app start. Create state metadata for instance: " + instanceId);
+            applicationStateMetadataClient.store(new ApplicationStateMetadata(instanceId, environmentInfoService.getPort(), fogIdentification, getAppState()));
             // BEGIN Simulation
             simulationClientService.notifyStarting();
             // END Simulation
@@ -149,14 +168,14 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
                     // END Simulation
                     break;
                 case Upgrade:
-                    LOG.debug("App upgrade finished for instanceId: " + environmentInfoService.getInstanceId());
+                    LOG.debug("App upgrade finished for instanceId: " + instanceId);
                     updateAppState(fogIdentification, null, stateMetadata);
                     // BEGIN Simulation
                     simulationClientService.notifyUpgrade();
                     // END Simulation
                     break;
                 case Moving:
-                    LOG.debug("App move finished for instanceId: " + environmentInfoService.getInstanceId());
+                    LOG.debug("App move finished for instanceId: " + instanceId);
                     travelingCoordinationService.finishMove(fogIdentification);
                     updateAppState(fogIdentification, null, stateMetadata);
                     // BEGIN Simulation
@@ -164,6 +183,21 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
                     // END Simulation
                     break;
             }
+        }
+    }
+
+    private boolean activeInstanceCheck(String instanceId) {
+        try {
+            boolean activeInstance = applicationStateMetadataClient.isActiveInstance(instanceId);
+
+            if (!activeInstance) {
+                LOG.warn("Instance '" + instanceId + "' is not the active instance anymore.");
+                //TODO: impl deprecated instance recovery
+            }
+            return activeInstance;
+        } catch (Exception ex) {
+            LOG.error("Active instance check failed", ex);
+            return true;        //assume yes
         }
     }
 

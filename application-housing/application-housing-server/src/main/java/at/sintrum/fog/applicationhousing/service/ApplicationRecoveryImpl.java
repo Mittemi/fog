@@ -33,7 +33,7 @@ public class ApplicationRecoveryImpl {
         appRuntimeMetadata = new HashMap<>();
     }
 
-    @Scheduled(fixedRate = 60000)
+    @Scheduled(fixedDelay = 60000)
     public synchronized void runChecks() {
         LOG.debug("Run app recovery checks");
         if (isCheckRunning) {
@@ -66,11 +66,36 @@ public class ApplicationRecoveryImpl {
                 Map<String, String> metadata = instance.getMetadata();
             }
 
-            appRuntimeMetadata.get(serviceId);
+            AppRuntimeMetadata appRuntimeMetadata = this.appRuntimeMetadata.get(serviceId);
+
+            //TODO: ask app for health state
+
+
         }
     }
 
     class AppRuntimeMetadata {
+        private DateTime timeAdded;
         private DateTime lastTimeActive;
+
+        public AppRuntimeMetadata() {
+            timeAdded = new DateTime();
+        }
+
+        public DateTime getTimeAdded() {
+            return timeAdded;
+        }
+
+        public void setTimeAdded(DateTime timeAdded) {
+            this.timeAdded = timeAdded;
+        }
+
+        public DateTime getLastTimeActive() {
+            return lastTimeActive;
+        }
+
+        public void setLastTimeActive(DateTime lastTimeActive) {
+            this.lastTimeActive = lastTimeActive;
+        }
     }
 }

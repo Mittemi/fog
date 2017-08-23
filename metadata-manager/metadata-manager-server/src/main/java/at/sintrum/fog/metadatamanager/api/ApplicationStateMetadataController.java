@@ -4,6 +4,8 @@ import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.metadatamanager.api.dto.AppState;
 import at.sintrum.fog.metadatamanager.api.dto.ApplicationStateMetadata;
 import at.sintrum.fog.metadatamanager.service.ApplicationStateMetadataService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,6 +19,8 @@ import java.util.List;
 public class ApplicationStateMetadataController implements ApplicationStateMetadataApi {
 
     private final ApplicationStateMetadataService applicationStateMetadataService;
+
+    private static final Logger LOG = LoggerFactory.getLogger(ApplicationStateMetadataController.class);
 
     public ApplicationStateMetadataController(ApplicationStateMetadataService applicationStateMetadataService) {
         this.applicationStateMetadataService = applicationStateMetadataService;
@@ -61,5 +65,17 @@ public class ApplicationStateMetadataController implements ApplicationStateMetad
     @Override
     public List<ApplicationStateMetadata> getByFog(@RequestBody FogIdentification fogIdentification) {
         return applicationStateMetadataService.getManagedByFog(fogIdentification);
+    }
+
+    @Override
+    public boolean deprecateInstance(@PathVariable("instanceId") String instanceId) {
+        LOG.debug("Mark instance '" + instanceId + "' as deprecated");
+        return applicationStateMetadataService.markInstanceAsDeprecated(instanceId);
+    }
+
+    @Override
+    public boolean isActiveInstance(@PathVariable("instanceId") String instanceId) {
+        LOG.debug("Check if instance '" + instanceId + "' is active");
+        return applicationStateMetadataService.isInstanceDeprecated(instanceId);
     }
 }
