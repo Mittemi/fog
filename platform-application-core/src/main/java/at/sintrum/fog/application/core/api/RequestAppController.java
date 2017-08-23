@@ -5,16 +5,13 @@ import at.sintrum.fog.core.dto.FogIdentification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Created by Michael Mittermayr on 17.07.2017.
  */
 @RestController
-@RequestMapping(value = "request")
-public class RequestAppController {
+public class RequestAppController implements RequestAppApi {
 
     private final TravelingCoordinationService travelingCoordinationService;
 
@@ -24,7 +21,7 @@ public class RequestAppController {
         this.travelingCoordinationService = travelingCoordinationService;
     }
 
-    @RequestMapping(value = "move", method = RequestMethod.POST)
+    @Override
     public boolean requestApplication(@RequestBody FogIdentification fogIdentification) {
 
         return travelingCoordinationService.requestMove(fogIdentification);

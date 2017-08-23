@@ -8,16 +8,13 @@ import at.sintrum.fog.applicationhousing.client.api.AppEvolution;
 import at.sintrum.fog.core.service.EnvironmentInfoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Created by Michael Mittermayr on 15.07.2017.
  */
 @RestController
-@RequestMapping("app/")
-public class ApplicationInfo {
+public class ApplicationInfo implements ApplicationInfoApi {
 
     private final AppEvolution appEvolution;
     private final EnvironmentInfoService environmentInfoService;
@@ -31,8 +28,7 @@ public class ApplicationInfo {
         this.cloudLocatorService = cloudLocatorService;
     }
 
-
-    @RequestMapping(value = "info", method = RequestMethod.GET)
+    @Override
     public AppInfo info() {
 
         AppInfo appInfo = new AppInfo();

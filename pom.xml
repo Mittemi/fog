@@ -22,6 +22,8 @@
         <module>platform-redis</module>
         <module>application-housing</module>
         <module>simulation-master</module>
+        <module>platform-application-api</module>
+        <module>platform-application-client</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -178,6 +180,16 @@
             <dependency>
                 <groupId>at.sintrum.fog</groupId>
                 <artifactId>platform-application-core</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>at.sintrum.fog</groupId>
+                <artifactId>platform-application-api</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>at.sintrum.fog</groupId>
+                <artifactId>platform-application-client</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
             </dependency>
             <dependency>

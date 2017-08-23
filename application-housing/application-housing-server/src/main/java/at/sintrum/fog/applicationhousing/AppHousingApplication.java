@@ -1,5 +1,6 @@
 package at.sintrum.fog.applicationhousing;
 
+import at.sintrum.fog.application.client.ApplicationClientConfig;
 import at.sintrum.fog.core.PlatformCoreConfig;
 import at.sintrum.fog.deploymentmanager.client.DeploymentManagerClientConfig;
 import at.sintrum.fog.metadatamanager.client.MetadataManagerClientConfig;
@@ -19,7 +20,15 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @Configuration
 @EnableAutoConfiguration
 @SpringBootApplication
-@Import({RedissonConfig.class, SwaggerConfig.class, PlatformCoreConfig.class, ServerCoreConfig.class, MetadataManagerClientConfig.class, DeploymentManagerClientConfig.class})
+@Import({
+        RedissonConfig.class,
+        SwaggerConfig.class,
+        PlatformCoreConfig.class,
+        ServerCoreConfig.class,
+        MetadataManagerClientConfig.class,
+        DeploymentManagerClientConfig.class,
+        ApplicationClientConfig.class
+})
 @EnableScheduling
 public class AppHousingApplication {
 

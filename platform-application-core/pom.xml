@@ -18,6 +18,11 @@
         </dependency>
         <dependency>
             <groupId>at.sintrum.fog</groupId>
+            <artifactId>platform-application-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>at.sintrum.fog</groupId>
             <artifactId>application-housing-client</artifactId>
         </dependency>
         <dependency>

@@ -7,5 +7,6 @@ public enum AppState {
     Running,
     Standby,
     Upgrade,
-    Moving
+    Moving,
+    Retired
 }

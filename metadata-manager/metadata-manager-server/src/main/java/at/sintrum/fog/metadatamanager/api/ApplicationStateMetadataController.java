@@ -76,6 +76,6 @@ public class ApplicationStateMetadataController implements ApplicationStateMetad
     @Override
     public boolean isActiveInstance(@PathVariable("instanceId") String instanceId) {
         LOG.debug("Check if instance '" + instanceId + "' is active");
-        return applicationStateMetadataService.isInstanceDeprecated(instanceId);
+        return !applicationStateMetadataService.isInstanceDeprecated(instanceId);
     }
 }
