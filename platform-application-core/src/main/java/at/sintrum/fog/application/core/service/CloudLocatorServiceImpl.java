@@ -1,5 +1,6 @@
 package at.sintrum.fog.application.core.service;
 
+import at.sintrum.fog.core.dto.FogIdentification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.client.ServiceInstance;
@@ -34,7 +35,7 @@ public class CloudLocatorServiceImpl implements CloudLocatorService {
                     continue;
                 }
                 if (profiles.contains("cloud")) {
-                    String url = "http://" + instance.getHost() + ":" + instance.getPort();
+                    String url = new FogIdentification(instance.getHost(), instance.getPort()).toUrl();
                     LOG.debug("Cloud url: " + url);
                     return url;
                 }

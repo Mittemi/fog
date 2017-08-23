@@ -293,6 +293,46 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
         }
     }
 
+    @Async
+    @Override
+    public Future<FogOperationResult> recover(ApplicationRecoveryRequest applicationRecoveryRequest) {
+
+        DockerContainerMetadata containerMetadata = containerMetadataApi.getLatestByInstanceId(applicationRecoveryRequest.getInstanceId());
+
+        if (containerMetadata == null) {
+            LOG.warn("Unable to recover. Can't find any metadata for this instance");
+        } else {
+            ContainerInfo containerInfo = dockerService.getContainerInfo(containerMetadata.getContainerId());
+            if (containerInfo == null) {
+                LOG.warn("Unable to find the container. Can't recover it");
+            } else {
+                return new AsyncResult<>(performOperationIfPossible(containerInfo, () -> performRecover(applicationRecoveryRequest, containerInfo, containerMetadata)));
+            }
+        }
+        return new AsyncResult<>(new FogOperationResult(null, false, environmentInfoService.getFogBaseUrl(), "Unable to recover"));
+    }
+
+    private FogOperationResult performRecover(ApplicationRecoveryRequest applicationRecoveryRequest, ContainerInfo containerInfo, DockerContainerMetadata containerMetadata) {
+
+        //TODO: prevent simple restart on subsequent tries
+
+        if (!containerInfo.isRunning()) {
+            LOG.debug("Container not running, start it: " + containerInfo.getId());
+        } else {
+            LOG.debug("Container running. Let's try to restart the container: " + containerInfo.getId());
+            if (!dockerService.stopContainer(containerInfo.getId())) {
+                LOG.error("Failed to stop container");
+            }
+        }
+
+        if (!dockerService.startContainer(containerInfo.getId())) {
+            LOG.error("Failed to start container");
+            return new FogOperationResult(containerInfo.getId(), false, environmentInfoService.getFogBaseUrl(), "Failed to start the container");
+        }
+
+        return new FogOperationResult(containerInfo.getId(), true, environmentInfoService.getFogBaseUrl(), "Container restarted");
+    }
+
     private FogOperationResult performUpgrade(ApplicationUpgradeRequest applicationUpgradeRequest, ContainerInfo containerInfo) {
 
         DockerContainerMetadata containerMetadata = containerMetadataApi.getById(environmentInfoService.getFogId(), containerInfo.getId());

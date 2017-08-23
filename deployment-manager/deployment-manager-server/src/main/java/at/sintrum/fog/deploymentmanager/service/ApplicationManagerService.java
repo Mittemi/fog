@@ -1,9 +1,6 @@
 package at.sintrum.fog.deploymentmanager.service;
 
-import at.sintrum.fog.deploymentmanager.api.dto.ApplicationMoveRequest;
-import at.sintrum.fog.deploymentmanager.api.dto.ApplicationStartRequest;
-import at.sintrum.fog.deploymentmanager.api.dto.ApplicationUpgradeRequest;
-import at.sintrum.fog.deploymentmanager.api.dto.FogOperationResult;
+import at.sintrum.fog.deploymentmanager.api.dto.*;
 
 import java.util.concurrent.Future;
 
@@ -16,4 +13,6 @@ public interface ApplicationManagerService {
     Future<FogOperationResult> move(ApplicationMoveRequest applicationMoveRequest);
 
     Future<FogOperationResult> upgrade(ApplicationUpgradeRequest applicationUpgradeRequest);
+
+    Future<FogOperationResult> recover(ApplicationRecoveryRequest applicationRecoveryRequest);
 }

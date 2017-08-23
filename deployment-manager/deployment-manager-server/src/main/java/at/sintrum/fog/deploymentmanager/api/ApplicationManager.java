@@ -1,10 +1,7 @@
 package at.sintrum.fog.deploymentmanager.api;
 
 import at.sintrum.fog.core.service.EnvironmentInfoService;
-import at.sintrum.fog.deploymentmanager.api.dto.ApplicationMoveRequest;
-import at.sintrum.fog.deploymentmanager.api.dto.ApplicationStartRequest;
-import at.sintrum.fog.deploymentmanager.api.dto.ApplicationUpgradeRequest;
-import at.sintrum.fog.deploymentmanager.api.dto.FogOperationResult;
+import at.sintrum.fog.deploymentmanager.api.dto.*;
 import at.sintrum.fog.deploymentmanager.service.ApplicationManagerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +58,16 @@ public class ApplicationManager implements ApplicationManagerApi {
             return applicationManagerService.upgrade(applicationUpgradeRequest).get();
         } catch (InterruptedException | ExecutionException e) {
             LOG.error("upgrade failed", e);
+        }
+        return new FogOperationResult(null, false, environmentInfoService.getFogBaseUrl());
+    }
+
+    @Override
+    public FogOperationResult recoverApplication(@RequestBody ApplicationRecoveryRequest applicationRecoveryRequest) {
+        try {
+            return applicationManagerService.recover(applicationRecoveryRequest).get();
+        } catch (InterruptedException | ExecutionException e) {
+            LOG.error("move failed", e);
         }
         return new FogOperationResult(null, false, environmentInfoService.getFogBaseUrl());
     }

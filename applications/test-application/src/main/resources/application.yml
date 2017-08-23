@@ -9,7 +9,8 @@ eureka:
     non-secure-port: ${EUREKA_CLIENT_PORT:${server.port}}
     metadata-map:
       instanceId: ${vcap.application.instance_id:${spring.application.name}:${spring.application.instance_id:${server.port}}}
-
+      profiles: ${spring.profiles.active}
+      fogInstanceId: ${INSTANCE_ID}
   client:
     registryFetchIntervalSeconds: 5
     serviceUrl:

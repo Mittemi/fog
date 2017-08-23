@@ -68,4 +68,10 @@ public class ApplicationStateMetadataService extends RedissonMetadataServiceBase
     public boolean isInstanceDeprecated(String instanceId) {
         return getInstanceDeprecatedMap().getOrDefault(instanceId, false);
     }
+
+    @Override
+    public void deleteAll() {
+        getInstanceDeprecatedMap().clear();
+        super.deleteAll();
+    }
 }

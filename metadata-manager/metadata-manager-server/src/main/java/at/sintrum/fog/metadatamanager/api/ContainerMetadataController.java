@@ -1,11 +1,13 @@
 package at.sintrum.fog.metadatamanager.api;
 
 import at.sintrum.fog.metadatamanager.api.dto.DockerContainerMetadata;
+import at.sintrum.fog.metadatamanager.api.dto.MetadataBase;
 import at.sintrum.fog.metadatamanager.service.ContainerMetadataService;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -48,5 +50,10 @@ public class ContainerMetadataController implements ContainerMetadataApi {
     @Override
     public List<DockerContainerMetadata> getByInstanceId(@PathVariable("instanceId") String instanceId) {
         return metadataService.getByInstance(instanceId);
+    }
+
+    @Override
+    public DockerContainerMetadata getLatestByInstanceId(@PathVariable("instanceId") String instanceId) {
+        return metadataService.getByInstance(instanceId).stream().sorted(Comparator.comparing(MetadataBase::getLastUpdate).reversed()).findFirst().orElse(null);
     }
 }

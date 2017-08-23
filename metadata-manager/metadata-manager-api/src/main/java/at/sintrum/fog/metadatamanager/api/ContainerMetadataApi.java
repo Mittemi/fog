@@ -30,4 +30,7 @@ public interface ContainerMetadataApi {
 
     @RequestMapping(value = "getByInstanceId/{instanceId}", method = RequestMethod.GET)
     List<DockerContainerMetadata> getByInstanceId(@PathVariable("instanceId") String instanceId);
+
+    @RequestMapping(value = "getLatestByInstanceId/{instanceId}", method = RequestMethod.GET)
+    DockerContainerMetadata getLatestByInstanceId(@PathVariable("instanceId") String instanceId);
 }
