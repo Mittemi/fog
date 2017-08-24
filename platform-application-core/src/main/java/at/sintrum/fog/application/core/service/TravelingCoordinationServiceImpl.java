@@ -10,6 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * Created by Michael Mittermayr on 17.07.2017.
  */
@@ -45,6 +47,11 @@ public class TravelingCoordinationServiceImpl implements TravelingCoordinationSe
             LOG.error("Failed to add to request queue", ex);
         }
         return false;
+    }
+
+    @Override
+    public List<FogIdentification> getTargets() {
+        return getTravelQueue().readAll();
     }
 
     private RQueue<FogIdentification> getTravelQueue() {

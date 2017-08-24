@@ -111,7 +111,9 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
             applicationStartRequest.setInstanceId(instanceId);
         }
 
-        return new AsyncResult<>(performStart(applicationStartRequest));
+        FogOperationResult fogOperationResult = performStart(applicationStartRequest);
+        fogOperationResult.setInstanceId(applicationStartRequest.getInstanceId());
+        return new AsyncResult<>(fogOperationResult);
     }
 
     private FogOperationResult performStart(ApplicationStartRequest applicationStartRequest) {

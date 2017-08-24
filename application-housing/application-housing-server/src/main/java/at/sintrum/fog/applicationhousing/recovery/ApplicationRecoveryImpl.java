@@ -3,16 +3,20 @@ package at.sintrum.fog.applicationhousing.recovery;
 import at.sintrum.fog.application.client.ApplicationClientFactory;
 import at.sintrum.fog.application.core.api.ApplicationInfoApi;
 import at.sintrum.fog.application.core.api.dto.AppInfo;
+import at.sintrum.fog.applicationhousing.config.AppHousingConfigurationProperties;
 import at.sintrum.fog.applicationhousing.recovery.metadata.AppRuntimeMetadata;
 import at.sintrum.fog.applicationhousing.recovery.metadata.FogCellMetadata;
 import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.deploymentmanager.api.dto.ApplicationRecoveryRequest;
+import at.sintrum.fog.deploymentmanager.api.dto.ApplicationStartRequest;
 import at.sintrum.fog.deploymentmanager.api.dto.FogOperationResult;
 import at.sintrum.fog.deploymentmanager.client.api.ApplicationManager;
 import at.sintrum.fog.deploymentmanager.client.factory.DeploymentManagerClientFactory;
 import at.sintrum.fog.metadatamanager.api.ApplicationStateMetadataApi;
+import at.sintrum.fog.metadatamanager.api.ContainerMetadataApi;
 import at.sintrum.fog.metadatamanager.api.dto.AppState;
 import at.sintrum.fog.metadatamanager.api.dto.ApplicationStateMetadata;
+import at.sintrum.fog.metadatamanager.api.dto.DockerContainerMetadata;
 import org.joda.time.DateTime;
 import org.joda.time.Seconds;
 import org.slf4j.Logger;
@@ -41,6 +45,8 @@ public class ApplicationRecoveryImpl {
     private final ApplicationStateMetadataApi applicationStateMetadataApi;
     private final ApplicationClientFactory applicationClientFactory;
     private final DeploymentManagerClientFactory deploymentManagerClientFactory;
+    private final ContainerMetadataApi containerMetadataApi;
+    private final AppHousingConfigurationProperties configurationProperties;
     private FogIdentification cloud;
 
     // key: instanceId
@@ -52,11 +58,15 @@ public class ApplicationRecoveryImpl {
     public ApplicationRecoveryImpl(DiscoveryClient discoveryClient,
                                    ApplicationStateMetadataApi applicationStateMetadataApi,
                                    ApplicationClientFactory applicationClientFactory,
-                                   DeploymentManagerClientFactory deploymentManagerClientFactory) {
+                                   DeploymentManagerClientFactory deploymentManagerClientFactory,
+                                   ContainerMetadataApi containerMetadataApi,
+                                   AppHousingConfigurationProperties configurationProperties) {
         this.discoveryClient = discoveryClient;
         this.applicationStateMetadataApi = applicationStateMetadataApi;
         this.applicationClientFactory = applicationClientFactory;
         this.deploymentManagerClientFactory = deploymentManagerClientFactory;
+        this.containerMetadataApi = containerMetadataApi;
+        this.configurationProperties = configurationProperties;
         appRuntimeMetadata = new HashMap<>();
         fogCellMetadata = new HashMap<>();
     }
@@ -94,7 +104,7 @@ public class ApplicationRecoveryImpl {
                 continue;
             }
 
-            if (appRuntimeMetadata.hasTimeout()) {
+            if (appRuntimeMetadata.hasTimeout(configurationProperties.getAppHeartbeatTimeout())) {
                 LOG.warn("AppTimeout: " + appRuntimeMetadata.getInstanceId());
 
                 if (!applicationStateMetadataApi.isActiveInstance(appRuntimeMetadata.getInstanceId())) {
@@ -109,27 +119,61 @@ public class ApplicationRecoveryImpl {
                 //4a. tell deployment manager to recover app
                 //4b. recover app in cloud
                 ApplicationStateMetadata stateMetadata = applicationStateMetadataApi.getById(appRuntimeMetadata.getInstanceId());
+                if (!hasTimeout(stateMetadata.getLastUpdate(), configurationProperties.getAppStateMetadataGraceTimeout())) {
+                    LOG.debug("State metadata update within grace period. Skip this recovery call for instance: " + appRuntimeMetadata.getInstanceId());
+                    continue;
+                }
+
                 if (shouldRun(stateMetadata, appRuntimeMetadata)) {
                     FogIdentification applicationUrl = applicationStateMetadataApi.getApplicationUrl(appRuntimeMetadata.getInstanceId());
 //                    boolean isAppReachable = isAppReachable(applicationUrl);
 
-                    if (appRuntimeMetadata.getLastRecoveryCall() == null || Seconds.secondsBetween(appRuntimeMetadata.getLastRecoveryCall(), new DateTime()).isGreaterThan(Seconds.seconds(60))) {
+                    if (appRuntimeMetadata.getLastRecoveryCall() == null || hasTimeout(appRuntimeMetadata.getLastRecoveryCall(), configurationProperties.getAppRecoveryWaitTime())) {
                         LOG.debug("Recover app: " + appRuntimeMetadata.getInstanceId());
 
-                        if (tryRecoverApp(appRuntimeMetadata, stateMetadata)) {
-
-                            LOG.debug("Failed to recovery in fog cell, start recovery in cloud: " + appRuntimeMetadata.getInstanceId());
-                            if (!applicationStateMetadataApi.deprecateInstance(appRuntimeMetadata.getInstanceId())) {
-                                LOG.warn("Failed to deprecate instance: " + appRuntimeMetadata.getInstanceId());
-                            }
-
-                            //TODO: recover app in cloud
+                        if (!tryRecoverApp(appRuntimeMetadata, stateMetadata)) {
+                            recoverAppInCloud(appRuntimeMetadata, stateMetadata);
                         }
-
                     } else {
                         LOG.debug("Recovery has been called recent for this application. Skip recovery for: " + appRuntimeMetadata.getInstanceId());
                     }
                 }
+            }
+        }
+    }
+
+    private boolean hasTimeout(DateTime dateTime, int seconds) {
+        return Seconds.secondsBetween(dateTime, new DateTime()).isGreaterThan(Seconds.seconds(seconds));
+    }
+
+    private boolean recoverAppInCloud(AppRuntimeMetadata appRuntimeMetadata, ApplicationStateMetadata stateMetadata) {
+
+        FogCellMetadata cloud = getCloud();
+        if (cloud == null) {
+            LOG.error("Failed to identify the cloud. Unable to run recovery.");
+            return false;
+        } else {
+            DockerContainerMetadata containerMetadata = containerMetadataApi.getLatestByInstanceId(appRuntimeMetadata.getInstanceId());
+
+            if (containerMetadata == null) {
+                LOG.error("Failed to recover app, container metadata not found for: " + appRuntimeMetadata.getInstanceId());
+                return false;
+            }
+
+            ApplicationManager applicationManagerClient = deploymentManagerClientFactory.createApplicationManagerClient(cloud.getFogIdentification().toUrl());
+            appRuntimeMetadata.setLastRecoveryCall(new DateTime());
+
+            FogOperationResult fogOperationResult = applicationManagerClient.requestApplicationStart(new ApplicationStartRequest(containerMetadata.getImageMetadataId(), null));
+            if (fogOperationResult.isSuccessful()) {
+                LOG.debug("Recovered app: " + appRuntimeMetadata.getInstanceId() + " in cloud. New InstanceID: " + fogOperationResult.getInstanceId());
+                return true;
+            } else {
+                LOG.debug("Failed to recovery in fog cell, start recovery in cloud: " + appRuntimeMetadata.getInstanceId());
+                if (!applicationStateMetadataApi.deprecateInstance(appRuntimeMetadata.getInstanceId())) {
+                    LOG.warn("Failed to deprecate instance: " + appRuntimeMetadata.getInstanceId());
+                }
+                LOG.debug("Failed to recover app: " + appRuntimeMetadata.getInstanceId());
+                return false;
             }
         }
     }

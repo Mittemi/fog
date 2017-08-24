@@ -41,7 +41,7 @@ public class RuntimeMetadataBase {
         return serviceId;
     }
 
-    public boolean hasTimeout() {
-        return getLastTimeActive() == null || Seconds.secondsBetween(getLastTimeActive(), new DateTime()).isGreaterThan(Seconds.seconds(60));
+    public boolean hasTimeout(int seconds) {
+        return getLastTimeActive() == null || Seconds.secondsBetween(getLastTimeActive(), new DateTime()).isGreaterThan(Seconds.seconds(seconds));
     }
 }

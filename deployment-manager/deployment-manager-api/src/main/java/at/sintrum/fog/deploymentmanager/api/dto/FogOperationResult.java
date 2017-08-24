@@ -7,6 +7,8 @@ public class FogOperationResult {
 
     private String containerId;
 
+    private String instanceId;
+
     private boolean successful;
 
     private String fogUrl;
@@ -59,5 +61,13 @@ public class FogOperationResult {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public String getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(String instanceId) {
+        this.instanceId = instanceId;
     }
 }
