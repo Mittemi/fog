@@ -2,6 +2,7 @@ package at.sintrum.fog.simulation.taskengine.tasks;
 
 import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.metadatamanager.api.ApplicationStateMetadataApi;
+import at.sintrum.fog.metadatamanager.api.dto.ApplicationStateMetadata;
 
 /**
  * Created by Michael Mittermayr on 24.08.2017.
@@ -21,7 +22,8 @@ public class CheckFogLocationTask extends FogTaskBase {
     @Override
     protected boolean internalExecute() {
 
-        FogIdentification applicationUrl = applicationStateMetadataApi.getApplicationUrl(instanceId);
-        return applicationUrl.isSameFog(expectedLocation);
+        ApplicationStateMetadata stateMetadata = applicationStateMetadataApi.getById(instanceId);
+        if (stateMetadata == null || stateMetadata.getRunningAt() == null) return false;
+        return stateMetadata.getRunningAt().isSameFog(expectedLocation);
     }
 }

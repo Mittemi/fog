@@ -76,14 +76,18 @@ public class FogTaskList {
         addTask(0, new RequestAppTask(15, firstAppUUID, fogA, platformAppClientFactory, applicationStateMetadataClient));
         addTask(0, new CheckFogLocationTask(30, firstAppUUID, fogA, applicationStateMetadataClient));
         addTask(0, new FinishWorkTask(15, firstAppUUID, testApplicationClientFactory, applicationStateMetadataClient));
+
         addTask(0, new CheckFogLocationTask(30, firstAppUUID, cloud, applicationStateMetadataClient));
         addTask(0, new RequestAppTask(20, firstAppUUID, fogA, platformAppClientFactory, applicationStateMetadataClient));
         addTask(0, new NotifySimulationTrackFinishedTask(0, 0));
 
+
+        //TODO: task timeout
         addTask(1, new StartAppTask(0, deploymentManagerClientFactory, cloud, new ApplicationStartRequest(anotherAppMetadata.getId(), secondAppUUID)));
-        addTask(0, new CheckFogLocationTask(30, firstAppUUID, fogA, applicationStateMetadataClient));
+        addTask(1, new CheckFogLocationTask(30, secondAppUUID, cloud, applicationStateMetadataClient));
         addTask(1, new RequestAppTask(15, secondAppUUID, fogA, platformAppClientFactory, applicationStateMetadataClient));
-        addTask(0, new CheckFogLocationTask(30, firstAppUUID, cloud, applicationStateMetadataClient));
+
+        addTask(1, new CheckFogLocationTask(30, secondAppUUID, fogA, applicationStateMetadataClient));
         addTask(1, new FinishWorkTask(30, secondAppUUID, testApplicationClientFactory, applicationStateMetadataClient));
         addTask(1, new NotifySimulationTrackFinishedTask(0, 1));
 

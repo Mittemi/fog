@@ -25,6 +25,7 @@ public class RequestAppTask extends FogTaskBase {
     @Override
     protected boolean internalExecute() {
         FogIdentification applicationUrl = applicationStateMetadataApi.getApplicationUrl(instanceId);
+        if (applicationUrl == null) return false;
         return platformAppClientFactory.createPlatformAppClient(applicationUrl.toUrl()).requestApplication(targetLocation);
     }
 }

@@ -23,11 +23,8 @@ public class FinishWorkTask extends FogTaskBase {
 
     @Override
     protected boolean internalExecute() {
-
-        //TODO: make sure app is in the right fog!
-
         FogIdentification applicationUrl = applicationStateMetadataApi.getApplicationUrl(instanceId);
-
+        if (applicationUrl == null) return false;
         return testApplicationClientFactory.createWorkClient(applicationUrl.toUrl()).doSomeWork() != null;
     }
 }
