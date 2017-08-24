@@ -7,6 +7,7 @@ import at.sintrum.fog.deploymentmanager.client.DeploymentManagerClientConfig;
 import at.sintrum.fog.metadatamanager.client.MetadataManagerClientConfig;
 import at.sintrum.fog.redis.RedissonConfig;
 import at.sintrum.fog.servercore.ServerCoreConfig;
+import at.sintrum.fog.simulation.appclient.PlatformAppClientConfig;
 import at.sintrum.fog.swagger.SwaggerConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -29,6 +30,7 @@ import org.springframework.context.annotation.Import;
         DeploymentManagerClientConfig.class,
         MetadataManagerClientConfig.class,
         ApplicationHousingClientConfig.class,
+        PlatformAppClientConfig.class,
         TestApplicationClientConfig.class
 })
 public class SimulationServerApplication {

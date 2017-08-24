@@ -59,6 +59,11 @@
             <artifactId>test-application-client</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>at.sintrum.fog</groupId>
+            <artifactId>platform-application-client</artifactId>
+        </dependency>
+
 
     </dependencies>
 

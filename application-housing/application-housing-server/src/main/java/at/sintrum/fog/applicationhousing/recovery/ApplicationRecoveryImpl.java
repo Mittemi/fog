@@ -21,6 +21,7 @@ import org.joda.time.DateTime;
 import org.joda.time.Seconds;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -36,6 +37,7 @@ import java.util.stream.Collectors;
  * Created by Michael Mittermayr on 21.07.2017.
  */
 @Service
+@ConditionalOnProperty(name = "fog.apphousing.enableRecovery", havingValue = "true")
 public class ApplicationRecoveryImpl {
 
     private static final Logger LOG = LoggerFactory.getLogger(ApplicationRecoveryImpl.class);
