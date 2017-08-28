@@ -10,12 +10,15 @@ import java.util.List;
 /**
  * Created by Michael Mittermayr on 23.08.2017.
  */
-@RequestMapping(value = "request")
-public interface RequestAppApi {
+@RequestMapping(value = "lifecycle")
+public interface AppLifecycleApi {
 
     @RequestMapping(value = "move", method = RequestMethod.POST)
     boolean requestApplication(@RequestBody FogIdentification fogIdentification);
 
-    @RequestMapping(value = "getQueue", method = RequestMethod.GET)
+    @RequestMapping(value = "teardown", method = RequestMethod.DELETE)
+    boolean tearDownApplication();
+
+    @RequestMapping(value = "getTravelQueue", method = RequestMethod.GET)
     List<FogIdentification> getTravelQueue();
 }

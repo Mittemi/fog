@@ -33,6 +33,11 @@ public class ContainerManager implements ContainerManagerApi {
     }
 
     @Override
+    public ContainerInfo getContainerInfo(@PathVariable("id") String id) {
+        return dockerService.getContainerInfo(id);
+    }
+
+    @Override
     public boolean startContainer(@PathVariable("id") String id) {
         return dockerService.startContainer(id);
     }

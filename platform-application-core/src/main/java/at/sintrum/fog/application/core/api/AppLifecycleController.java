@@ -1,5 +1,6 @@
 package at.sintrum.fog.application.core.api;
 
+import at.sintrum.fog.application.core.service.ApplicationLifecycleService;
 import at.sintrum.fog.application.core.service.TravelingCoordinationService;
 import at.sintrum.fog.core.dto.FogIdentification;
 import org.slf4j.Logger;
@@ -13,20 +14,27 @@ import java.util.List;
  * Created by Michael Mittermayr on 17.07.2017.
  */
 @RestController
-public class RequestAppController implements RequestAppApi {
+public class AppLifecycleController implements AppLifecycleApi {
 
     private final TravelingCoordinationService travelingCoordinationService;
+    private final ApplicationLifecycleService applicationLifecycleService;
 
-    private static final Logger LOG = LoggerFactory.getLogger(RequestAppController.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AppLifecycleController.class);
 
-    public RequestAppController(TravelingCoordinationService travelingCoordinationService) {
+    public AppLifecycleController(TravelingCoordinationService travelingCoordinationService, ApplicationLifecycleService applicationLifecycleService) {
         this.travelingCoordinationService = travelingCoordinationService;
+        this.applicationLifecycleService = applicationLifecycleService;
     }
 
     @Override
     public boolean requestApplication(@RequestBody FogIdentification fogIdentification) {
 
         return travelingCoordinationService.requestMove(fogIdentification);
+    }
+
+    @Override
+    public boolean tearDownApplication() {
+        return applicationLifecycleService.tearDown();
     }
 
     @Override

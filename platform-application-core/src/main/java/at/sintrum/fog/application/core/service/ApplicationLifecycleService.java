@@ -7,9 +7,13 @@ import at.sintrum.fog.core.dto.FogIdentification;
  */
 public interface ApplicationLifecycleService {
 
-    void moveApplication(FogIdentification target);
+    boolean moveApplication(FogIdentification target);
 
     void moveAppIfRequired();
 
     boolean upgradeAppIfRequired();
+
+    boolean shouldAcceptRequests();
+
+    boolean tearDown();
 }

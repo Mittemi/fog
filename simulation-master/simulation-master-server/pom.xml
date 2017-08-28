@@ -64,7 +64,6 @@
             <artifactId>platform-application-client</artifactId>
         </dependency>
 
-
     </dependencies>
 
     <build>

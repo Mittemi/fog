@@ -314,6 +314,36 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
         return new AsyncResult<>(new FogOperationResult(null, false, environmentInfoService.getFogBaseUrl(), "Unable to recover"));
     }
 
+    @Async
+    @Override
+    public Future<FogOperationResult> remove(ApplicationRemoveRequest applicationRemoveRequest) {
+
+        ContainerInfo containerInfo = dockerService.getContainerInfo(applicationRemoveRequest.getContainerId());
+        if (containerInfo == null) {
+            LOG.warn("Unable to find the container. Can't remove it");
+        } else {
+            return new AsyncResult<>(performOperationIfPossible(containerInfo, () -> performRemove(applicationRemoveRequest, containerInfo)));
+        }
+
+        return new AsyncResult<>(new FogOperationResult(null, false, environmentInfoService.getFogBaseUrl(), "Unable to remove the container"));
+    }
+
+    private FogOperationResult performRemove(ApplicationRemoveRequest applicationRemoveRequest, ContainerInfo containerInfo) {
+        if (containerInfo.isRunning()) {
+            if (!stopApplication(applicationRemoveRequest.getApplicationUrl(), applicationRemoveRequest.getContainerId())) {
+                LOG.error("Failed to stop the container");
+                return new FogOperationResult(applicationRemoveRequest.getContainerId(), false, environmentInfoService.getFogBaseUrl(), "failed to stop application");
+            }
+        }
+        if (dockerService.removeContainer(applicationRemoveRequest.getContainerId())) {
+            LOG.debug("Container deleted: " + applicationRemoveRequest.getContainerId());
+            return new FogOperationResult(applicationRemoveRequest.getContainerId(), true, environmentInfoService.getFogBaseUrl());
+        }
+        LOG.error("Failed to remove the container");
+
+        return new FogOperationResult(applicationRemoveRequest.getContainerId(), false, environmentInfoService.getFogBaseUrl());
+    }
+
     private FogOperationResult performRecover(ApplicationRecoveryRequest applicationRecoveryRequest, ContainerInfo containerInfo, DockerContainerMetadata containerMetadata) {
 
         //TODO: prevent simple restart on subsequent tries

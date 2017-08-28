@@ -22,4 +22,7 @@ public interface ApplicationManagerApi {
 
     @RequestMapping(value = "recover", method = RequestMethod.POST)
     FogOperationResult recoverApplication(@RequestBody ApplicationRecoveryRequest applicationRecoveryRequest);
+
+    @RequestMapping(value = "remove", method = RequestMethod.DELETE)
+    FogOperationResult removeApplication(@RequestBody ApplicationRemoveRequest applicationRemoveRequest);
 }

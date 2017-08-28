@@ -1,7 +1,7 @@
 package at.sintrum.fog.application.core;
 
+import at.sintrum.fog.application.core.api.AppLifecycleController;
 import at.sintrum.fog.application.core.api.ApplicationInfo;
-import at.sintrum.fog.application.core.api.RequestAppController;
 import at.sintrum.fog.applicationhousing.client.ApplicationHousingClientConfig;
 import at.sintrum.fog.core.PlatformCoreConfig;
 import at.sintrum.fog.core.service.EnvironmentInfoService;
@@ -30,7 +30,7 @@ import javax.annotation.PostConstruct;
  * Created by Michael Mittermayr on 24.05.2017.
  */
 @Configuration
-@ComponentScan(basePackageClasses = {ApplicationInfo.class, RequestAppController.class})
+@ComponentScan(basePackageClasses = {ApplicationInfo.class, AppLifecycleController.class})
 @Import({PlatformCoreConfig.class,
         HostInfoProviderConfig.class,
         ApplicationHousingClientConfig.class,

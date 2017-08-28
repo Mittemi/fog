@@ -6,6 +6,7 @@ import at.sintrum.fog.applicationhousing.client.api.AppEvolution;
 import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.core.service.EnvironmentInfoService;
 import at.sintrum.fog.deploymentmanager.api.dto.ApplicationMoveRequest;
+import at.sintrum.fog.deploymentmanager.api.dto.ApplicationRemoveRequest;
 import at.sintrum.fog.deploymentmanager.api.dto.ApplicationUpgradeRequest;
 import at.sintrum.fog.deploymentmanager.api.dto.FogOperationResult;
 import at.sintrum.fog.deploymentmanager.client.api.ApplicationManager;
@@ -33,6 +34,7 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
     private final TravelingCoordinationService travelingCoordinationService;
     private final CloudLocatorService cloudLocatorService;
     private final AppEvolution appEvolution;
+    private boolean acceptRequests = false;
 
     private final ApplicationStateMetadataApi applicationStateMetadataClient;
     private final SimulationClientService simulationClientService;
@@ -56,8 +58,14 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
     }
 
     @Override
-    public void moveApplication(FogIdentification target) {
+    public boolean moveApplication(FogIdentification target) {
         synchronized (this) {
+            if (acceptRequests) {
+                acceptRequests = false;
+            } else {
+                LOG.warn("Cancel move request. ");
+                return false;
+            }
             LOG.debug("Request application move to fog: " + target.toUrl());
 
             setMovingStateMetadata(target);
@@ -65,7 +73,7 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
             // BEGIN Simulation
             simulationClientService.notifyMove(target);
             // END Simulation
-            applicationManager.moveApplication(new ApplicationMoveRequest(environmentInfoService.getOwnContainerId(), target.toUrl()));
+            return applicationManager.moveApplication(new ApplicationMoveRequest(environmentInfoService.getOwnContainerId(), target.toUrl())).isSuccessful();
         }
     }
 
@@ -104,6 +112,9 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
 
     public boolean upgradeAppIfRequired() {
         synchronized (this) {
+
+            boolean lAcceptRequests = acceptRequests;
+
             try {
                 AppUpdateInfo appUpdateInfo = appEvolution.checkForUpdate(new AppIdentification(environmentInfoService.getMetadataId()));
 
@@ -112,6 +123,13 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
                     ApplicationUpgradeRequest applicationUpgradeRequest = new ApplicationUpgradeRequest();
                     applicationUpgradeRequest.setContainerId(environmentInfoService.getOwnContainerId());
                     applicationUpgradeRequest.setApplicationUrl(environmentInfoService.getOwnUrl());
+
+                    if (acceptRequests) {
+                        acceptRequests = false;
+                    } else {
+                        LOG.warn("We can't upgrade. Something else is currently in operation");
+                        return false;
+                    }
 
                     ApplicationStateMetadata stateMetadata = applicationStateMetadataClient.setState(environmentInfoService.getInstanceId(), AppState.Upgrade);
 
@@ -128,8 +146,33 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
 
             } catch (Exception ex) {
                 LOG.error("Check for updates failed", ex);
+            } finally {
+                acceptRequests = lAcceptRequests;       //restore
             }
             return false;
+        }
+    }
+
+    @Override
+    public boolean shouldAcceptRequests() {
+        return acceptRequests;
+    }
+
+    @Override
+    public boolean tearDown() {
+        synchronized (this) {
+            if (!acceptRequests) {
+                LOG.warn("Teardown currently not possible");
+                return false;
+            }
+            acceptRequests = false;
+            // if this fails, the recovery service will restart the app and everything is fine again
+            try {
+                return applicationManager.removeApplication(new ApplicationRemoveRequest(environmentInfoService.getOwnContainerId(), environmentInfoService.getOwnUrl())).isSuccessful();
+            } catch (Exception ex) {
+                LOG.error("Teardown failed", ex);
+                return false;
+            }
         }
     }
 
@@ -141,6 +184,7 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
 
         synchronized (this) {
             performStartupWork(fogIdentification, instanceId);
+            acceptRequests = true;
         }
     }
 

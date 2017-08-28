@@ -1,7 +1,9 @@
 package at.sintrum.fog.simulation.service;
 
 import at.sintrum.fog.application.api.WorkApi;
+import at.sintrum.fog.application.client.ApplicationClientFactory;
 import at.sintrum.fog.application.client.api.TestApplicationClientFactory;
+import at.sintrum.fog.application.core.api.AppLifecycleApi;
 import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.deploymentmanager.api.dto.ApplicationStartRequest;
 import at.sintrum.fog.deploymentmanager.api.dto.FogOperationResult;
@@ -10,8 +12,6 @@ import at.sintrum.fog.deploymentmanager.client.factory.DeploymentManagerClientFa
 import at.sintrum.fog.metadatamanager.api.ApplicationStateMetadataApi;
 import at.sintrum.fog.servercore.service.RequestInfoService;
 import at.sintrum.fog.simulation.api.dto.SimulationStartInfoDto;
-import at.sintrum.fog.simulation.appclient.PlatformAppClient;
-import at.sintrum.fog.simulation.appclient.PlatformAppClientFactory;
 import at.sintrum.fog.simulation.model.ApplicationExecutionStatus;
 import at.sintrum.fog.simulation.model.SimulationState;
 import org.redisson.api.RMap;
@@ -35,7 +35,8 @@ public class SimulationServiceImpl implements SimulationService {
     private final RMap<String, SimulationStartInfoDto> simulationStartInfos;
     private final RMap<String, ApplicationExecutionStatus> applicationExecutionStatus;
     private final RequestInfoService requestInfoService;
-    private final PlatformAppClientFactory platformAppClientFactory;
+    private final ApplicationClientFactory applicationClientFactory;
+
     private final TestApplicationClientFactory testApplicationClientFactory;
     private final ApplicationStateMetadataApi applicationStateMetadataClient;
 
@@ -44,7 +45,7 @@ public class SimulationServiceImpl implements SimulationService {
                                  TestApplicationClientFactory testApplicationClientFactory,
                                  ApplicationStateMetadataApi applicationStateMetadataClient,
                                  RequestInfoService requestInfoService,
-                                 PlatformAppClientFactory platformAppClientFactory) {
+                                 ApplicationClientFactory applicationClientFactory) {
         this.deploymentManagerClientFactory = deploymentManagerClientFactory;
         this.redissonClient = redissonClient;
         this.testApplicationClientFactory = testApplicationClientFactory;
@@ -54,7 +55,8 @@ public class SimulationServiceImpl implements SimulationService {
         simulationStartInfos = redissonClient.getMap("Simulation.StartInfo.Map");
         applicationExecutionStatus = redissonClient.getMap("Simulation.ApplicationExecutionStatus.Map");
         this.requestInfoService = requestInfoService;
-        this.platformAppClientFactory = platformAppClientFactory;
+
+        this.applicationClientFactory = applicationClientFactory;
     }
 
 
@@ -121,7 +123,7 @@ public class SimulationServiceImpl implements SimulationService {
         FogIdentification[] fogs = simulationStartInfoDto.getFogs();
 
         FogIdentification applicationUrl = applicationStateMetadataClient.getApplicationUrl(instanceId);
-        PlatformAppClient platformAppClient = platformAppClientFactory.createPlatformAppClient(applicationUrl.toUrl());
+        AppLifecycleApi platformAppClient = applicationClientFactory.createAppLifecycleClient(applicationUrl.toUrl());
 
         FogIdentification fog = fogs[iteration % fogs.length];
         boolean b = platformAppClient.requestApplication(fog);

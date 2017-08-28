@@ -67,7 +67,17 @@ public class ApplicationManager implements ApplicationManagerApi {
         try {
             return applicationManagerService.recover(applicationRecoveryRequest).get();
         } catch (InterruptedException | ExecutionException e) {
-            LOG.error("move failed", e);
+            LOG.error("recover failed", e);
+        }
+        return new FogOperationResult(null, false, environmentInfoService.getFogBaseUrl());
+    }
+
+    @Override
+    public FogOperationResult removeApplication(@RequestBody ApplicationRemoveRequest applicationRemoveRequest) {
+        try {
+            return applicationManagerService.remove(applicationRemoveRequest).get();
+        } catch (InterruptedException | ExecutionException e) {
+            LOG.error("remove failed", e);
         }
         return new FogOperationResult(null, false, environmentInfoService.getFogBaseUrl());
     }

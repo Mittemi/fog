@@ -1,7 +1,7 @@
 package at.sintrum.fog.application.client;
 
+import at.sintrum.fog.application.core.api.AppLifecycleApi;
 import at.sintrum.fog.application.core.api.ApplicationInfoApi;
-import at.sintrum.fog.application.core.api.RequestAppApi;
 import at.sintrum.fog.clientcore.annotation.EnableRetry;
 import at.sintrum.fog.clientcore.client.ClientFactory;
 
@@ -14,5 +14,5 @@ public interface ApplicationClientFactory extends ClientFactory {
     ApplicationInfoApi createApplicationInfoClient(String url);
 
     @EnableRetry
-    RequestAppApi createRequestAppClient(String url);
+    AppLifecycleApi createAppLifecycleClient(String url);
 }

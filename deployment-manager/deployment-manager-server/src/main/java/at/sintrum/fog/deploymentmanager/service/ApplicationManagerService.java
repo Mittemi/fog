@@ -15,4 +15,6 @@ public interface ApplicationManagerService {
     Future<FogOperationResult> upgrade(ApplicationUpgradeRequest applicationUpgradeRequest);
 
     Future<FogOperationResult> recover(ApplicationRecoveryRequest applicationRecoveryRequest);
+
+    Future<FogOperationResult> remove(ApplicationRemoveRequest applicationRemoveRequest);
 }
