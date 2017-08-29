@@ -30,7 +30,8 @@ public class ResourcesController implements FogResourcesApi {
 
     @Override
     public FogResourceInfoDto freeResources(FogIdentification fogIdentification) {
-        ResourceInfo free = fogResourceService.getAvailableResources(fogIdentification).subtract(fogResourceService.getUsedResources(fogIdentification));
+        ResourceInfo free = fogResourceService.getAvailableResources(fogIdentification);
+        free.subtract(fogResourceService.getUsedResources(fogIdentification));
         return new FogResourceInfoDto(fogIdentification, free);
     }
 }

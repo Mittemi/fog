@@ -1,5 +1,7 @@
 package at.sintrum.fog.deploymentmanager.api.dto;
 
+import at.sintrum.fog.core.dto.FogIdentification;
+
 /**
  * Created by Michael Mittermayr on 03.06.2017.
  */
@@ -7,11 +9,11 @@ public class ApplicationMoveRequest {
 
     private String containerId;
 
-    private String targetFog;
+    private FogIdentification targetFog;
 
     private String applicationUrl;
 
-    public ApplicationMoveRequest(String containerId, String targetFog) {
+    public ApplicationMoveRequest(String containerId, FogIdentification targetFog) {
         this.containerId = containerId;
         this.targetFog = targetFog;
     }
@@ -27,11 +29,11 @@ public class ApplicationMoveRequest {
         this.containerId = containerId;
     }
 
-    public String getTargetFog() {
+    public FogIdentification getTargetFog() {
         return targetFog;
     }
 
-    public void setTargetFog(String targetFog) {
+    public void setTargetFog(FogIdentification targetFog) {
         this.targetFog = targetFog;
     }
 

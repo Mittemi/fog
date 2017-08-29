@@ -73,7 +73,7 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
             // BEGIN Simulation
             simulationClientService.notifyMove(target);
             // END Simulation
-            return applicationManager.moveApplication(new ApplicationMoveRequest(environmentInfoService.getOwnContainerId(), target.toUrl())).isSuccessful();
+            return applicationManager.moveApplication(new ApplicationMoveRequest(environmentInfoService.getOwnContainerId(), target)).isSuccessful();
         }
     }
 

@@ -1,5 +1,6 @@
 package at.sintrum.fog.deploymentmanager.api;
 
+import at.sintrum.fog.core.dto.ResourceInfo;
 import at.sintrum.fog.deploymentmanager.api.dto.*;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,4 +26,7 @@ public interface ApplicationManagerApi {
 
     @RequestMapping(value = "remove", method = RequestMethod.DELETE)
     FogOperationResult removeApplication(@RequestBody ApplicationRemoveRequest applicationRemoveRequest);
+
+    @RequestMapping(value = "checkResources", method = RequestMethod.POST)
+    boolean checkResources(@RequestBody ResourceInfo resourceInfo);
 }

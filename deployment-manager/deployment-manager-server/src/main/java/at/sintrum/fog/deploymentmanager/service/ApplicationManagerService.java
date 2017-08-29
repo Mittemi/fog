@@ -1,5 +1,6 @@
 package at.sintrum.fog.deploymentmanager.service;
 
+import at.sintrum.fog.core.dto.ResourceInfo;
 import at.sintrum.fog.deploymentmanager.api.dto.*;
 
 import java.util.concurrent.Future;
@@ -17,4 +18,6 @@ public interface ApplicationManagerService {
     Future<FogOperationResult> recover(ApplicationRecoveryRequest applicationRecoveryRequest);
 
     Future<FogOperationResult> remove(ApplicationRemoveRequest applicationRemoveRequest);
+
+    boolean checkResources(ResourceInfo resourceInfo);
 }

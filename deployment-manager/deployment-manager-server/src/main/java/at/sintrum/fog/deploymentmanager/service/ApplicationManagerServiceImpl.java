@@ -4,13 +4,18 @@ import at.sintrum.fog.applicationhousing.api.dto.AppIdentification;
 import at.sintrum.fog.applicationhousing.api.dto.AppUpdateInfo;
 import at.sintrum.fog.applicationhousing.client.api.AppEvolution;
 import at.sintrum.fog.clientcore.service.ShutdownApplicationService;
+import at.sintrum.fog.core.dto.FogIdentification;
+import at.sintrum.fog.core.dto.ResourceInfo;
 import at.sintrum.fog.core.service.EnvironmentInfoService;
 import at.sintrum.fog.deploymentmanager.api.dto.*;
+import at.sintrum.fog.deploymentmanager.client.api.ApplicationManager;
 import at.sintrum.fog.deploymentmanager.client.factory.DeploymentManagerClientFactory;
 import at.sintrum.fog.metadatamanager.api.ContainerMetadataApi;
 import at.sintrum.fog.metadatamanager.api.ImageMetadataApi;
 import at.sintrum.fog.metadatamanager.api.dto.DockerContainerMetadata;
 import at.sintrum.fog.metadatamanager.api.dto.DockerImageMetadata;
+import at.sintrum.fog.simulation.api.FogResourcesApi;
+import at.sintrum.fog.simulation.api.dto.FogResourceInfoDto;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
@@ -40,6 +45,10 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
     private final DeploymentService deploymentService;
     private final AppEvolution appEvolutionClient;
     private final RedissonClient redissonClient;
+    private final FogResourcesApi fogResourcesApi;
+    private final FogIdentification currentFogIdentification;
+
+    private final ResourceInfo usedResources;
 
     public ApplicationManagerServiceImpl(DockerService dockerService,
                                          ImageMetadataApi imageMetadataApi,
@@ -49,7 +58,8 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
                                          ShutdownApplicationService shutdownApplicationService,
                                          DeploymentService deploymentService,
                                          AppEvolution appEvolutionClient,
-                                         RedissonClient redissonClient) {
+                                         RedissonClient redissonClient,
+                                         FogResourcesApi fogResourcesApi) {
         this.dockerService = dockerService;
         this.imageMetadataApi = imageMetadataApi;
         this.containerMetadataApi = containerMetadataApi;
@@ -59,13 +69,16 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
         this.deploymentService = deploymentService;
         this.appEvolutionClient = appEvolutionClient;
         this.redissonClient = redissonClient;
+        this.fogResourcesApi = fogResourcesApi;
+        currentFogIdentification = FogIdentification.parseFogBaseUrl(environmentInfoService.getFogBaseUrl());
+        usedResources = new ResourceInfo();
     }
 
     private static final Logger LOG = LoggerFactory.getLogger(ApplicationManagerServiceImpl.class);
 
 
     private FogOperationResult moveContainerToRemote(ApplicationMoveRequest applicationMoveRequest, DockerImageMetadata imageMetadata, String instanceId) {
-        at.sintrum.fog.deploymentmanager.client.api.ApplicationManager applicationManagerClient = clientFactory.createApplicationManagerClient(applicationMoveRequest.getTargetFog());
+        at.sintrum.fog.deploymentmanager.client.api.ApplicationManager applicationManagerClient = clientFactory.createApplicationManagerClient(applicationMoveRequest.getTargetFog().toUrl());
         FogOperationResult fogOperationResult = null;
 
         try {
@@ -127,18 +140,51 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
             LOG.error("Image metadata missing for: " + metadataId);
             return new FogOperationResult(null, false, environmentInfoService.getFogBaseUrl(), "Image metadata missing.");
         } else {
-            FogOperationResult fogOperationResult = createContainer(applicationStartRequest, imageMetadata);
 
-            if (!fogOperationResult.isSuccessful()) {
-                return fogOperationResult;
+            if (!ensureLocalResources(true)) {
+                LOG.warn("Can't start application. Not enough resources available right now.");
+                return new FogOperationResult(null, false, environmentInfoService.getFogBaseUrl(), "Not enough resources");
             }
+            FogOperationResult result = null;
 
-            //TODO: logging
-            if (!dockerService.startContainer(fogOperationResult.getContainerId())) {
-                return new FogOperationResult(fogOperationResult.getContainerId(), false, environmentInfoService.getFogBaseUrl(), "Failed to start container");
+            try {
+                result = createContainer(applicationStartRequest, imageMetadata);
+
+                if (result.isSuccessful()) {
+                    //TODO: logging
+                    if (!dockerService.startContainer(result.getContainerId())) {
+                        return new FogOperationResult(result.getContainerId(), false, environmentInfoService.getFogBaseUrl(), "Failed to start container");
+                    }
+                    //   metadataService.finishStartup(applicationStartRequest);
+                    result = new FogOperationResult(result.getContainerId(), true, environmentInfoService.getFogBaseUrl());
+                }
+            } finally {
+                if (result == null || !result.isSuccessful()) {
+                    freeLocalResources();
+                }
             }
-            //   metadataService.finishStartup(applicationStartRequest);
-            return new FogOperationResult(fogOperationResult.getContainerId(), true, environmentInfoService.getFogBaseUrl());
+            return result;
+        }
+    }
+
+    private void freeLocalResources() {
+        synchronized (usedResources) {
+            LOG.debug("Free resources for 1 application");
+            usedResources.subtract(new ResourceInfo(1, 1, 1, 1));
+        }
+    }
+
+    private synchronized boolean ensureLocalResources(boolean blockResourcesIfAvailable) {
+        FogResourceInfoDto fogResourceInfoDto = fogResourcesApi.availableResources(currentFogIdentification);
+        ResourceInfo demand = new ResourceInfo(1, 1, 1, 1);
+        synchronized (usedResources) {
+            LOG.debug("Check resources for 1 application");
+            boolean result = fogResourceInfoDto.getResourceInfo().isEnough(demand.copy().add(usedResources));
+            if (result && blockResourcesIfAvailable) {
+                LOG.debug("Block resources for 1 application");
+                usedResources.add(demand);
+            }
+            return result;
         }
     }
 
@@ -216,6 +262,12 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
             return new FogOperationResult(null, false, environmentInfoService.getFogBaseUrl(), "missing container metadata");
         } else {
 
+            // ensure there are enough resources at the remote location to prevent unnecessary work
+            if (!checkRemoteResources(applicationMoveRequest)) {
+                LOG.warn("Not enough resources at remote target. Moving not possible.");
+                return new FogOperationResult(containerInfo.getId(), false, environmentInfoService.getFogBaseUrl(), "Not enough resources at remote location");
+            }
+
             String originalContainerId = applicationMoveRequest.getContainerId();
             if (!stopApplication(applicationMoveRequest.getApplicationUrl(), originalContainerId)) {
                 return new FogOperationResult(containerInfo.getId(), false, environmentInfoService.getFogBaseUrl(), "Failed to stop container");
@@ -265,6 +317,11 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
 
             return moveContainerToRemote(applicationMoveRequest, imageMetadata, containerMetadata.getInstanceId());
         }
+    }
+
+    private boolean checkRemoteResources(ApplicationMoveRequest applicationMoveRequest) {
+        ApplicationManager applicationManagerClient = clientFactory.createApplicationManagerClient(applicationMoveRequest.getTargetFog().toUrl());
+        return applicationManagerClient.checkResources(new ResourceInfo(1, 1, 1, 1));
     }
 
     private boolean stopApplication(String applicationUrl, String containerId) {
@@ -328,6 +385,11 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
         return new AsyncResult<>(new FogOperationResult(null, false, environmentInfoService.getFogBaseUrl(), "Unable to remove the container"));
     }
 
+    @Override
+    public boolean checkResources(ResourceInfo resourceInfo) {
+        return ensureLocalResources(false);
+    }
+
     private FogOperationResult performRemove(ApplicationRemoveRequest applicationRemoveRequest, ContainerInfo containerInfo) {
         if (containerInfo.isRunning()) {
             if (!stopApplication(applicationRemoveRequest.getApplicationUrl(), applicationRemoveRequest.getContainerId())) {
@@ -337,6 +399,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
         }
         if (dockerService.removeContainer(applicationRemoveRequest.getContainerId())) {
             LOG.debug("Container deleted: " + applicationRemoveRequest.getContainerId());
+            freeLocalResources();
             return new FogOperationResult(applicationRemoveRequest.getContainerId(), true, environmentInfoService.getFogBaseUrl());
         }
         LOG.error("Failed to remove the container");

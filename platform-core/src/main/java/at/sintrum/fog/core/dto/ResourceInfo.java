@@ -20,6 +20,13 @@ public class ResourceInfo {
         this.network = network;
     }
 
+    public ResourceInfo(ResourceInfo resourceInfo) {
+        this.storage = resourceInfo.storage;
+        this.cpu = resourceInfo.cpu;
+        this.network = resourceInfo.network;
+        this.memory = resourceInfo.memory;
+    }
+
     public float getStorage() {
         return storage;
     }
@@ -57,6 +64,22 @@ public class ResourceInfo {
     }
 
     public ResourceInfo subtract(ResourceInfo resourceInfo) {
-        return new ResourceInfo(this.storage - resourceInfo.storage, this.cpu - resourceInfo.cpu, this.memory - resourceInfo.memory, this.network - resourceInfo.network);
+        this.storage -= resourceInfo.storage;
+        this.cpu -= resourceInfo.cpu;
+        this.memory -= resourceInfo.memory;
+        this.network -= resourceInfo.network;
+        return this;
+    }
+
+    public ResourceInfo copy() {
+        return new ResourceInfo(this);
+    }
+
+    public ResourceInfo add(ResourceInfo resourceInfo) {
+        this.storage += resourceInfo.storage;
+        this.cpu += resourceInfo.cpu;
+        this.memory += resourceInfo.memory;
+        this.network += resourceInfo.network;
+        return this;
     }
 }

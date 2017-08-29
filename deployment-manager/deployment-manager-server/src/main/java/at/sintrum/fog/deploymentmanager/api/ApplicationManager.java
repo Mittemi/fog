@@ -1,5 +1,6 @@
 package at.sintrum.fog.deploymentmanager.api;
 
+import at.sintrum.fog.core.dto.ResourceInfo;
 import at.sintrum.fog.core.service.EnvironmentInfoService;
 import at.sintrum.fog.deploymentmanager.api.dto.*;
 import at.sintrum.fog.deploymentmanager.service.ApplicationManagerService;
@@ -80,5 +81,10 @@ public class ApplicationManager implements ApplicationManagerApi {
             LOG.error("remove failed", e);
         }
         return new FogOperationResult(null, false, environmentInfoService.getFogBaseUrl());
+    }
+
+    @Override
+    public boolean checkResources(@RequestBody ResourceInfo resourceInfo) {
+        return applicationManagerService.checkResources(resourceInfo);
     }
 }
