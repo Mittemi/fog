@@ -4,6 +4,7 @@ import at.sintrum.fog.core.dto.ResourceInfo;
 import at.sintrum.fog.core.service.EnvironmentInfoService;
 import at.sintrum.fog.deploymentmanager.api.dto.*;
 import at.sintrum.fog.deploymentmanager.service.ApplicationManagerService;
+import at.sintrum.fog.servercore.connectionfilter.SimulationControlledOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,6 +30,7 @@ public class ApplicationManager implements ApplicationManagerApi {
     }
 
     @Override
+    @SimulationControlledOperation
     public FogOperationResult requestApplicationStart(@RequestBody ApplicationStartRequest applicationStartRequest) {
         try {
             return applicationManagerService.start(applicationStartRequest).get();
@@ -39,6 +41,7 @@ public class ApplicationManager implements ApplicationManagerApi {
     }
 
     @Override
+    @SimulationControlledOperation
     public FogOperationResult moveApplication(@RequestBody ApplicationMoveRequest applicationMoveRequest) {
         try {
             return applicationManagerService.move(applicationMoveRequest).get();
@@ -49,6 +52,7 @@ public class ApplicationManager implements ApplicationManagerApi {
     }
 
     @Override
+    @SimulationControlledOperation
     public FogOperationResult upgradeApplication(@RequestBody ApplicationUpgradeRequest applicationUpgradeRequest) {
         try {
             if (!environmentInfoService.getServiceProfile().contains("cloud")) {
@@ -64,6 +68,7 @@ public class ApplicationManager implements ApplicationManagerApi {
     }
 
     @Override
+    @SimulationControlledOperation
     public FogOperationResult recoverApplication(@RequestBody ApplicationRecoveryRequest applicationRecoveryRequest) {
         try {
             return applicationManagerService.recover(applicationRecoveryRequest).get();
@@ -74,6 +79,7 @@ public class ApplicationManager implements ApplicationManagerApi {
     }
 
     @Override
+    @SimulationControlledOperation
     public FogOperationResult removeApplication(@RequestBody ApplicationRemoveRequest applicationRemoveRequest) {
         try {
             return applicationManagerService.remove(applicationRemoveRequest).get();

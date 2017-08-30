@@ -2,6 +2,7 @@ package at.sintrum.fog.simulation.client.api;
 
 import at.sintrum.fog.clientcore.annotation.EnableRetry;
 import at.sintrum.fog.clientcore.client.ClientFactory;
+import at.sintrum.fog.simulation.api.FogCellStateApi;
 import at.sintrum.fog.simulation.api.FogResourcesApi;
 import at.sintrum.fog.simulation.api.SimulationApi;
 
@@ -15,4 +16,7 @@ public interface SimulationClientFactory extends ClientFactory {
 
     @EnableRetry
     FogResourcesApi createFogResourcesClient(String url);
+
+    @EnableRetry
+    FogCellStateApi createFogCellStateClient(String url);
 }

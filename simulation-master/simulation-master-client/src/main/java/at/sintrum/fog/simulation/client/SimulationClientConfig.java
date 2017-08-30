@@ -2,6 +2,7 @@ package at.sintrum.fog.simulation.client;
 
 import at.sintrum.fog.clientcore.ClientCoreConfig;
 import at.sintrum.fog.clientcore.client.ClientFactoryFactory;
+import at.sintrum.fog.simulation.api.FogCellStateApi;
 import at.sintrum.fog.simulation.api.FogResourcesApi;
 import at.sintrum.fog.simulation.api.SimulationApi;
 import at.sintrum.fog.simulation.client.api.SimulationClientFactory;
@@ -20,6 +21,9 @@ public class SimulationClientConfig {
 
     private final Logger LOG = LoggerFactory.getLogger(SimulationClientConfig.class);
 
+    public SimulationClientConfig() {
+    }
+
     @Bean
     public SimulationClientFactory testApplicationClientFactory(ClientFactoryFactory factory) {
         LOG.debug("Create SimulationClient");
@@ -34,5 +38,10 @@ public class SimulationClientConfig {
     @Bean
     public FogResourcesApi fogResourcesClient(SimulationClientFactory simulationClientFactory) {
         return simulationClientFactory.createFogResourcesClient(null);
+    }
+
+    @Bean
+    public FogCellStateApi fogCellStateClient(SimulationClientFactory simulationClientFactory) {
+        return simulationClientFactory.createFogCellStateClient(null);
     }
 }

@@ -35,9 +35,18 @@ public class FogIdentification {
             baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
         }
 
-        int idx = baseUrl.lastIndexOf(":");
-        String ip = baseUrl.substring(0, idx);
-        int port = Integer.parseInt(baseUrl.substring(idx + 1));
+        return parseFogId(baseUrl);
+    }
+
+    public static FogIdentification parseFogId(String fogId) {
+
+        if (StringUtils.isEmpty(fogId)) {
+            return null;
+        }
+
+        int idx = fogId.lastIndexOf(":");
+        String ip = fogId.substring(0, idx);
+        int port = Integer.parseInt(fogId.substring(idx + 1));
 
         return new FogIdentification(ip, port);
     }

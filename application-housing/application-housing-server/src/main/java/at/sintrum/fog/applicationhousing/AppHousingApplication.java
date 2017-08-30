@@ -6,6 +6,8 @@ import at.sintrum.fog.deploymentmanager.client.DeploymentManagerClientConfig;
 import at.sintrum.fog.metadatamanager.client.MetadataManagerClientConfig;
 import at.sintrum.fog.redis.RedissonConfig;
 import at.sintrum.fog.servercore.ServerCoreConfig;
+import at.sintrum.fog.servercore.connectionfilter.SimulationControlledReachableServiceConfig;
+import at.sintrum.fog.simulation.client.SimulationClientConfig;
 import at.sintrum.fog.swagger.SwaggerConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -27,7 +29,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         ServerCoreConfig.class,
         MetadataManagerClientConfig.class,
         DeploymentManagerClientConfig.class,
-        ApplicationClientConfig.class
+        ApplicationClientConfig.class,
+        SimulationClientConfig.class,
+        SimulationControlledReachableServiceConfig.class
 })
 @EnableScheduling
 public class AppHousingApplication {

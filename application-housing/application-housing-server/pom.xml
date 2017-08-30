@@ -57,6 +57,10 @@
             <groupId>at.sintrum.fog</groupId>
             <artifactId>application-housing-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>at.sintrum.fog</groupId>
+            <artifactId>simulation-master-client</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

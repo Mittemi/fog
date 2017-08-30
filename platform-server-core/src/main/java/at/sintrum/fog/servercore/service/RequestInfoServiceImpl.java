@@ -20,7 +20,7 @@ public class RequestInfoServiceImpl implements RequestInfoService {
     }
 
     public String getCallerFogId() {
-        return servletRequest.getHeader("CallerFogId");
+        return servletRequest.getHeader("FogId");
     }
 
     public String getCallerServiceUrl() {

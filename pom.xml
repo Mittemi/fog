@@ -64,6 +64,13 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- https://mvnrepository.com/artifact/org.aspectj/aspectjtools -->
+            <dependency>
+                <groupId>org.aspectj</groupId>
+                <artifactId>aspectjtools</artifactId>
+                <version>1.8.10</version>
+            </dependency>
+
             <!--Logging-->
             <dependency>
                 <groupId>ch.qos.logback</groupId>

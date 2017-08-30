@@ -20,7 +20,13 @@ import javax.annotation.PostConstruct;
         @PropertySource("classpath:servercore-application.yml")
 )
 @EnableConfigurationProperties
-@ComponentScan(basePackageClasses = {RequestInfoServiceImpl.class, FogEnvironmentInfoContributor.class})
+@ComponentScan(
+        basePackageClasses = {RequestInfoServiceImpl.class, FogEnvironmentInfoContributor.class},
+        excludeFilters = {
+                @ComponentScan.Filter(type = FilterType.ASPECTJ, pattern = "at.sintrum.fog.servercore.connectionfilter")
+        }
+)
+
 @Import({HostInfoProviderConfig.class})
 @EnableDiscoveryClient
 public class ServerCoreConfig {
