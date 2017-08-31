@@ -355,6 +355,8 @@
                                     <argument>${project.artifactId}</argument>
                                     <argument>-t</argument>
                                     <argument>deb.hw.sintrum.at:5000/${project.artifactId}</argument>
+                                    <argument>-t</argument>
+                                    <argument>ubu1604.internal.sintrum.at:5000/${project.artifactId}</argument>
                                 </arguments>
                             </configuration>
                         </execution>

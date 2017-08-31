@@ -1,7 +1,9 @@
 package at.sintrum.fog.simulation.api;
 
+import at.sintrum.fog.simulation.api.dto.BasicScenarioInfoDto;
 import at.sintrum.fog.simulation.taskengine.FogTaskList;
 import at.sintrum.fog.simulation.taskengine.FogTaskRunner;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,8 +24,8 @@ public class ScenarioController {
     }
 
     @RequestMapping(value = "run", method = RequestMethod.POST)
-    public void runScenario() {
-        taskList.build();
+    public void runScenario(@RequestBody BasicScenarioInfoDto basicScenarioInfoDto) {
+        taskList.build(basicScenarioInfoDto.getCloud(), basicScenarioInfoDto.getFogA());
         taskRunner.setTaskList(taskList);
     }
 }

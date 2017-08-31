@@ -56,7 +56,7 @@ public class FogTaskList {
     }
 
 
-    public boolean build() {
+    public boolean build(FogIdentification cloud, FogIdentification fogA) {
 
         List<DockerImageMetadata> all = metadataManagerClientFactory.createApplicationMetadataClient(null).getAll();
 
@@ -73,8 +73,8 @@ public class FogTaskList {
         String firstAppUUID = UUID.randomUUID().toString();
         String secondAppUUID = UUID.randomUUID().toString();
 
-        FogIdentification cloud = FogIdentification.parseFogBaseUrl("192.168.1.10:8088");
-        FogIdentification fogA = FogIdentification.parseFogBaseUrl("192.168.1.10:8080");
+        //    FogIdentification cloud = FogIdentification.parseFogBaseUrl("192.168.1.10:8088");
+//        FogIdentification fogA = FogIdentification.parseFogBaseUrl("192.168.1.10:8080");
 
         addTask(0, new StartAppTask(0, deploymentManagerClientFactory, cloud, new ApplicationStartRequest(testAppMetadata.getId(), firstAppUUID)));
         addTask(0, new RequestAppTask(15, firstAppUUID, fogA, applicationClientFactory, applicationStateMetadataClient));

@@ -1,9 +1,11 @@
 package at.sintrum.fog.metadatamanager.api;
 
+import at.sintrum.fog.metadatamanager.api.dto.DemoDataDto;
 import at.sintrum.fog.metadatamanager.api.dto.DockerImageMetadata;
 import at.sintrum.fog.metadatamanager.service.ApplicationStateMetadataService;
 import at.sintrum.fog.metadatamanager.service.ContainerMetadataService;
 import at.sintrum.fog.metadatamanager.service.ImageMetadataService;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,22 +32,22 @@ public class DemoDataController {
     }
 
     @RequestMapping(value = "reset", method = RequestMethod.POST)
-    public List<DockerImageMetadata> reset() {
+    public List<DockerImageMetadata> reset(@RequestBody DemoDataDto demoDataDto) {
         containerMetadataService.deleteAll();
         imageMetadataService.deleteAll();
         applicationStateMetadataService.deleteAll();
 
         return Arrays.asList(
-                createImageMetadata("test-application", 10000, true),
-                createImageMetadata("test-application", 10000, false),
-                createImageMetadata("another-application", 10001, true),
-                createImageMetadata("another-application", 10001, false)
+                createImageMetadata(demoDataDto, "test-application", 10000, true),
+                createImageMetadata(demoDataDto, "test-application", 10000, false),
+                createImageMetadata(demoDataDto, "another-application", 10001, true),
+                createImageMetadata(demoDataDto, "another-application", 10001, false)
         );
     }
 
-    private DockerImageMetadata createImageMetadata(String name, int port, boolean enableDebug) {
+    private DockerImageMetadata createImageMetadata(DemoDataDto demoDataDto, String name, int port, boolean enableDebug) {
         DockerImageMetadata imageMetadata = new DockerImageMetadata();
-        imageMetadata.setImage("deb.hw.sintrum.at:5000/test-application");
+        imageMetadata.setImage(demoDataDto.getRegistryUrl() + ":5000/test-application");
         imageMetadata.setApplicationName(name);
         imageMetadata.setTag("latest");
         imageMetadata.setEurekaEnabled(true);
