@@ -234,6 +234,13 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
         try {
             boolean activeInstance = applicationStateMetadataClient.isActiveInstance(instanceId);
 
+            if (activeInstance) {
+                String latestInstanceId = appEvolution.getLatestInstanceId(instanceId);
+                if (!latestInstanceId.equals(instanceId)) {
+                    LOG.error("Something is wrong. This instanceId is not active anymore. Data is corrupted!");
+                }
+            }
+
             if (!activeInstance) {
                 LOG.warn("Instance '" + instanceId + "' is not the active instance anymore.");
                 //TODO: impl deprecated instance recovery

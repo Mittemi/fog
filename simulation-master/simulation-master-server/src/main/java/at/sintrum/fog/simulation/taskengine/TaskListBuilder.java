@@ -2,6 +2,8 @@ package at.sintrum.fog.simulation.taskengine;
 
 import at.sintrum.fog.application.client.ApplicationClientFactory;
 import at.sintrum.fog.application.client.api.TestApplicationClientFactory;
+import at.sintrum.fog.applicationhousing.api.AppEvolutionApi;
+import at.sintrum.fog.applicationhousing.api.dto.AppIdentification;
 import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.deploymentmanager.api.dto.ApplicationStartRequest;
 import at.sintrum.fog.deploymentmanager.client.factory.DeploymentManagerClientFactory;
@@ -34,13 +36,15 @@ public class TaskListBuilder {
     private final TestApplicationClientFactory testApplicationClientFactory;
 
     private final ContainerMetadataApi containerMetadataApi;
+    private final AppEvolutionApi appEvolutionApi;
 
     public TaskListBuilder(DeploymentManagerClientFactory deploymentManagerClientFactory,
                            MetadataManagerClientFactory metadataManagerClientFactory,
                            ApplicationStateMetadataApi applicationStateMetadataClient,
                            ApplicationClientFactory applicationClientFactory,
                            TestApplicationClientFactory testApplicationClientFactory,
-                           ContainerMetadataApi containerMetadataApi) {
+                           ContainerMetadataApi containerMetadataApi,
+                           AppEvolutionApi appEvolutionApi) {
         this.deploymentManagerClientFactory = deploymentManagerClientFactory;
         this.metadataManagerClientFactory = metadataManagerClientFactory;
         this.applicationStateMetadataClient = applicationStateMetadataClient;
@@ -49,6 +53,7 @@ public class TaskListBuilder {
         this.containerMetadataApi = containerMetadataApi;
 
 
+        this.appEvolutionApi = appEvolutionApi;
     }
 
     public class TaskListBuilderState {
@@ -145,6 +150,10 @@ public class TaskListBuilder {
 
             public AppTaskBuilder logMessage(int offset, String message) {
                 return addTask(new LogMessageTask(offset, message, applicationUuid));
+            }
+
+            public AppTaskBuilder upgradeApp(int offset, DockerImageMetadata oldVersion, DockerImageMetadata newVersion) {
+                return addTask(new AddUpgradeInfoTask(offset, appEvolutionApi, new AppIdentification(oldVersion.getId()), new AppIdentification(newVersion.getId())));
             }
         }
 

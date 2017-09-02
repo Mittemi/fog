@@ -1,6 +1,7 @@
 package at.sintrum.fog.deploymentmanager.service;
 
 import at.sintrum.fog.applicationhousing.api.dto.AppIdentification;
+import at.sintrum.fog.applicationhousing.api.dto.AppInstanceIdHistoryInfo;
 import at.sintrum.fog.applicationhousing.api.dto.AppUpdateInfo;
 import at.sintrum.fog.applicationhousing.client.api.AppEvolution;
 import at.sintrum.fog.clientcore.service.ShutdownApplicationService;
@@ -475,9 +476,20 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
 
             //copy data
             migrateData(oldContainerId, oldImageMetadata, newContainerId, imageMetadata);
+            appEvolutionClient.saveInstanceIdHistory(new AppInstanceIdHistoryInfo(containerMetadata.getInstanceId(), newInstanceId));
 
             //start new application, delete old container
             boolean startNewAppSuccessful = dockerService.startContainer(newContainerId);
+            if (!startNewAppSuccessful) {
+                try {
+                    appEvolutionClient.rollbackInstanceIdHistory(new AppInstanceIdHistoryInfo(containerMetadata.getInstanceId(), newInstanceId));
+                } catch (Exception ex) {
+                    LOG.error("Failed to rollback upgrade history info. Well, that might be a problem and this simulation is worthless!");
+                    finalizeReplaceContainerOperation(false, oldContainerId);
+                    return new FogOperationResult(oldContainerId, false, environmentInfoService.getFogBaseUrl(), "upgrade failed, metadata corrupted, partial recovery");
+                }
+            }
+
             if (!finalizeReplaceContainerOperation(startNewAppSuccessful, oldContainerId)) {
                 return new FogOperationResult(oldContainerId, false, environmentInfoService.getFogBaseUrl(), "upgrade failed, recovered");
             }
