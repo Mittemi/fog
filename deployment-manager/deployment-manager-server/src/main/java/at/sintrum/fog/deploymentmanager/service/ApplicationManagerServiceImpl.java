@@ -15,7 +15,7 @@ import at.sintrum.fog.metadatamanager.api.ImageMetadataApi;
 import at.sintrum.fog.metadatamanager.api.dto.DockerContainerMetadata;
 import at.sintrum.fog.metadatamanager.api.dto.DockerImageMetadata;
 import at.sintrum.fog.simulation.api.FogResourcesApi;
-import at.sintrum.fog.simulation.api.dto.FogResourceInfoDto;
+import at.sintrum.fog.simulation.scenario.dto.FogResourceInfoDto;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;

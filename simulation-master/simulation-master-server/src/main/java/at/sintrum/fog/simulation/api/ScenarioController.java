@@ -1,12 +1,11 @@
 package at.sintrum.fog.simulation.api;
 
-import at.sintrum.fog.simulation.api.dto.BasicScenarioInfoDto;
-import at.sintrum.fog.simulation.taskengine.FogTaskList;
-import at.sintrum.fog.simulation.taskengine.FogTaskRunner;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import at.sintrum.fog.simulation.scenario.dto.BasicScenarioInfo;
+import at.sintrum.fog.simulation.scenario.dto.ScenarioExecutionInfo;
+import at.sintrum.fog.simulation.service.ScenarioService;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * Created by Michael Mittermayr on 24.08.2017.
@@ -15,17 +14,19 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("scenario")
 public class ScenarioController {
 
-    private final FogTaskRunner taskRunner;
-    private final FogTaskList taskList;
+    private final ScenarioService scenarioService;
 
-    public ScenarioController(FogTaskRunner taskRunner, FogTaskList taskList) {
-        this.taskRunner = taskRunner;
-        this.taskList = taskList;
+    public ScenarioController(ScenarioService scenarioService) {
+        this.scenarioService = scenarioService;
     }
 
-    @RequestMapping(value = "run", method = RequestMethod.POST)
-    public void runScenario(@RequestBody BasicScenarioInfoDto basicScenarioInfoDto) {
-        taskList.build(basicScenarioInfoDto.getCloud(), basicScenarioInfoDto.getFogA());
-        taskRunner.setTaskList(taskList);
+    @RequestMapping(value = "run/{name}", method = RequestMethod.POST)
+    public ScenarioExecutionInfo runScenario(@PathVariable("name") String name, @RequestBody BasicScenarioInfo basicScenarioInfo) {
+        return scenarioService.run(basicScenarioInfo, name);
+    }
+
+    @RequestMapping(value = "", method = RequestMethod.GET)
+    public List<String> getNames() {
+        return scenarioService.getScenarioNames();
     }
 }

@@ -1,4 +1,4 @@
-package at.sintrum.fog.simulation.api.dto;
+package at.sintrum.fog.simulation.scenario.dto;
 
 import at.sintrum.fog.core.dto.FogIdentification;
 

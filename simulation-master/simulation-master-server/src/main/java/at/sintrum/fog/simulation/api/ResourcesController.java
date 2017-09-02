@@ -2,7 +2,7 @@ package at.sintrum.fog.simulation.api;
 
 import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.core.dto.ResourceInfo;
-import at.sintrum.fog.simulation.api.dto.FogResourceInfoDto;
+import at.sintrum.fog.simulation.scenario.dto.FogResourceInfoDto;
 import at.sintrum.fog.simulation.service.FogResourceService;
 import org.springframework.web.bind.annotation.RestController;
 

@@ -1,8 +1,8 @@
 package at.sintrum.fog.simulation.api;
 
 import at.sintrum.fog.core.dto.FogIdentification;
-import at.sintrum.fog.simulation.api.dto.SimulationStartInfoDto;
 import at.sintrum.fog.simulation.model.SimulationState;
+import at.sintrum.fog.simulation.scenario.dto.SimulationStartInfoDto;
 import at.sintrum.fog.simulation.service.SimulationService;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
