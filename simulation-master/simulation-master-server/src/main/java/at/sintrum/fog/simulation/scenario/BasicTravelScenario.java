@@ -36,7 +36,6 @@ public class BasicTravelScenario implements Scenario {
                 .removeApp(0)
                 .logMessage(0, "Track finished");
 
-        taskListBuilderState.markAsReady();
         return taskListBuilderState;
     }
 }

@@ -73,7 +73,10 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
             // BEGIN Simulation
             simulationClientService.notifyMove(target);
             // END Simulation
-            return applicationManager.moveApplication(new ApplicationMoveRequest(environmentInfoService.getOwnContainerId(), target)).isSuccessful();
+            FogOperationResult result = applicationManager.moveApplication(new ApplicationMoveRequest(environmentInfoService.getOwnContainerId(), target, environmentInfoService.getOwnUrl()));
+            acceptRequests = true;
+            //TODO: handle errors correctly
+            return result.isSuccessful();
         }
     }
 
@@ -195,6 +198,7 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
 
         if (stateMetadata == null) {
             LOG.debug("First app start. Create state metadata for instance: " + instanceId);
+            travelingCoordinationService.reset();       //TODO: check if this is ok for upgrades
             applicationStateMetadataClient.store(new ApplicationStateMetadata(instanceId, environmentInfoService.getPort(), fogIdentification, getAppState()));
             // BEGIN Simulation
             simulationClientService.notifyStarting();

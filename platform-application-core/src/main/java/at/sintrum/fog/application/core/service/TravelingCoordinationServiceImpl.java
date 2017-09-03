@@ -108,6 +108,12 @@ public class TravelingCoordinationServiceImpl implements TravelingCoordinationSe
         }
     }
 
+    @Override
+    public void reset() {
+        LOG.warn("Reset travel queue. This should only happen on first app start");
+        getTravelQueue().clear();
+    }
+
     private boolean removeTargetFromQueue(FogIdentification currentFog) {
         FogIdentification peek = getTravelQueue().peek();
         if (peek != null) {

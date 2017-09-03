@@ -58,7 +58,7 @@ public class ScenarioServiceImpl implements ScenarioService {
     @Scheduled(fixedDelay = 1000)
     public void executor() {
 
-        if (taskList == null || !taskList.isReady()) {
+        if (taskList == null) {
             return;
         }
 

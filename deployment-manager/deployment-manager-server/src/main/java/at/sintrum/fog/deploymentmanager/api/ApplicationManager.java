@@ -91,6 +91,8 @@ public class ApplicationManager implements ApplicationManagerApi {
 
     @Override
     public boolean checkResources(@RequestBody ResourceInfo resourceInfo) {
-        return applicationManagerService.checkResources(resourceInfo);
+        boolean result = applicationManagerService.checkResources(resourceInfo);
+        LOG.debug("Check resources result: " + result);
+        return result;
     }
 }

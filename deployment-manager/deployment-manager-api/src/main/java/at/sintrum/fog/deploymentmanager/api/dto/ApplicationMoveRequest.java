@@ -13,9 +13,10 @@ public class ApplicationMoveRequest {
 
     private String applicationUrl;
 
-    public ApplicationMoveRequest(String containerId, FogIdentification targetFog) {
+    public ApplicationMoveRequest(String containerId, FogIdentification targetFog, String applicationUrl) {
         this.containerId = containerId;
         this.targetFog = targetFog;
+        this.applicationUrl = applicationUrl;
     }
 
     public ApplicationMoveRequest() {

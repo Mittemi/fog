@@ -13,10 +13,4 @@ public interface FogResourcesApi {
 
     @RequestMapping(value = "available", method = RequestMethod.POST)
     FogResourceInfoDto availableResources(FogIdentification fogIdentification);
-
-    @RequestMapping(value = "used", method = RequestMethod.POST)
-    FogResourceInfoDto usedResources(FogIdentification fogIdentification);
-
-    @RequestMapping(value = "free", method = RequestMethod.POST)
-    FogResourceInfoDto freeResources(FogIdentification fogIdentification);
 }

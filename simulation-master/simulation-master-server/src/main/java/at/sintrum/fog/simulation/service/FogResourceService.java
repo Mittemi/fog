@@ -8,7 +8,9 @@ import at.sintrum.fog.core.dto.ResourceInfo;
  */
 public interface FogResourceService {
 
-    ResourceInfo getUsedResources(FogIdentification fogIdentification);
+    void setResourceRestriction(FogIdentification fogIdentification, ResourceInfo resourceInfo);
 
     ResourceInfo getAvailableResources(FogIdentification fogIdentification);
+
+    void reset();
 }

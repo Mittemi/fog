@@ -20,4 +20,6 @@ public interface TravelingCoordinationService {
     boolean startMove(FogIdentification target);
 
     boolean finishMove(FogIdentification currentFog);
+
+    void reset();
 }

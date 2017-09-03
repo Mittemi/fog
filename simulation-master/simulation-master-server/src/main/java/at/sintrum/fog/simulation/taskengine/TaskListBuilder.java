@@ -5,12 +5,14 @@ import at.sintrum.fog.application.client.api.TestApplicationClientFactory;
 import at.sintrum.fog.applicationhousing.api.AppEvolutionApi;
 import at.sintrum.fog.applicationhousing.api.dto.AppIdentification;
 import at.sintrum.fog.core.dto.FogIdentification;
+import at.sintrum.fog.core.dto.ResourceInfo;
 import at.sintrum.fog.deploymentmanager.client.factory.DeploymentManagerClientFactory;
 import at.sintrum.fog.metadatamanager.api.ApplicationStateMetadataApi;
 import at.sintrum.fog.metadatamanager.api.ContainerMetadataApi;
 import at.sintrum.fog.metadatamanager.api.ImageMetadataApi;
 import at.sintrum.fog.metadatamanager.api.dto.DockerImageMetadata;
 import at.sintrum.fog.metadatamanager.client.factory.MetadataManagerClientFactory;
+import at.sintrum.fog.simulation.service.FogResourceService;
 import at.sintrum.fog.simulation.taskengine.tasks.*;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -41,6 +43,7 @@ public class TaskListBuilder {
     private final ContainerMetadataApi containerMetadataApi;
     private final ImageMetadataApi imageMetadataApi;
     private final AppEvolutionApi appEvolutionApi;
+    private final FogResourceService fogResourceService;
 
     public TaskListBuilder(DeploymentManagerClientFactory deploymentManagerClientFactory,
                            MetadataManagerClientFactory metadataManagerClientFactory,
@@ -49,7 +52,8 @@ public class TaskListBuilder {
                            TestApplicationClientFactory testApplicationClientFactory,
                            ContainerMetadataApi containerMetadataApi,
                            ImageMetadataApi imageMetadataApi,
-                           AppEvolutionApi appEvolutionApi) {
+                           AppEvolutionApi appEvolutionApi,
+                           FogResourceService fogResourceService) {
         this.deploymentManagerClientFactory = deploymentManagerClientFactory;
         this.metadataManagerClientFactory = metadataManagerClientFactory;
         this.applicationStateMetadataClient = applicationStateMetadataClient;
@@ -60,13 +64,13 @@ public class TaskListBuilder {
 
 
         this.appEvolutionApi = appEvolutionApi;
+        this.fogResourceService = fogResourceService;
     }
 
     public class TaskListBuilderState {
 
         private final Map<Integer, Queue<FogTask>> tracks;
         private int currentId;
-        private boolean isReady = false;
 
         private final ConcurrentHashMap<Integer, DateTime> simulationTime;
 
@@ -92,16 +96,8 @@ public class TaskListBuilder {
         }
 
         public TaskListBuilderState resetMetadata() {
-            ResetMetadataTask.reset(applicationStateMetadataClient, appEvolutionApi);
+            ResetMetadataTask.reset(applicationStateMetadataClient, appEvolutionApi, fogResourceService);
             return this;
-        }
-
-        public void markAsReady() {
-            isReady = true;
-        }
-
-        public boolean isReady() {
-            return isReady;
         }
 
         public class AppTaskBuilder {
@@ -193,7 +189,11 @@ public class TaskListBuilder {
             }
 
             public AppTaskBuilder resetMetadata(int offset) {
-                return addTask(new ResetMetadataTask(offset, trackExecutionState, applicationStateMetadataClient, appEvolutionApi));
+                return addTask(new ResetMetadataTask(offset, trackExecutionState, applicationStateMetadataClient, appEvolutionApi, fogResourceService));
+            }
+
+            public AppTaskBuilder setResourceLimit(int offset, FogIdentification fogIdentification, ResourceInfo resourceInfo) {
+                return addTask(new SetResourceLimitTask(offset, trackExecutionState, resourceInfo, fogIdentification, fogResourceService));
             }
         }
 

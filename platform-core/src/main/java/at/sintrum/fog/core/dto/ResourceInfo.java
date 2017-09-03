@@ -82,4 +82,8 @@ public class ResourceInfo {
         this.network += resourceInfo.network;
         return this;
     }
+
+    public static ResourceInfo fixedSized(int numberApps) {
+        return new ResourceInfo(numberApps, numberApps, numberApps, numberApps);
+    }
 }
