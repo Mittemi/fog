@@ -5,10 +5,10 @@ import at.sintrum.fog.application.client.api.TestApplicationClientFactory;
 import at.sintrum.fog.applicationhousing.api.AppEvolutionApi;
 import at.sintrum.fog.applicationhousing.api.dto.AppIdentification;
 import at.sintrum.fog.core.dto.FogIdentification;
-import at.sintrum.fog.deploymentmanager.api.dto.ApplicationStartRequest;
 import at.sintrum.fog.deploymentmanager.client.factory.DeploymentManagerClientFactory;
 import at.sintrum.fog.metadatamanager.api.ApplicationStateMetadataApi;
 import at.sintrum.fog.metadatamanager.api.ContainerMetadataApi;
+import at.sintrum.fog.metadatamanager.api.ImageMetadataApi;
 import at.sintrum.fog.metadatamanager.api.dto.DockerImageMetadata;
 import at.sintrum.fog.metadatamanager.client.factory.MetadataManagerClientFactory;
 import at.sintrum.fog.simulation.taskengine.tasks.*;
@@ -17,7 +17,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -36,6 +39,7 @@ public class TaskListBuilder {
     private final TestApplicationClientFactory testApplicationClientFactory;
 
     private final ContainerMetadataApi containerMetadataApi;
+    private final ImageMetadataApi imageMetadataApi;
     private final AppEvolutionApi appEvolutionApi;
 
     public TaskListBuilder(DeploymentManagerClientFactory deploymentManagerClientFactory,
@@ -44,6 +48,7 @@ public class TaskListBuilder {
                            ApplicationClientFactory applicationClientFactory,
                            TestApplicationClientFactory testApplicationClientFactory,
                            ContainerMetadataApi containerMetadataApi,
+                           ImageMetadataApi imageMetadataApi,
                            AppEvolutionApi appEvolutionApi) {
         this.deploymentManagerClientFactory = deploymentManagerClientFactory;
         this.metadataManagerClientFactory = metadataManagerClientFactory;
@@ -51,6 +56,7 @@ public class TaskListBuilder {
         this.applicationClientFactory = applicationClientFactory;
         this.testApplicationClientFactory = testApplicationClientFactory;
         this.containerMetadataApi = containerMetadataApi;
+        this.imageMetadataApi = imageMetadataApi;
 
 
         this.appEvolutionApi = appEvolutionApi;
@@ -85,6 +91,11 @@ public class TaskListBuilder {
             return appTaskBuilder;
         }
 
+        public TaskListBuilderState resetMetadata() {
+            ResetMetadataTask.reset(applicationStateMetadataClient, appEvolutionApi);
+            return this;
+        }
+
         public void markAsReady() {
             isReady = true;
         }
@@ -97,14 +108,31 @@ public class TaskListBuilder {
 
             private final DockerImageMetadata testAppMetadata;
             private final DockerImageMetadata anotherAppMetadata;
-            private String applicationUuid;
+
+            private final TrackExecutionState trackExecutionState;
+
+            public class TrackExecutionState {
+                private String instanceId;
+
+                public TrackExecutionState(String instanceId) {
+                    this.instanceId = instanceId;
+                }
+
+                public String getInstanceId() {
+                    return instanceId;
+                }
+
+                public void setInstanceId(String instanceId) {
+                    this.instanceId = instanceId;
+                }
+            }
 
             private final Queue<FogTask> tasks;
 
 
             private AppTaskBuilder(Queue<FogTask> tasks) {
                 this.tasks = tasks;
-                applicationUuid = UUID.randomUUID().toString();
+                trackExecutionState = new TrackExecutionState(null);
                 List<DockerImageMetadata> all = metadataManagerClientFactory.createApplicationMetadataClient(null).getAll();
 
                 testAppMetadata = all.stream().filter(x -> x.getApplicationName().equals("test-application") && x.isEnableDebugging() && x.getTag().equals("latest")).findFirst().orElse(null);
@@ -129,31 +157,43 @@ public class TaskListBuilder {
             }
 
             public AppTaskBuilder startApp(int offset, FogIdentification cloud, DockerImageMetadata metadata) {
-                return addTask(new StartAppTask(0, deploymentManagerClientFactory, cloud, new ApplicationStartRequest(metadata.getId(), applicationUuid)));
+                return addTask(new StartAppTask(0, trackExecutionState, deploymentManagerClientFactory, cloud, metadata.getId()));
             }
 
             public AppTaskBuilder requestApp(int offset, FogIdentification target) {
-                return addTask(new RequestAppTask(offset, applicationUuid, target, applicationClientFactory, applicationStateMetadataClient));
+                return addTask(new RequestAppTask(offset, trackExecutionState, target, applicationClientFactory, applicationStateMetadataClient));
             }
 
             public AppTaskBuilder checkLocation(int offset, FogIdentification expectedLocation) {
-                return addTask(new CheckFogLocationTask(offset, applicationUuid, expectedLocation, applicationStateMetadataClient));
+                return addTask(new CheckFogLocationTask(offset, trackExecutionState, expectedLocation, applicationStateMetadataClient));
             }
 
             public AppTaskBuilder finishWork(int offset) {
-                return addTask(new FinishWorkTask(offset, applicationUuid, testApplicationClientFactory, applicationStateMetadataClient));
+                return addTask(new FinishWorkTask(offset, trackExecutionState, testApplicationClientFactory, applicationStateMetadataClient));
             }
 
             public AppTaskBuilder removeApp(int offset) {
-                return addTask(new RemoveAppTask(offset, applicationUuid, applicationClientFactory, applicationStateMetadataClient, deploymentManagerClientFactory, containerMetadataApi));
+                return addTask(new RemoveAppTask(offset, trackExecutionState, applicationClientFactory, applicationStateMetadataClient, deploymentManagerClientFactory, containerMetadataApi));
             }
 
             public AppTaskBuilder logMessage(int offset, String message) {
-                return addTask(new LogMessageTask(offset, message, applicationUuid));
+                return addTask(new LogMessageTask(offset, message, trackExecutionState));
             }
 
             public AppTaskBuilder upgradeApp(int offset, DockerImageMetadata oldVersion, DockerImageMetadata newVersion) {
-                return addTask(new AddUpgradeInfoTask(offset, appEvolutionApi, new AppIdentification(oldVersion.getId()), new AppIdentification(newVersion.getId())));
+                return addTask(new AddUpgradeInfoTask(offset, trackExecutionState, appEvolutionApi, new AppIdentification(oldVersion.getId()), new AppIdentification(newVersion.getId())));
+            }
+
+            public AppTaskBuilder checkUpgraded(int offset, DockerImageMetadata newVersion) {
+                return addTask(new CheckUpgradedTask(offset, trackExecutionState, appEvolutionApi, new AppIdentification(newVersion.getId()), containerMetadataApi, imageMetadataApi));
+            }
+
+            public AppTaskBuilder removeUpgradeInfo(int offset, DockerImageMetadata oldVersion) {
+                return addTask(new RemoveUpgradeInfoTask(offset, trackExecutionState, appEvolutionApi, new AppIdentification(oldVersion.getId())));
+            }
+
+            public AppTaskBuilder resetMetadata(int offset) {
+                return addTask(new ResetMetadataTask(offset, trackExecutionState, applicationStateMetadataClient, appEvolutionApi));
             }
         }
 

@@ -26,6 +26,7 @@ public class BasicTravelScenario implements Scenario {
         TaskListBuilder.TaskListBuilderState taskListBuilderState = taskListBuilder.newTaskList();
 
         taskListBuilderState.createTrack()
+                .resetMetadata(0)
                 .startTestApp(0, basicScenarioInfo.getCloud())
                 .checkLocation(10, basicScenarioInfo.getCloud())
                 .requestApp(0, basicScenarioInfo.getFogA())

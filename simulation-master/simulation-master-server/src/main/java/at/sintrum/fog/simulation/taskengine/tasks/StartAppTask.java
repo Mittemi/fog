@@ -5,6 +5,9 @@ import at.sintrum.fog.deploymentmanager.api.dto.ApplicationStartRequest;
 import at.sintrum.fog.deploymentmanager.api.dto.FogOperationResult;
 import at.sintrum.fog.deploymentmanager.client.api.ApplicationManager;
 import at.sintrum.fog.deploymentmanager.client.factory.DeploymentManagerClientFactory;
+import at.sintrum.fog.simulation.taskengine.TaskListBuilder;
+
+import java.util.UUID;
 
 /**
  * Created by Michael Mittermayr on 24.08.2017.
@@ -13,20 +16,21 @@ public class StartAppTask extends FogTaskBase {
 
     private final DeploymentManagerClientFactory deploymentManagerClientFactory;
     private final FogIdentification target;
-    private final ApplicationStartRequest applicationStartRequest;
+    private final String imageMetadataId;
 
-    public StartAppTask(int offset, DeploymentManagerClientFactory deploymentManagerClientFactory, FogIdentification target, ApplicationStartRequest applicationStartRequest) {
-        super(offset, StartAppTask.class);
+    public StartAppTask(int offset, TaskListBuilder.TaskListBuilderState.AppTaskBuilder.TrackExecutionState trackExecutionState, DeploymentManagerClientFactory deploymentManagerClientFactory, FogIdentification target, String imageMetadataId) {
+        super(offset, trackExecutionState, StartAppTask.class);
         this.deploymentManagerClientFactory = deploymentManagerClientFactory;
         this.target = target;
-        this.applicationStartRequest = applicationStartRequest;
+        this.imageMetadataId = imageMetadataId;
     }
 
     @Override
     protected boolean internalExecute() {
 
         ApplicationManager applicationManagerClient = deploymentManagerClientFactory.createApplicationManagerClient(target.toUrl());
-        FogOperationResult fogOperationResult = applicationManagerClient.requestApplicationStart(applicationStartRequest);
+        getTrackExecutionState().setInstanceId(UUID.randomUUID().toString());
+        FogOperationResult fogOperationResult = applicationManagerClient.requestApplicationStart(new ApplicationStartRequest(imageMetadataId, getTrackExecutionState().getInstanceId()));
 
         return fogOperationResult.isSuccessful();
     }

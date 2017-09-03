@@ -32,4 +32,7 @@ public interface AppEvolutionApi {
 
     @RequestMapping(value = "getLatestInstanceId/{instanceId}", method = RequestMethod.GET)
     String getLatestInstanceId(@PathVariable("instanceId") String instanceId);
+
+    @RequestMapping(value = "reset", method = RequestMethod.POST)
+    void reset();
 }

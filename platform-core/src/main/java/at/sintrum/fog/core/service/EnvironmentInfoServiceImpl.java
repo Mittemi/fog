@@ -18,7 +18,7 @@ import java.util.Scanner;
 public class EnvironmentInfoServiceImpl implements EnvironmentInfoService {
 
     private final org.slf4j.Logger LOG = LoggerFactory.getLogger(EnvironmentInfoServiceImpl.class);
-    private final String fogBaseUrl;
+    private String fogBaseUrl;
     private final String eurekaServiceUrl;
     private final String eurekaClientIP;
     private final String serverPort;
@@ -47,13 +47,20 @@ public class EnvironmentInfoServiceImpl implements EnvironmentInfoService {
         String activeProfiles = String.join(", ", environment.getActiveProfiles());
         LOG.info("Active Profiles: " + activeProfiles);
 
+        this.fogBaseUrl = fogBaseUrl;
+        updateFogBaseUrl();
+    }
+
+    private String updateFogBaseUrl() {
         if ("deployment-manager".equals(applicationName) && "UNKNOWN".equals(fogBaseUrl)) {
             fogBaseUrl = "http://" + eurekaClientIP + ":" + serverPort;
             LOG.info("FOG_BASE_URL, rewrite to: " + fogBaseUrl);
+        } else if ("UNKNOWN".equals(fogBaseUrl)) {
+            fogBaseUrl = "http://" + eurekaClientIP + ":8080";  // TODO: wrong, just a quickfix
         } else {
             LOG.info("FOG_BASE_URL: " + fogBaseUrl);
         }
-        this.fogBaseUrl = fogBaseUrl;
+        return fogBaseUrl;
     }
 
     @Override
@@ -116,6 +123,11 @@ public class EnvironmentInfoServiceImpl implements EnvironmentInfoService {
 
     @Override
     public String getFogBaseUrl() {
+
+        if ("UNKNOWN".equals(fogBaseUrl)) {
+            updateFogBaseUrl();
+        }
+
         return fogBaseUrl;
     }
 

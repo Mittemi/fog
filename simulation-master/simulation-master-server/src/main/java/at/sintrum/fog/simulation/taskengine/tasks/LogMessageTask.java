@@ -1,22 +1,22 @@
 package at.sintrum.fog.simulation.taskengine.tasks;
 
+import at.sintrum.fog.simulation.taskengine.TaskListBuilder;
+
 /**
  * Created by Michael Mittermayr on 24.08.2017.
  */
 public class LogMessageTask extends FogTaskBase {
 
     private final String message;
-    private final String appInstanceId;
 
-    public LogMessageTask(int offset, String message, String appInstanceId) {
-        super(offset, LogMessageTask.class);
+    public LogMessageTask(int offset, String message, TaskListBuilder.TaskListBuilderState.AppTaskBuilder.TrackExecutionState trackExecutionState) {
+        super(offset, trackExecutionState, LogMessageTask.class);
         this.message = message;
-        this.appInstanceId = appInstanceId;
     }
 
     @Override
     protected boolean internalExecute() {
-        getLogger().info("APP: " + appInstanceId + " || " + message);
+        getLogger().info("APP: " + getTrackExecutionState().getInstanceId() + " || " + message);
         return true;
     }
 }

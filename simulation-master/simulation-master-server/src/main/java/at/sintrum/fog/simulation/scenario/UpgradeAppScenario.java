@@ -39,10 +39,18 @@ public class UpgradeAppScenario implements Scenario {
         TaskListBuilder.TaskListBuilderState taskList = taskListBuilder.newTaskList();
 
         taskList.createTrack()
+                .resetMetadata(0)
                 .startApp(0, basicScenarioInfo.getCloud(), debugVersion)
                 .checkLocation(10, basicScenarioInfo.getCloud())
                 .logMessage(0, "App is running in the cloud now")
-                .upgradeApp(0, debugVersion, nonDebugVersion);
+                .upgradeApp(0, debugVersion, nonDebugVersion)
+                .logMessage(0, "Upgrade Info added")
+                .checkUpgraded(15, nonDebugVersion)
+                .logMessage(0, "Upgrade completed")
+                .checkLocation(0, basicScenarioInfo.getCloud())
+                .removeApp(0)
+                .removeUpgradeInfo(0, debugVersion)
+                .logMessage(0, "Basic upgrade track completed");
 
         //TODO: check version
 

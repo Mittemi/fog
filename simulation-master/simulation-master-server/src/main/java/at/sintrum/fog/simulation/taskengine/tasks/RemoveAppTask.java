@@ -7,22 +7,20 @@ import at.sintrum.fog.deploymentmanager.client.factory.DeploymentManagerClientFa
 import at.sintrum.fog.metadatamanager.api.ApplicationStateMetadataApi;
 import at.sintrum.fog.metadatamanager.api.ContainerMetadataApi;
 import at.sintrum.fog.metadatamanager.api.dto.DockerContainerMetadata;
+import at.sintrum.fog.simulation.taskengine.TaskListBuilder;
 
 /**
  * Created by Michael Mittermayr on 28.08.2017.
  */
 public class RemoveAppTask extends FogTaskBase {
 
-
-    private final String instanceId;
     private final ApplicationClientFactory applicationClientFactory;
     private final ApplicationStateMetadataApi applicationStateMetadataApi;
     private final DeploymentManagerClientFactory deploymentManagerClientFactory;
     private final ContainerMetadataApi containerMetadataApi;
 
-    public RemoveAppTask(int offset, String instanceId, ApplicationClientFactory applicationClientFactory, ApplicationStateMetadataApi applicationStateMetadataApi, DeploymentManagerClientFactory deploymentManagerClientFactory, ContainerMetadataApi containerMetadataApi) {
-        super(offset, RemoveAppTask.class);
-        this.instanceId = instanceId;
+    public RemoveAppTask(int offset, TaskListBuilder.TaskListBuilderState.AppTaskBuilder.TrackExecutionState trackExecutionState, ApplicationClientFactory applicationClientFactory, ApplicationStateMetadataApi applicationStateMetadataApi, DeploymentManagerClientFactory deploymentManagerClientFactory, ContainerMetadataApi containerMetadataApi) {
+        super(offset, trackExecutionState, RemoveAppTask.class);
         this.applicationClientFactory = applicationClientFactory;
         this.applicationStateMetadataApi = applicationStateMetadataApi;
         this.deploymentManagerClientFactory = deploymentManagerClientFactory;
@@ -31,6 +29,7 @@ public class RemoveAppTask extends FogTaskBase {
 
     @Override
     protected boolean internalExecute() {
+        String instanceId = getTrackExecutionState().getInstanceId();
         FogIdentification applicationUrl = applicationStateMetadataApi.getApplicationUrl(instanceId);
 
         FogIdentification runningAt = applicationStateMetadataApi.getById(instanceId).getRunningAt();
