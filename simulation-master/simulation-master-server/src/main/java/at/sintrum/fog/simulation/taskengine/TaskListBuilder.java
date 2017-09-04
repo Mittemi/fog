@@ -3,6 +3,7 @@ package at.sintrum.fog.simulation.taskengine;
 import at.sintrum.fog.application.client.ApplicationClientFactory;
 import at.sintrum.fog.application.client.api.TestApplicationClientFactory;
 import at.sintrum.fog.applicationhousing.api.AppEvolutionApi;
+import at.sintrum.fog.applicationhousing.api.AppRecoveryApi;
 import at.sintrum.fog.applicationhousing.api.dto.AppIdentification;
 import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.core.dto.ResourceInfo;
@@ -46,6 +47,7 @@ public class TaskListBuilder {
     private final ImageMetadataApi imageMetadataApi;
     private final AppEvolutionApi appEvolutionApi;
     private final FogResourceService fogResourceService;
+    private final AppRecoveryApi appRecovery;
 
     public TaskListBuilder(DeploymentManagerClientFactory deploymentManagerClientFactory,
                            MetadataManagerClientFactory metadataManagerClientFactory,
@@ -55,7 +57,8 @@ public class TaskListBuilder {
                            ContainerMetadataApi containerMetadataApi,
                            ImageMetadataApi imageMetadataApi,
                            AppEvolutionApi appEvolutionApi,
-                           FogResourceService fogResourceService) {
+                           FogResourceService fogResourceService,
+                           AppRecoveryApi appRecovery) {
         this.deploymentManagerClientFactory = deploymentManagerClientFactory;
         this.metadataManagerClientFactory = metadataManagerClientFactory;
         this.applicationStateMetadataClient = applicationStateMetadataClient;
@@ -67,6 +70,7 @@ public class TaskListBuilder {
 
         this.appEvolutionApi = appEvolutionApi;
         this.fogResourceService = fogResourceService;
+        this.appRecovery = appRecovery;
     }
 
     public class TaskListBuilderState {
@@ -100,7 +104,7 @@ public class TaskListBuilder {
         }
 
         public TaskListBuilderState resetMetadata() {
-            ResetMetadataTask.reset(applicationStateMetadataClient, appEvolutionApi, fogResourceService);
+            ResetMetadataTask.reset(applicationStateMetadataClient, appEvolutionApi, appRecovery, fogResourceService);
             return this;
         }
 
@@ -203,7 +207,7 @@ public class TaskListBuilder {
             }
 
             public AppTaskBuilder resetMetadata(int offset) {
-                return addTask(new ResetMetadataTask(offset, trackExecutionState, applicationStateMetadataClient, appEvolutionApi, fogResourceService));
+                return addTask(new ResetMetadataTask(offset, trackExecutionState, applicationStateMetadataClient, appEvolutionApi, appRecovery, fogResourceService));
             }
 
             public AppTaskBuilder setResourceLimit(int offset, FogIdentification fogIdentification, ResourceInfo resourceInfo) {

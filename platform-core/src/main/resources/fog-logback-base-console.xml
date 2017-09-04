@@ -10,6 +10,13 @@
 
     <logger name="at.sintrum.fog" level="DEBUG"/>
 
+    <logger name="at.sintrum.fog.metadatamanager.api" level="ERROR"/>
+    <logger name="at.sintrum.fog.deploymentmanager.client" level="ERROR"/>
+    <logger name="at.sintrum.fog.application.core.api" level="ERROR"/>
+
+
+    <logger name="com.netflix.discovery.DiscoveryClient" level="OFF"/>
+
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
     </root>

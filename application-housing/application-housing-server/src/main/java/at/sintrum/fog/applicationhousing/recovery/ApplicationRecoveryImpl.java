@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @ConditionalOnProperty(name = "fog.apphousing.enableRecovery", havingValue = "true")
-public class ApplicationRecoveryImpl {
+public class ApplicationRecoveryImpl implements ApplicationRecovery {
 
     private static final Logger LOG = LoggerFactory.getLogger(ApplicationRecoveryImpl.class);
 
@@ -121,6 +121,11 @@ public class ApplicationRecoveryImpl {
                 //4a. tell deployment manager to recover app
                 //4b. recover app in cloud
                 ApplicationStateMetadata stateMetadata = applicationStateMetadataApi.getById(appRuntimeMetadata.getInstanceId());
+                if (stateMetadata == null) {
+                    LOG.warn("No state metadata. This might be due to a reset call");
+                    continue;
+                }
+
                 if (!hasTimeout(stateMetadata.getLastUpdate(), configurationProperties.getAppStateMetadataGraceTimeout())) {
                     LOG.debug("State metadata update within grace period. Skip this recovery call for instance: " + appRuntimeMetadata.getInstanceId());
                     continue;
@@ -197,14 +202,22 @@ public class ApplicationRecoveryImpl {
         }
     }
 
+    @Override
+    public void reset() {
+        appRuntimeMetadata.clear();
+        fogCellMetadata.clear();
+    }
+
     private boolean isAppReachable(FogIdentification applicationUrl) {
+        if (applicationUrl == null) return false;
+
         ApplicationInfoApi applicationInfoClient = applicationClientFactory.createApplicationInfoClient(applicationUrl.toUrl());
 
         try {
             AppInfo info = applicationInfoClient.info();
             return info != null;
         } catch (Exception ex) {
-            LOG.error("Failed to get appinfo", ex);
+            LOG.trace("App not reachable: " + applicationUrl.toFogId());
         }
         return false;
     }

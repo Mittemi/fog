@@ -1,6 +1,7 @@
 package at.sintrum.fog.applicationhousing.client.client;
 
 import at.sintrum.fog.applicationhousing.client.api.AppEvolution;
+import at.sintrum.fog.applicationhousing.client.api.AppRecovery;
 import at.sintrum.fog.clientcore.annotation.EnableRetry;
 import at.sintrum.fog.clientcore.client.ClientFactory;
 
@@ -11,4 +12,7 @@ public interface AppHousingClientFactory extends ClientFactory {
 
     @EnableRetry
     AppEvolution createAppEvolutionClient(String url);
+
+    @EnableRetry
+    AppRecovery createRecoveryClient(String url);
 }

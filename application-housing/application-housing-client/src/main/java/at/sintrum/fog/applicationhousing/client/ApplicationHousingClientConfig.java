@@ -1,6 +1,7 @@
 package at.sintrum.fog.applicationhousing.client;
 
 import at.sintrum.fog.applicationhousing.client.api.AppEvolution;
+import at.sintrum.fog.applicationhousing.client.api.AppRecovery;
 import at.sintrum.fog.applicationhousing.client.client.AppHousingClientFactory;
 import at.sintrum.fog.clientcore.ClientCoreConfig;
 import at.sintrum.fog.clientcore.client.ClientFactoryFactory;
@@ -28,5 +29,10 @@ public class ApplicationHousingClientConfig {
     @Bean
     public AppEvolution createAppEvolutionClient(AppHousingClientFactory clientFactory) {
         return clientFactory.createAppEvolutionClient(null);
+    }
+
+    @Bean
+    public AppRecovery createAppRecoveryClient(AppHousingClientFactory clientFactory) {
+        return clientFactory.createRecoveryClient(null);
     }
 }
