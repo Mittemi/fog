@@ -2,9 +2,9 @@ package at.sintrum.fog.metadatamanager.client;
 
 import at.sintrum.fog.clientcore.ClientCoreConfig;
 import at.sintrum.fog.clientcore.client.ClientFactoryFactory;
-import at.sintrum.fog.metadatamanager.api.ApplicationStateMetadataApi;
-import at.sintrum.fog.metadatamanager.api.ContainerMetadataApi;
-import at.sintrum.fog.metadatamanager.api.ImageMetadataApi;
+import at.sintrum.fog.metadatamanager.client.api.ApplicationStateMetadataClient;
+import at.sintrum.fog.metadatamanager.client.api.ContainerMetadataClient;
+import at.sintrum.fog.metadatamanager.client.api.ImageMetadataClient;
 import at.sintrum.fog.metadatamanager.client.factory.MetadataManagerClientFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,17 +25,17 @@ public class MetadataManagerClientConfig {
     }
 
     @Bean
-    public ImageMetadataApi applicationMetadata(MetadataManagerClientFactory clientFactory) {
+    public ImageMetadataClient applicationMetadata(MetadataManagerClientFactory clientFactory) {
         return clientFactory.createApplicationMetadataClient(null);
     }
 
     @Bean
-    public ContainerMetadataApi containerMetadataApi(MetadataManagerClientFactory clientFactory) {
+    public ContainerMetadataClient containerMetadataApi(MetadataManagerClientFactory clientFactory) {
         return clientFactory.createContainerMetadataClient(null);
     }
 
     @Bean
-    public ApplicationStateMetadataApi applicationStateMetadataApi(MetadataManagerClientFactory clientFactory) {
+    public ApplicationStateMetadataClient applicationStateMetadataApi(MetadataManagerClientFactory clientFactory) {
         return clientFactory.createApplicationStateMetadataClient(null);
     }
 }

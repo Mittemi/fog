@@ -3,7 +3,7 @@ package at.sintrum.fog.simulation.taskengine.tasks;
 import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.deploymentmanager.api.dto.ApplicationStartRequest;
 import at.sintrum.fog.deploymentmanager.api.dto.FogOperationResult;
-import at.sintrum.fog.deploymentmanager.client.api.ApplicationManager;
+import at.sintrum.fog.deploymentmanager.client.api.ApplicationManagerClient;
 import at.sintrum.fog.deploymentmanager.client.factory.DeploymentManagerClientFactory;
 import at.sintrum.fog.simulation.taskengine.TaskListBuilder;
 
@@ -28,7 +28,7 @@ public class StartAppTask extends FogTaskBase {
     @Override
     protected boolean internalExecute() {
 
-        ApplicationManager applicationManagerClient = deploymentManagerClientFactory.createApplicationManagerClient(target.toUrl());
+        ApplicationManagerClient applicationManagerClient = deploymentManagerClientFactory.createApplicationManagerClient(target.toUrl());
         getTrackExecutionState().setInstanceId(UUID.randomUUID().toString());
         FogOperationResult fogOperationResult = applicationManagerClient.requestApplicationStart(new ApplicationStartRequest(imageMetadataId, getTrackExecutionState().getInstanceId()));
 

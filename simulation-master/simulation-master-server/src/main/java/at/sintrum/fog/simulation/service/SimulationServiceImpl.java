@@ -1,13 +1,13 @@
 package at.sintrum.fog.simulation.service;
 
 import at.sintrum.fog.application.api.WorkApi;
-import at.sintrum.fog.application.client.ApplicationClientFactory;
-import at.sintrum.fog.application.client.api.TestApplicationClientFactory;
+import at.sintrum.fog.application.client.factory.ApplicationClientFactory;
+import at.sintrum.fog.application.client.factory.TestApplicationClientFactory;
 import at.sintrum.fog.application.core.api.AppLifecycleApi;
 import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.deploymentmanager.api.dto.ApplicationStartRequest;
 import at.sintrum.fog.deploymentmanager.api.dto.FogOperationResult;
-import at.sintrum.fog.deploymentmanager.client.api.ApplicationManager;
+import at.sintrum.fog.deploymentmanager.client.api.ApplicationManagerClient;
 import at.sintrum.fog.deploymentmanager.client.factory.DeploymentManagerClientFactory;
 import at.sintrum.fog.metadatamanager.api.ApplicationStateMetadataApi;
 import at.sintrum.fog.servercore.service.RequestInfoService;
@@ -62,7 +62,7 @@ public class SimulationServiceImpl implements SimulationService {
 
     @Override
     public void startSimulation(SimulationStartInfoDto startInfoDto) {
-        ApplicationManager applicationManagerClient = deploymentManagerClientFactory.createApplicationManagerClient(startInfoDto.getCloud().toUrl());
+        ApplicationManagerClient applicationManagerClient = deploymentManagerClientFactory.createApplicationManagerClient(startInfoDto.getCloud().toUrl());
 
         String instanceId = UUID.randomUUID().toString();
         simulationStartInfos.put(instanceId, startInfoDto);

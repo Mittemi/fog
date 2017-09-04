@@ -2,14 +2,14 @@ package at.sintrum.fog.application.core.service;
 
 import at.sintrum.fog.applicationhousing.api.dto.AppIdentification;
 import at.sintrum.fog.applicationhousing.api.dto.AppUpdateInfo;
-import at.sintrum.fog.applicationhousing.client.api.AppEvolution;
+import at.sintrum.fog.applicationhousing.client.api.AppEvolutionClient;
 import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.core.service.EnvironmentInfoService;
 import at.sintrum.fog.deploymentmanager.api.dto.ApplicationMoveRequest;
 import at.sintrum.fog.deploymentmanager.api.dto.ApplicationRemoveRequest;
 import at.sintrum.fog.deploymentmanager.api.dto.ApplicationUpgradeRequest;
 import at.sintrum.fog.deploymentmanager.api.dto.FogOperationResult;
-import at.sintrum.fog.deploymentmanager.client.api.ApplicationManager;
+import at.sintrum.fog.deploymentmanager.client.api.ApplicationManagerClient;
 import at.sintrum.fog.metadatamanager.api.ApplicationStateMetadataApi;
 import at.sintrum.fog.metadatamanager.api.dto.AppState;
 import at.sintrum.fog.metadatamanager.api.dto.ApplicationStateMetadata;
@@ -30,10 +30,10 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
     // this allows calls from e.g. the standby service in a scheduled way without concurrency problems
 
     private final EnvironmentInfoService environmentInfoService;
-    private final ApplicationManager applicationManager;
+    private final ApplicationManagerClient applicationManagerClient;
     private final TravelingCoordinationService travelingCoordinationService;
     private final CloudLocatorService cloudLocatorService;
-    private final AppEvolution appEvolution;
+    private final AppEvolutionClient appEvolutionClient;
     private boolean acceptRequests = false;
 
     private final ApplicationStateMetadataApi applicationStateMetadataClient;
@@ -42,17 +42,17 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
     private final Logger LOG = LoggerFactory.getLogger(ApplicationLifecycleServiceImpl.class);
 
     public ApplicationLifecycleServiceImpl(EnvironmentInfoService environmentInfoService,
-                                           ApplicationManager applicationManager,
+                                           ApplicationManagerClient applicationManagerClient,
                                            TravelingCoordinationService travelingCoordinationService,
                                            CloudLocatorService cloudLocatorService,
-                                           AppEvolution appEvolution,
+                                           AppEvolutionClient appEvolutionClient,
                                            ApplicationStateMetadataApi applicationStateMetadataClient,
                                            SimulationClientService simulationClientService) {
         this.environmentInfoService = environmentInfoService;
-        this.applicationManager = applicationManager;
+        this.applicationManagerClient = applicationManagerClient;
         this.travelingCoordinationService = travelingCoordinationService;
         this.cloudLocatorService = cloudLocatorService;
-        this.appEvolution = appEvolution;
+        this.appEvolutionClient = appEvolutionClient;
         this.applicationStateMetadataClient = applicationStateMetadataClient;
         this.simulationClientService = simulationClientService;
     }
@@ -66,7 +66,7 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
             // BEGIN Simulation
             simulationClientService.notifyMove(target);
             // END Simulation
-            FogOperationResult result = applicationManager.moveApplication(new ApplicationMoveRequest(environmentInfoService.getOwnContainerId(), target, environmentInfoService.getOwnUrl()));
+            FogOperationResult result = applicationManagerClient.moveApplication(new ApplicationMoveRequest(environmentInfoService.getOwnContainerId(), target, environmentInfoService.getOwnUrl()));
             if (!result.isSuccessful()) {
                 String message = result.getMessage();
                 if (message == null) {
@@ -151,7 +151,7 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
             boolean lAcceptRequests = acceptRequests;
 
             try {
-                AppUpdateInfo appUpdateInfo = appEvolution.checkForUpdate(new AppIdentification(environmentInfoService.getMetadataId()));
+                AppUpdateInfo appUpdateInfo = appEvolutionClient.checkForUpdate(new AppIdentification(environmentInfoService.getMetadataId()));
 
                 if (appUpdateInfo.isUpdateRequired()) {
                     LOG.debug("Update is required. Request upgrade!");
@@ -168,7 +168,7 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
 
                     ApplicationStateMetadata stateMetadata = applicationStateMetadataClient.setState(environmentInfoService.getInstanceId(), AppState.Upgrade);
 
-                    FogOperationResult fogOperationResult = applicationManager.upgradeApplication(applicationUpgradeRequest);
+                    FogOperationResult fogOperationResult = applicationManagerClient.upgradeApplication(applicationUpgradeRequest);
 
                     if (!fogOperationResult.isSuccessful()) {
                         LOG.debug("Update failed, continue with normal execution");
@@ -204,7 +204,7 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
             // if this fails, the recovery service will restart the app and everything is fine again
             try {
                 setRetiredStateMetadata();
-                return applicationManager.removeApplication(new ApplicationRemoveRequest(environmentInfoService.getOwnContainerId(), environmentInfoService.getOwnUrl())).isSuccessful();
+                return applicationManagerClient.removeApplication(new ApplicationRemoveRequest(environmentInfoService.getOwnContainerId(), environmentInfoService.getOwnUrl())).isSuccessful();
             } catch (Exception ex) {
                 LOG.error("Teardown failed", ex);
                 return false;
@@ -274,7 +274,7 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
             boolean activeInstance = applicationStateMetadataClient.isActiveInstance(instanceId);
 
             if (activeInstance) {
-                String latestInstanceId = appEvolution.getLatestInstanceId(instanceId);
+                String latestInstanceId = appEvolutionClient.getLatestInstanceId(instanceId);
                 if (!latestInstanceId.equals(instanceId)) {
                     LOG.error("Something is wrong. This instanceId is not active anymore. Data is corrupted!");
                 }

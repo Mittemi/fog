@@ -1,6 +1,6 @@
 package at.sintrum.fog.application.client;
 
-import at.sintrum.fog.application.client.api.TestApplicationClientFactory;
+import at.sintrum.fog.application.client.factory.TestApplicationClientFactory;
 import at.sintrum.fog.clientcore.ClientCoreConfig;
 import at.sintrum.fog.clientcore.client.ClientFactoryFactory;
 import org.slf4j.Logger;

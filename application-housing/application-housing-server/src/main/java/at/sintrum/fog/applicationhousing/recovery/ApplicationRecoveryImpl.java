@@ -1,6 +1,6 @@
 package at.sintrum.fog.applicationhousing.recovery;
 
-import at.sintrum.fog.application.client.ApplicationClientFactory;
+import at.sintrum.fog.application.client.factory.ApplicationClientFactory;
 import at.sintrum.fog.application.core.api.ApplicationInfoApi;
 import at.sintrum.fog.application.core.api.dto.AppInfo;
 import at.sintrum.fog.applicationhousing.config.AppHousingConfigurationProperties;
@@ -10,7 +10,7 @@ import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.deploymentmanager.api.dto.ApplicationRecoveryRequest;
 import at.sintrum.fog.deploymentmanager.api.dto.ApplicationStartRequest;
 import at.sintrum.fog.deploymentmanager.api.dto.FogOperationResult;
-import at.sintrum.fog.deploymentmanager.client.api.ApplicationManager;
+import at.sintrum.fog.deploymentmanager.client.api.ApplicationManagerClient;
 import at.sintrum.fog.deploymentmanager.client.factory.DeploymentManagerClientFactory;
 import at.sintrum.fog.metadatamanager.api.ApplicationStateMetadataApi;
 import at.sintrum.fog.metadatamanager.api.ContainerMetadataApi;
@@ -167,7 +167,7 @@ public class ApplicationRecoveryImpl implements ApplicationRecovery {
                 return false;
             }
 
-            ApplicationManager applicationManagerClient = deploymentManagerClientFactory.createApplicationManagerClient(cloud.getFogIdentification().toUrl());
+            ApplicationManagerClient applicationManagerClient = deploymentManagerClientFactory.createApplicationManagerClient(cloud.getFogIdentification().toUrl());
             appRuntimeMetadata.setLastRecoveryCall(new DateTime());
 
             FogOperationResult fogOperationResult = applicationManagerClient.requestApplicationStart(new ApplicationStartRequest(containerMetadata.getImageMetadataId(), null));
@@ -188,7 +188,7 @@ public class ApplicationRecoveryImpl implements ApplicationRecovery {
     private boolean tryRecoverApp(AppRuntimeMetadata appRuntimeMetadata, ApplicationStateMetadata stateMetadata) {
         try {
             appRuntimeMetadata.setLastRecoveryCall(new DateTime());
-            ApplicationManager applicationManagerClient = deploymentManagerClientFactory.createApplicationManagerClient(stateMetadata.getRunningAt().toUrl());
+            ApplicationManagerClient applicationManagerClient = deploymentManagerClientFactory.createApplicationManagerClient(stateMetadata.getRunningAt().toUrl());
             FogOperationResult fogOperationResult = applicationManagerClient.recoverApplication(new ApplicationRecoveryRequest(stateMetadata.getInstanceId()));
 
             if (!fogOperationResult.isSuccessful()) {

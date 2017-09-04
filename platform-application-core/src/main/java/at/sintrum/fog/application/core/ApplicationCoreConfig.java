@@ -6,7 +6,7 @@ import at.sintrum.fog.applicationhousing.client.ApplicationHousingClientConfig;
 import at.sintrum.fog.core.PlatformCoreConfig;
 import at.sintrum.fog.core.service.EnvironmentInfoService;
 import at.sintrum.fog.deploymentmanager.client.DeploymentManagerClientConfig;
-import at.sintrum.fog.deploymentmanager.client.api.ApplicationManager;
+import at.sintrum.fog.deploymentmanager.client.api.ApplicationManagerClient;
 import at.sintrum.fog.deploymentmanager.client.factory.DeploymentManagerClientFactory;
 import at.sintrum.fog.hostinfo.HostInfoProviderConfig;
 import at.sintrum.fog.metadatamanager.client.MetadataManagerClientConfig;
@@ -64,7 +64,7 @@ public class ApplicationCoreConfig {
     }
 
     @Bean
-    public ApplicationManager applicationManager(DeploymentManagerClientFactory deploymentManagerClientFactory, EnvironmentInfoService environmentInfoService) {
+    public ApplicationManagerClient applicationManager(DeploymentManagerClientFactory deploymentManagerClientFactory, EnvironmentInfoService environmentInfoService) {
         return deploymentManagerClientFactory.createApplicationManagerClient(environmentInfoService.getFogBaseUrl());
     }
 }

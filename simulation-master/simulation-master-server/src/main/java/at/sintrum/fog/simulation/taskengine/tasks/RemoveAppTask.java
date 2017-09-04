@@ -1,6 +1,6 @@
 package at.sintrum.fog.simulation.taskengine.tasks;
 
-import at.sintrum.fog.application.client.ApplicationClientFactory;
+import at.sintrum.fog.application.client.factory.ApplicationClientFactory;
 import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.deploymentmanager.api.dto.ContainerInfo;
 import at.sintrum.fog.deploymentmanager.client.factory.DeploymentManagerClientFactory;

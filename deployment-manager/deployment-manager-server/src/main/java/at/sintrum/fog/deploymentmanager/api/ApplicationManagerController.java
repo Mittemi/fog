@@ -16,14 +16,14 @@ import java.util.concurrent.ExecutionException;
  * Created by Michael Mittermayr on 31.05.2017.
  */
 @RestController
-public class ApplicationManager implements ApplicationManagerApi {
+public class ApplicationManagerController implements ApplicationManagerApi {
 
-    private final Logger LOG = LoggerFactory.getLogger(ApplicationManager.class);
+    private final Logger LOG = LoggerFactory.getLogger(ApplicationManagerController.class);
 
     private final ApplicationManagerService applicationManagerService;
     private final EnvironmentInfoService environmentInfoService;
 
-    public ApplicationManager(ApplicationManagerService applicationManagerService, EnvironmentInfoService environmentInfoService) {
+    public ApplicationManagerController(ApplicationManagerService applicationManagerService, EnvironmentInfoService environmentInfoService) {
 
         this.applicationManagerService = applicationManagerService;
         this.environmentInfoService = environmentInfoService;

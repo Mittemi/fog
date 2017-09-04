@@ -14,11 +14,11 @@ import java.util.List;
  * Created by Michael Mittermayr on 20.05.2017.
  */
 @RestController
-public class ImageManager implements ImageManagerApi {
+public class ImageManagerController implements ImageManagerApi {
 
     private DockerService dockerService;
 
-    public ImageManager(DockerService dockerService) {
+    public ImageManagerController(DockerService dockerService) {
         this.dockerService = dockerService;
     }
 

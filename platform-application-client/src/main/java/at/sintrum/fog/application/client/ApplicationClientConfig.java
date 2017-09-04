@@ -1,5 +1,6 @@
 package at.sintrum.fog.application.client;
 
+import at.sintrum.fog.application.client.factory.ApplicationClientFactory;
 import at.sintrum.fog.clientcore.ClientCoreConfig;
 import at.sintrum.fog.clientcore.client.ClientFactoryFactory;
 import org.springframework.context.annotation.Bean;

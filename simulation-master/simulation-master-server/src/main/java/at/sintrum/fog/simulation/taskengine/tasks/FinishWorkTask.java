@@ -1,6 +1,6 @@
 package at.sintrum.fog.simulation.taskengine.tasks;
 
-import at.sintrum.fog.application.client.api.TestApplicationClientFactory;
+import at.sintrum.fog.application.client.factory.TestApplicationClientFactory;
 import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.metadatamanager.api.ApplicationStateMetadataApi;
 import at.sintrum.fog.simulation.taskengine.TaskListBuilder;

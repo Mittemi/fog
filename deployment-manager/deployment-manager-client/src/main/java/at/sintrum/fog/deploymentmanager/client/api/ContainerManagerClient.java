@@ -8,5 +8,5 @@ import at.sintrum.fog.deploymentmanager.api.ContainerManagerApi;
  * Created by Michael Mittermayr on 17.05.2017.
  */
 @DoNotRegister
-public interface ContainerManager extends ContainerManagerApi {
+public interface ContainerManagerClient extends ContainerManagerApi {
 }

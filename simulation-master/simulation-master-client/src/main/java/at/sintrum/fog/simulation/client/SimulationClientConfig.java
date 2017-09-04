@@ -2,10 +2,10 @@ package at.sintrum.fog.simulation.client;
 
 import at.sintrum.fog.clientcore.ClientCoreConfig;
 import at.sintrum.fog.clientcore.client.ClientFactoryFactory;
-import at.sintrum.fog.simulation.api.FogCellStateApi;
-import at.sintrum.fog.simulation.api.FogResourcesApi;
-import at.sintrum.fog.simulation.api.SimulationApi;
-import at.sintrum.fog.simulation.client.api.SimulationClientFactory;
+import at.sintrum.fog.simulation.client.api.FogCellStateClient;
+import at.sintrum.fog.simulation.client.api.FogResourcesClient;
+import at.sintrum.fog.simulation.client.api.SimulationClient;
+import at.sintrum.fog.simulation.client.factory.SimulationClientFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -31,17 +31,17 @@ public class SimulationClientConfig {
     }
 
     @Bean
-    public SimulationApi simulationApiClient(SimulationClientFactory simulationClientFactory) {
+    public SimulationClient simulationApiClient(SimulationClientFactory simulationClientFactory) {
         return simulationClientFactory.createSimulationClient(null);
     }
 
     @Bean
-    public FogResourcesApi fogResourcesClient(SimulationClientFactory simulationClientFactory) {
+    public FogResourcesClient fogResourcesClient(SimulationClientFactory simulationClientFactory) {
         return simulationClientFactory.createFogResourcesClient(null);
     }
 
     @Bean
-    public FogCellStateApi fogCellStateClient(SimulationClientFactory simulationClientFactory) {
+    public FogCellStateClient fogCellStateClient(SimulationClientFactory simulationClientFactory) {
         return simulationClientFactory.createFogCellStateClient(null);
     }
 }

@@ -7,5 +7,5 @@ import at.sintrum.fog.deploymentmanager.api.ImageManagerApi;
  * Created by Michael Mittermayr on 20.05.2017.
  */
 @DoNotRegister
-public interface ImageManager extends ImageManagerApi {
+public interface ImageManagerClient extends ImageManagerApi {
 }

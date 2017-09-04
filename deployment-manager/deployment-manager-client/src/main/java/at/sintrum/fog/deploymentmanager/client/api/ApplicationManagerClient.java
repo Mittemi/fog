@@ -7,5 +7,5 @@ import at.sintrum.fog.deploymentmanager.api.ApplicationManagerApi;
  * Created by Michael Mittermayr on 23.05.2017.
  */
 @DoNotRegister
-public interface ApplicationManager extends ApplicationManagerApi {
+public interface ApplicationManagerClient extends ApplicationManagerApi {
 }

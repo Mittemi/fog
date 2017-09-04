@@ -2,9 +2,9 @@ package at.sintrum.fog.metadatamanager.client.factory;
 
 import at.sintrum.fog.clientcore.annotation.EnableRetry;
 import at.sintrum.fog.clientcore.client.ClientFactory;
-import at.sintrum.fog.metadatamanager.api.ApplicationStateMetadataApi;
-import at.sintrum.fog.metadatamanager.api.ContainerMetadataApi;
-import at.sintrum.fog.metadatamanager.api.ImageMetadataApi;
+import at.sintrum.fog.metadatamanager.client.api.ApplicationStateMetadataClient;
+import at.sintrum.fog.metadatamanager.client.api.ContainerMetadataClient;
+import at.sintrum.fog.metadatamanager.client.api.ImageMetadataClient;
 
 /**
  * Created by Michael Mittermayr on 30.05.2017.
@@ -12,11 +12,11 @@ import at.sintrum.fog.metadatamanager.api.ImageMetadataApi;
 public interface MetadataManagerClientFactory extends ClientFactory {
 
     @EnableRetry
-    ImageMetadataApi createApplicationMetadataClient(String url);
+    ImageMetadataClient createApplicationMetadataClient(String url);
 
     @EnableRetry
-    ContainerMetadataApi createContainerMetadataClient(String url);
+    ContainerMetadataClient createContainerMetadataClient(String url);
 
     @EnableRetry
-    ApplicationStateMetadataApi createApplicationStateMetadataClient(String url);
+    ApplicationStateMetadataClient createApplicationStateMetadataClient(String url);
 }

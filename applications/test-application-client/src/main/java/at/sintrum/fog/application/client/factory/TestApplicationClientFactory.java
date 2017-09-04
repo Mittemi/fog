@@ -1,6 +1,6 @@
-package at.sintrum.fog.application.client.api;
+package at.sintrum.fog.application.client.factory;
 
-import at.sintrum.fog.application.api.WorkApi;
+import at.sintrum.fog.application.client.api.WorkClient;
 import at.sintrum.fog.clientcore.client.ClientFactory;
 
 /**
@@ -8,5 +8,5 @@ import at.sintrum.fog.clientcore.client.ClientFactory;
  */
 public interface TestApplicationClientFactory extends ClientFactory {
 
-    WorkApi createWorkClient(String url);
+    WorkClient createWorkClient(String url);
 }

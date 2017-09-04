@@ -1,7 +1,7 @@
 package at.sintrum.fog.simulation.taskengine;
 
-import at.sintrum.fog.application.client.ApplicationClientFactory;
-import at.sintrum.fog.application.client.api.TestApplicationClientFactory;
+import at.sintrum.fog.application.client.factory.ApplicationClientFactory;
+import at.sintrum.fog.application.client.factory.TestApplicationClientFactory;
 import at.sintrum.fog.applicationhousing.api.AppEvolutionApi;
 import at.sintrum.fog.applicationhousing.api.AppRecoveryApi;
 import at.sintrum.fog.applicationhousing.api.dto.AppIdentification;

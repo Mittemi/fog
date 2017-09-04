@@ -13,11 +13,11 @@ import java.util.stream.Collectors;
  * Created by Michael Mittermayr on 17.05.2017.
  */
 @RestController
-public class ContainerManager implements ContainerManagerApi {
+public class ContainerManagerController implements ContainerManagerApi {
 
     private final DockerService dockerService;
 
-    public ContainerManager(DockerService dockerService) {
+    public ContainerManagerController(DockerService dockerService) {
         this.dockerService = dockerService;
     }
 

@@ -15,14 +15,14 @@ import org.springframework.web.bind.annotation.*;
  * Created by Michael Mittermayr on 14.07.2017.
  */
 @RestController
-public class AppEvolution implements AppEvolutionApi {
+public class AppEvolutionController implements AppEvolutionApi {
 
-    private Logger LOG = LoggerFactory.getLogger(AppEvolution.class);
+    private Logger LOG = LoggerFactory.getLogger(AppEvolutionController.class);
 
     private final UpdateMetadataService updateMetadataService;
     private final InstanceIdHistoryService instanceIdHistoryService;
 
-    public AppEvolution(UpdateMetadataService updateMetadataService, InstanceIdHistoryService instanceIdHistoryService) {
+    public AppEvolutionController(UpdateMetadataService updateMetadataService, InstanceIdHistoryService instanceIdHistoryService) {
         this.updateMetadataService = updateMetadataService;
         this.instanceIdHistoryService = instanceIdHistoryService;
     }

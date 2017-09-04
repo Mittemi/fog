@@ -3,13 +3,13 @@ package at.sintrum.fog.deploymentmanager.service;
 import at.sintrum.fog.applicationhousing.api.dto.AppIdentification;
 import at.sintrum.fog.applicationhousing.api.dto.AppInstanceIdHistoryInfo;
 import at.sintrum.fog.applicationhousing.api.dto.AppUpdateInfo;
-import at.sintrum.fog.applicationhousing.client.api.AppEvolution;
+import at.sintrum.fog.applicationhousing.client.api.AppEvolutionClient;
 import at.sintrum.fog.clientcore.service.ShutdownApplicationService;
 import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.core.dto.ResourceInfo;
 import at.sintrum.fog.core.service.EnvironmentInfoService;
 import at.sintrum.fog.deploymentmanager.api.dto.*;
-import at.sintrum.fog.deploymentmanager.client.api.ApplicationManager;
+import at.sintrum.fog.deploymentmanager.client.api.ApplicationManagerClient;
 import at.sintrum.fog.deploymentmanager.client.factory.DeploymentManagerClientFactory;
 import at.sintrum.fog.metadatamanager.api.ContainerMetadataApi;
 import at.sintrum.fog.metadatamanager.api.ImageMetadataApi;
@@ -44,7 +44,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
     private final EnvironmentInfoService environmentInfoService;
     private final ShutdownApplicationService shutdownApplicationService;
     private final DeploymentService deploymentService;
-    private final AppEvolution appEvolutionClient;
+    private final AppEvolutionClient appEvolutionClient;
     private final RedissonClient redissonClient;
     private final FogResourcesApi fogResourcesApi;
     private final FogIdentification currentFogIdentification;
@@ -58,7 +58,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
                                          EnvironmentInfoService environmentInfoService,
                                          ShutdownApplicationService shutdownApplicationService,
                                          DeploymentService deploymentService,
-                                         AppEvolution appEvolutionClient,
+                                         AppEvolutionClient appEvolutionClient,
                                          RedissonClient redissonClient,
                                          FogResourcesApi fogResourcesApi) {
         this.dockerService = dockerService;
@@ -79,7 +79,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
 
 
     private FogOperationResult moveContainerToRemote(ApplicationMoveRequest applicationMoveRequest, DockerImageMetadata imageMetadata, String instanceId) {
-        at.sintrum.fog.deploymentmanager.client.api.ApplicationManager applicationManagerClient = clientFactory.createApplicationManagerClient(applicationMoveRequest.getTargetFog().toUrl());
+        ApplicationManagerClient applicationManagerClient = clientFactory.createApplicationManagerClient(applicationMoveRequest.getTargetFog().toUrl());
         FogOperationResult fogOperationResult = null;
 
         try {
@@ -321,7 +321,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
     }
 
     private boolean checkRemoteResources(ApplicationMoveRequest applicationMoveRequest) {
-        ApplicationManager applicationManagerClient = clientFactory.createApplicationManagerClient(applicationMoveRequest.getTargetFog().toUrl());
+        ApplicationManagerClient applicationManagerClient = clientFactory.createApplicationManagerClient(applicationMoveRequest.getTargetFog().toUrl());
         return applicationManagerClient.checkResources(new ResourceInfo(1, 1, 1, 1));
     }
 

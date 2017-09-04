@@ -7,5 +7,5 @@ import at.sintrum.fog.clientcore.annotation.DoNotRegister;
  * Created by Michael Mittermayr on 04.09.2017.
  */
 @DoNotRegister
-public interface AppRecovery extends AppRecoveryApi {
+public interface AppRecoveryClient extends AppRecoveryApi {
 }
