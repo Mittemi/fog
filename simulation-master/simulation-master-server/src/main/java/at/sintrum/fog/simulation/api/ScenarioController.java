@@ -29,4 +29,9 @@ public class ScenarioController {
     public List<String> getNames() {
         return scenarioService.getScenarioNames();
     }
+
+    @RequestMapping(value = "state", method = RequestMethod.GET)
+    public ScenarioExecutionInfo getState() {
+        return scenarioService.getExecutionState();
+    }
 }

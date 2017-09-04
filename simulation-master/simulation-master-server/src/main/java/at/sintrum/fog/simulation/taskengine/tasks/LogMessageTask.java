@@ -16,7 +16,9 @@ public class LogMessageTask extends FogTaskBase {
 
     @Override
     protected boolean internalExecute() {
-        getLogger().info("APP: " + getTrackExecutionState().getInstanceId() + " || " + message);
+        String msg = "APP: " + getTrackExecutionState().getInstanceId() + " || " + message;
+        getLogger().info(msg);
+        getTrackExecutionState().getLogging().addMessage(getTrackExecutionState().getInstanceId(), message);
         return true;
     }
 }

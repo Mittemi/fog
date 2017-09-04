@@ -15,6 +15,7 @@
     </springProfile>
 
     <logger name="org.springframework.boot.SpringApplication" level="DEBUG"/>
+    <logger name="at.sintrum.fog.metadatamanager.api.*" level="INFO"/>
 
     <springProfile name="!debug">
         <logger name="com.netflix.discovery" level="ERROR"/>

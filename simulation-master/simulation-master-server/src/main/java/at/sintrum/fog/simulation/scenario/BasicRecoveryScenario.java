@@ -5,20 +5,20 @@ import at.sintrum.fog.simulation.taskengine.TaskListBuilder;
 import org.springframework.stereotype.Service;
 
 /**
- * Created by Michael Mittermayr on 02.09.2017.
+ * Created by Michael Mittermayr on 04.09.2017.
  */
 @Service
-public class BasicTravelScenario implements Scenario {
+public class BasicRecoveryScenario implements Scenario {
 
     private final TaskListBuilder taskListBuilder;
 
-    public BasicTravelScenario(TaskListBuilder taskListBuilder) {
+    public BasicRecoveryScenario(TaskListBuilder taskListBuilder) {
         this.taskListBuilder = taskListBuilder;
     }
 
     @Override
     public String getId() {
-        return "basicTravel";
+        return "basicRecovery";
     }
 
     @Override
@@ -27,14 +27,23 @@ public class BasicTravelScenario implements Scenario {
 
         taskListBuilderState.createTrack()
                 .resetMetadata(0)
+
                 .startTestApp(0, basicScenarioInfo.getCloud())
                 .checkLocation(10, basicScenarioInfo.getCloud())
+                .stopAppContainer(0, basicScenarioInfo.getCloud())
+                .logMessage(10, "Wait for recovery of container")
+                .checkReachability(10, true)
+                .checkLocation(2, basicScenarioInfo.getCloud())
+                .logMessage(0, "Container recovery in cloud")
                 .requestApp(0, basicScenarioInfo.getFogA())
                 .checkLocation(10, basicScenarioInfo.getFogA())
-                .finishWork(0)
-                .checkLocation(10, basicScenarioInfo.getCloud())
+                .stopAppContainer(0, basicScenarioInfo.getFogA())
+                .checkReachability(10, true)
+                .logMessage(0, "Container now in fog, wait for recovery")
+                .checkLocation(0, basicScenarioInfo.getFogA())
                 .removeApp(0)
-                .logMessage(0, "Track finished");
+                .logMessage(0, "Basic recovery scenario finished");
+
 
         return taskListBuilderState;
     }

@@ -34,7 +34,7 @@ public class UpgradeAppScenario implements Scenario {
         DockerImageMetadata debugVersion = all.stream().filter(x -> x.getApplicationName().equals("test-application") && x.getTag().equals("latest") && x.isEnableDebugging()).findFirst().orElse(null);
         DockerImageMetadata nonDebugVersion = all.stream().filter(x -> x.getApplicationName().equals("test-application") && x.getTag().equals("latest") && !x.isEnableDebugging()).findFirst().orElse(null);
 
-        TaskListBuilder.TaskListBuilderState taskList = taskListBuilder.newTaskList();
+        TaskListBuilder.TaskListBuilderState taskList = taskListBuilder.newTaskList(this);
 
         taskList.createTrack()
                 .resetMetadata(0)

@@ -7,11 +7,14 @@ public class ScenarioExecutionInfo {
 
     private String name;
 
+    private boolean isFinished;
+
     public ScenarioExecutionInfo() {
     }
 
-    public ScenarioExecutionInfo(String name) {
+    public ScenarioExecutionInfo(String name, boolean isFinished) {
         this.name = name;
+        this.isFinished = isFinished;
     }
 
     public String getName() {
@@ -20,5 +23,13 @@ public class ScenarioExecutionInfo {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public boolean isFinished() {
+        return isFinished;
+    }
+
+    public void setFinished(boolean finished) {
+        isFinished = finished;
     }
 }

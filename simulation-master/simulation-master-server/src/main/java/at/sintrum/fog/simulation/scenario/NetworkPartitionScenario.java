@@ -5,20 +5,20 @@ import at.sintrum.fog.simulation.taskengine.TaskListBuilder;
 import org.springframework.stereotype.Service;
 
 /**
- * Created by Michael Mittermayr on 02.09.2017.
+ * Created by Michael Mittermayr on 04.09.2017.
  */
 @Service
-public class BasicTravelScenario implements Scenario {
+public class NetworkPartitionScenario implements Scenario {
 
     private final TaskListBuilder taskListBuilder;
 
-    public BasicTravelScenario(TaskListBuilder taskListBuilder) {
+    public NetworkPartitionScenario(TaskListBuilder taskListBuilder) {
         this.taskListBuilder = taskListBuilder;
     }
 
     @Override
     public String getId() {
-        return "basicTravel";
+        return "networkPartition";
     }
 
     @Override
@@ -27,12 +27,11 @@ public class BasicTravelScenario implements Scenario {
 
         taskListBuilderState.createTrack()
                 .resetMetadata(0)
+
                 .startTestApp(0, basicScenarioInfo.getCloud())
                 .checkLocation(10, basicScenarioInfo.getCloud())
-                .requestApp(0, basicScenarioInfo.getFogA())
-                .checkLocation(10, basicScenarioInfo.getFogA())
-                .finishWork(0)
-                .checkLocation(10, basicScenarioInfo.getCloud())
+
+
                 .removeApp(0)
                 .logMessage(0, "Track finished");
 

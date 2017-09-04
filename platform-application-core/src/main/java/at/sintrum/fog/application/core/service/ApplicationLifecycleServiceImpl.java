@@ -57,27 +57,34 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
         this.simulationClientService = simulationClientService;
     }
 
-    @Override
-    public boolean moveApplication(FogIdentification target) {
-        synchronized (this) {
-            if (acceptRequests) {
-                acceptRequests = false;
-            } else {
-                LOG.warn("Cancel move request. ");
-                return false;
-            }
-            LOG.debug("Request application move to fog: " + target.toUrl());
 
+    private boolean moveApplication(FogIdentification target) {
+        synchronized (this) {
+            LOG.debug("Request application move to fog: " + target.toUrl());
             setMovingStateMetadata(target);
             travelingCoordinationService.startMove(target);
             // BEGIN Simulation
             simulationClientService.notifyMove(target);
             // END Simulation
             FogOperationResult result = applicationManager.moveApplication(new ApplicationMoveRequest(environmentInfoService.getOwnContainerId(), target, environmentInfoService.getOwnUrl()));
-            acceptRequests = true;
-            //TODO: handle errors correctly
+            if (!result.isSuccessful()) {
+                String message = result.getMessage();
+                if (message == null) {
+                    message = "";
+                }
+                LOG.debug("Unable to move application to target: " + target.toUrl() + ", Details: " + message);
+                setMovingFailedStateMetadata();
+            }
             return result.isSuccessful();
         }
+    }
+
+    private void setMovingFailedStateMetadata() {
+        ApplicationStateMetadata stateMetadata = applicationStateMetadataClient.getById(environmentInfoService.getInstanceId());
+        stateMetadata.setRunningAt(FogIdentification.parseFogBaseUrl(environmentInfoService.getFogBaseUrl()));
+        stateMetadata.setNextTarget(null);
+        stateMetadata.setState(AppState.Moving);
+        applicationStateMetadataClient.store(stateMetadata);
     }
 
     private void setMovingStateMetadata(FogIdentification target) {
@@ -88,29 +95,54 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
         applicationStateMetadataClient.store(stateMetadata);
     }
 
-    public void moveAppIfRequired() {
+    private void setRetiredStateMetadata() {
+        ApplicationStateMetadata stateMetadata = applicationStateMetadataClient.getById(environmentInfoService.getInstanceId());
+        stateMetadata.setRunningAt(FogIdentification.parseFogBaseUrl(environmentInfoService.getFogBaseUrl()));
+        stateMetadata.setNextTarget(null);
+        stateMetadata.setState(AppState.Retired);
+        applicationStateMetadataClient.store(stateMetadata);
+    }
+
+    public boolean moveAppIfRequired() {
         synchronized (this) {
-            // we assume work has been finished and we are ready to move somewhere else
-            if (travelingCoordinationService.hasNextTarget()) {
-                LOG.debug("New application target, let's move");
-                FogIdentification nextTarget = travelingCoordinationService.getNextTarget();
-                if (nextTarget != null) {
-                    moveApplication(nextTarget);
+            boolean lAcceptRequests = acceptRequests;
+
+            try {
+                if (acceptRequests) {
+                    acceptRequests = false;
                 } else {
-                    LOG.error("Move target is null. Can't move!");
+                    LOG.warn("Cancel move request. ");
+                    return false;
                 }
-            } else {
-                if (!environmentInfoService.isCloud()) {
-                    LOG.info("Let's move to the cloud, there is no target in queue right now");
-                    String cloudBaseUrl = cloudLocatorService.getCloudBaseUrl();
-                    if (!StringUtils.isEmpty(cloudBaseUrl)) {
-                        moveApplication(FogIdentification.parseFogBaseUrl(cloudBaseUrl));
+                // we assume work has been finished and we are ready to move somewhere else
+                if (travelingCoordinationService.hasNextTarget()) {
+                    LOG.debug("New application target, let's move");
+                    FogIdentification nextTarget = travelingCoordinationService.getNextTarget();
+                    if (nextTarget != null) {
+                        moveApplication(nextTarget);
                     } else {
-                        LOG.warn("We can't move! Cloud was not found.");
+                        LOG.error("Move target is null. Can't move!");
+                    }
+                } else {
+                    if (!environmentInfoService.isCloud()) {
+                        LOG.info("Let's move to the cloud, there is no target in queue right now");
+                        String cloudBaseUrl = cloudLocatorService.getCloudBaseUrl();
+                        if (!StringUtils.isEmpty(cloudBaseUrl)) {
+                            moveApplication(FogIdentification.parseFogBaseUrl(cloudBaseUrl));
+                        } else {
+                            LOG.warn("We can't move! Cloud was not found.");
+                        }
                     }
                 }
+            } catch (Exception ex) {
+                LOG.error("Error in moveAppIfRequired", ex);
+                LOG.info("We won't accept any requests. The Recovery should take care of this situation");
+                acceptRequests = false; // we need the recovery to take care about this situation
+            } finally {
+                acceptRequests = lAcceptRequests;
             }
         }
+        return true;
     }
 
     public boolean upgradeAppIfRequired() {
@@ -171,10 +203,13 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
             acceptRequests = false;
             // if this fails, the recovery service will restart the app and everything is fine again
             try {
+                setRetiredStateMetadata();
                 return applicationManager.removeApplication(new ApplicationRemoveRequest(environmentInfoService.getOwnContainerId(), environmentInfoService.getOwnUrl())).isSuccessful();
             } catch (Exception ex) {
                 LOG.error("Teardown failed", ex);
                 return false;
+            } finally {
+                acceptRequests = true;
             }
         }
     }

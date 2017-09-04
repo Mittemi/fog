@@ -26,7 +26,7 @@ public class ResourceLimitScenario implements Scenario {
     @Override
     public TaskListBuilder.TaskListBuilderState build(BasicScenarioInfo basicScenarioInfo) {
 
-        TaskListBuilder.TaskListBuilderState taskList = taskListBuilder.newTaskList();
+        TaskListBuilder.TaskListBuilderState taskList = taskListBuilder.newTaskList(this);
 
         taskList.createTrack()
                 .resetMetadata(0)

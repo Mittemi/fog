@@ -12,7 +12,9 @@ import at.sintrum.fog.metadatamanager.api.ContainerMetadataApi;
 import at.sintrum.fog.metadatamanager.api.ImageMetadataApi;
 import at.sintrum.fog.metadatamanager.api.dto.DockerImageMetadata;
 import at.sintrum.fog.metadatamanager.client.factory.MetadataManagerClientFactory;
+import at.sintrum.fog.simulation.scenario.Scenario;
 import at.sintrum.fog.simulation.service.FogResourceService;
+import at.sintrum.fog.simulation.taskengine.log.ExecutionLogging;
 import at.sintrum.fog.simulation.taskengine.tasks.*;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -70,6 +72,7 @@ public class TaskListBuilder {
     public class TaskListBuilderState {
 
         private final Map<Integer, Queue<FogTask>> tracks;
+        private final Scenario scenario;
         private int currentId;
 
         private final ConcurrentHashMap<Integer, DateTime> simulationTime;
@@ -83,7 +86,8 @@ public class TaskListBuilder {
             return simulationTime.get(id);
         }
 
-        private TaskListBuilderState() {
+        private TaskListBuilderState(Scenario scenario) {
+            this.scenario = scenario;
             simulationTime = new ConcurrentHashMap<>();
             tracks = new ConcurrentHashMap<>();
         }
@@ -100,18 +104,24 @@ public class TaskListBuilder {
             return this;
         }
 
+        public Scenario getScenario() {
+            return scenario;
+        }
+
         public class AppTaskBuilder {
 
             private final DockerImageMetadata testAppMetadata;
             private final DockerImageMetadata anotherAppMetadata;
-
             private final TrackExecutionState trackExecutionState;
 
             public class TrackExecutionState {
                 private String instanceId;
 
+                private final ExecutionLogging logging;
+
                 public TrackExecutionState(String instanceId) {
                     this.instanceId = instanceId;
+                    logging = new ExecutionLogging();
                 }
 
                 public String getInstanceId() {
@@ -120,6 +130,10 @@ public class TaskListBuilder {
 
                 public void setInstanceId(String instanceId) {
                     this.instanceId = instanceId;
+                }
+
+                public ExecutionLogging getLogging() {
+                    return logging;
                 }
             }
 
@@ -195,6 +209,18 @@ public class TaskListBuilder {
             public AppTaskBuilder setResourceLimit(int offset, FogIdentification fogIdentification, ResourceInfo resourceInfo) {
                 return addTask(new SetResourceLimitTask(offset, trackExecutionState, resourceInfo, fogIdentification, fogResourceService));
             }
+
+            public AppTaskBuilder stopAppContainer(int offset, FogIdentification deploymentManagerLocation) {
+                return addTask(new StopContainerTask(offset, trackExecutionState, deploymentManagerClientFactory, deploymentManagerLocation, containerMetadataApi));
+            }
+
+            public AppTaskBuilder startAppContainer(int offset, FogIdentification deploymentManagerLocation) {
+                return addTask(new StartContainerTask(offset, trackExecutionState, deploymentManagerClientFactory, deploymentManagerLocation, containerMetadataApi));
+            }
+
+            public AppTaskBuilder checkReachability(int offset, boolean shouldBeReachable) {
+                return addTask(new CheckAppReachabilityTask(offset, trackExecutionState, applicationClientFactory, applicationStateMetadataClient, shouldBeReachable));
+            }
         }
 
         public List<Integer> getTrackIds() {
@@ -205,6 +231,13 @@ public class TaskListBuilder {
             return tracks.get(id);
         }
 
+        public boolean isFinished(int trackId) {
+            return getTrack(trackId).isEmpty();
+        }
+
+        public boolean isFinished() {
+            return getTrackIds().stream().allMatch(this::isFinished);
+        }
 
         public boolean runTaskIfPossible(int trackId) {
             Queue<FogTask> privateTaskList = getTrack(trackId);
@@ -230,7 +263,7 @@ public class TaskListBuilder {
         }
     }
 
-    public TaskListBuilderState newTaskList() {
-        return new TaskListBuilderState();
+    public TaskListBuilderState newTaskList(Scenario scenario) {
+        return new TaskListBuilderState(scenario);
     }
 }

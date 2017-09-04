@@ -30,7 +30,7 @@ public class ApplicationInfo implements ApplicationInfoApi {
 
     @Override
     public AppInfo info() {
-
+        //TODO: limit network connectivity based on simulation input
         AppInfo appInfo = new AppInfo();
 
         try {

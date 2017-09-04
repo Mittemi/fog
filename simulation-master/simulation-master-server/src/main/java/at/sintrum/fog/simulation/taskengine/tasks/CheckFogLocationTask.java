@@ -24,6 +24,19 @@ public class CheckFogLocationTask extends FogTaskBase {
 
         ApplicationStateMetadata stateMetadata = applicationStateMetadataApi.getById(getTrackExecutionState().getInstanceId());
         if (stateMetadata == null || stateMetadata.getRunningAt() == null) return false;
-        return stateMetadata.getRunningAt().isSameFog(expectedLocation);
+        return stateMetadata.getRunningAt().isSameFog(expectedLocation) /*&& checkState(stateMetadata)*/;
+    }
+
+    private boolean checkState(ApplicationStateMetadata stateMetadata) {
+        switch (stateMetadata.getState()) {
+            case Running:
+            case Standby:
+            case Upgrade:
+                return true;
+            case Moving:
+            case Retired:
+                return false;
+        }
+        return false;
     }
 }
