@@ -10,12 +10,19 @@
 
     <logger name="at.sintrum.fog" level="DEBUG"/>
 
-    <logger name="at.sintrum.fog.metadatamanager.api" level="ERROR"/>
-    <logger name="at.sintrum.fog.deploymentmanager.client" level="ERROR"/>
-    <logger name="at.sintrum.fog.application.core.api" level="ERROR"/>
+    <logger name="at.sintrum.fog.application.client.api" level="ERROR"/>
+
+    <logger name="at.sintrum.fog.applicationhousing.client.api" level="ERROR"/>
+    <logger name="at.sintrum.fog.deploymentmanager.client.api" level="ERROR"/>
+    <logger name="at.sintrum.fog.metadatamanager.client.api" level="ERROR"/>
+    <logger name="at.sintrum.fog.simulation.client.api" level="ERROR"/>
+
+
+    <logger name="$FeignFilterRequestMappingHandlerMapping" level="INFO"/>
 
 
     <logger name="com.netflix.discovery.DiscoveryClient" level="OFF"/>
+    <logger name="com.netflix.discovery.shared" level="OFF"/>
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
