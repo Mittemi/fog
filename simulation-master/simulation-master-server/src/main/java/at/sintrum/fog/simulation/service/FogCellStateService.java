@@ -8,4 +8,10 @@ import at.sintrum.fog.core.dto.FogIdentification;
 public interface FogCellStateService {
 
     boolean isOnline(FogIdentification fogIdentification);
+
+    void setFogNetworkState(FogIdentification fogIdentification, boolean isOnline);
+
+    void setFogServiceState(FogIdentification fogIdentification, boolean isOnline);
+
+    void reset();
 }

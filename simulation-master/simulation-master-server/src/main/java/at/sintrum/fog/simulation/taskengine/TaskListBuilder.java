@@ -14,6 +14,7 @@ import at.sintrum.fog.metadatamanager.api.ImageMetadataApi;
 import at.sintrum.fog.metadatamanager.api.dto.DockerImageMetadata;
 import at.sintrum.fog.metadatamanager.client.factory.MetadataManagerClientFactory;
 import at.sintrum.fog.simulation.scenario.Scenario;
+import at.sintrum.fog.simulation.service.FogCellStateService;
 import at.sintrum.fog.simulation.service.FogResourceService;
 import at.sintrum.fog.simulation.taskengine.log.ExecutionLogging;
 import at.sintrum.fog.simulation.taskengine.tasks.*;
@@ -47,6 +48,7 @@ public class TaskListBuilder {
     private final ImageMetadataApi imageMetadataApi;
     private final AppEvolutionApi appEvolutionApi;
     private final FogResourceService fogResourceService;
+    private final FogCellStateService fogCellStateService;
     private final AppRecoveryApi appRecovery;
 
     public TaskListBuilder(DeploymentManagerClientFactory deploymentManagerClientFactory,
@@ -58,6 +60,7 @@ public class TaskListBuilder {
                            ImageMetadataApi imageMetadataApi,
                            AppEvolutionApi appEvolutionApi,
                            FogResourceService fogResourceService,
+                           FogCellStateService fogCellStateService,
                            AppRecoveryApi appRecovery) {
         this.deploymentManagerClientFactory = deploymentManagerClientFactory;
         this.metadataManagerClientFactory = metadataManagerClientFactory;
@@ -70,6 +73,7 @@ public class TaskListBuilder {
 
         this.appEvolutionApi = appEvolutionApi;
         this.fogResourceService = fogResourceService;
+        this.fogCellStateService = fogCellStateService;
         this.appRecovery = appRecovery;
     }
 
@@ -104,7 +108,7 @@ public class TaskListBuilder {
         }
 
         public TaskListBuilderState resetMetadata() {
-            ResetMetadataTask.reset(applicationStateMetadataClient, appEvolutionApi, appRecovery, fogResourceService);
+            ResetMetadataTask.reset(applicationStateMetadataClient, appEvolutionApi, appRecovery, fogResourceService, fogCellStateService);
             return this;
         }
 
@@ -207,7 +211,7 @@ public class TaskListBuilder {
             }
 
             public AppTaskBuilder resetMetadata(int offset) {
-                return addTask(new ResetMetadataTask(offset, trackExecutionState, applicationStateMetadataClient, appEvolutionApi, appRecovery, fogResourceService));
+                return addTask(new ResetMetadataTask(offset, trackExecutionState, applicationStateMetadataClient, appEvolutionApi, appRecovery, fogResourceService, fogCellStateService));
             }
 
             public AppTaskBuilder setResourceLimit(int offset, FogIdentification fogIdentification, ResourceInfo resourceInfo) {
@@ -225,6 +229,11 @@ public class TaskListBuilder {
             public AppTaskBuilder checkReachability(int offset, boolean shouldBeReachable) {
                 return addTask(new CheckAppReachabilityTask(offset, trackExecutionState, applicationClientFactory, applicationStateMetadataClient, shouldBeReachable));
             }
+
+            public AppTaskBuilder setFogNetworkState(int offset, FogIdentification fogIdentification, boolean isOnline, boolean serviceOnly) {
+                return addTask(new SetFogNetworkStateTask(offset, trackExecutionState, fogIdentification, isOnline, serviceOnly, fogCellStateService));
+            }
+
         }
 
         public List<Integer> getTrackIds() {
