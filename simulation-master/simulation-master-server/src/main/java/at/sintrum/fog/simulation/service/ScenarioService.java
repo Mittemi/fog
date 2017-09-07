@@ -15,4 +15,6 @@ public interface ScenarioService {
     ScenarioExecutionInfo run(BasicScenarioInfo basicScenarioInfo, String name);
 
     ScenarioExecutionInfo getExecutionState();
+
+    boolean cancel();
 }

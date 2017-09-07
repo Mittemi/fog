@@ -23,7 +23,6 @@ public class DoSomeWorkController implements WorkApi {
     @RequestMapping(value = "doSomeWork", method = RequestMethod.POST)
     public String doSomeWork() {
         String result = workService.doWork();
-        workService.moveAppToNextTargetAfterTimeout();      //async call
         return result;
     }
 

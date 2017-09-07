@@ -234,6 +234,9 @@ public class TaskListBuilder {
                 return addTask(new SetFogNetworkStateTask(offset, trackExecutionState, fogIdentification, isOnline, serviceOnly, fogCellStateService));
             }
 
+            public AppTaskBuilder updateInstanceId(int offset) {
+                return addTask(new UpdateInstanceIdTask(offset, trackExecutionState, appEvolutionApi));
+            }
         }
 
         public List<Integer> getTrackIds() {

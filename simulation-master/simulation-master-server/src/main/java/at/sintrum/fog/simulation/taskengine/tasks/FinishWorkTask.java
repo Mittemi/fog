@@ -23,6 +23,7 @@ public class FinishWorkTask extends FogTaskBase {
     protected boolean internalExecute() {
         FogIdentification applicationUrl = applicationStateMetadataApi.getApplicationUrl(getTrackExecutionState().getInstanceId());
         if (applicationUrl == null) return false;
-        return testApplicationClientFactory.createWorkClient(applicationUrl.toUrl()).doSomeWork() != null;
+        String result = testApplicationClientFactory.createWorkClient(applicationUrl.toUrl()).doSomeWork();
+        return result != null;
     }
 }

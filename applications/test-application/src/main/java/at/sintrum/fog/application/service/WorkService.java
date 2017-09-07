@@ -6,7 +6,7 @@ import at.sintrum.fog.core.service.EnvironmentInfoService;
 import org.bouncycastle.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -35,6 +35,8 @@ public class WorkService {
             "If work was so good, the rich would have kept more of it for themselves."
     };
 
+    private boolean isDone = false;
+    private boolean allowToMove = false;
 
     private final ApplicationLifecycleService applicationLifecycleService;
     private final EnvironmentInfoService environmentInfoService;
@@ -45,18 +47,23 @@ public class WorkService {
         this.environmentInfoService = environmentInfoService;
     }
 
-    @Async
-    public void moveAppToNextTargetAfterTimeout() {
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            LOG.debug("Sleep interrupted", e);
+    @Scheduled(fixedDelay = 1000)
+    public void moveAppToNextTargetAfterTimeout() throws InterruptedException {
+        if (isDone && allowToMove) {
+            Thread.sleep(1000);     //just a workaround to finish the currently running request
+            applicationLifecycleService.workIsFinished();
         }
-        LOG.debug("Call moveAppIfRequired!");
-        applicationLifecycleService.moveAppIfRequired();
     }
 
     public String doWork() {
+        synchronized (this) {
+            if (isDone) {
+                allowToMove = true;     // not really required
+                return "You shall not pass! Just kidding, I am already done here. Just waiting to move :)";
+            }
+            isDone = true;
+        }
+
         String result = SAYINGS[random.nextInt(SAYINGS.length)];
 
         if (environmentInfoService.isInsideContainer()) {
@@ -76,6 +83,7 @@ public class WorkService {
                 LOG.error("Failed during work", ex);
             }
         }
+        allowToMove = true;
         return result;
     }
 
@@ -89,5 +97,4 @@ public class WorkService {
         File[] files = f.listFiles();
         return new WorkStatus(files == null ? 0 : files.length);
     }
-
 }

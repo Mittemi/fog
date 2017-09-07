@@ -3,9 +3,11 @@ package at.sintrum.fog.applicationhousing.recovery;
 import at.sintrum.fog.application.client.factory.ApplicationClientFactory;
 import at.sintrum.fog.application.core.api.ApplicationInfoApi;
 import at.sintrum.fog.application.core.api.dto.AppInfo;
+import at.sintrum.fog.applicationhousing.api.dto.AppInstanceIdHistoryInfo;
 import at.sintrum.fog.applicationhousing.config.AppHousingConfigurationProperties;
 import at.sintrum.fog.applicationhousing.recovery.metadata.AppRuntimeMetadata;
 import at.sintrum.fog.applicationhousing.recovery.metadata.FogCellMetadata;
+import at.sintrum.fog.applicationhousing.service.InstanceIdHistoryService;
 import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.deploymentmanager.api.dto.ApplicationRecoveryRequest;
 import at.sintrum.fog.deploymentmanager.api.dto.ApplicationStartRequest;
@@ -29,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -48,6 +51,7 @@ public class ApplicationRecoveryImpl implements ApplicationRecovery {
     private final ApplicationClientFactory applicationClientFactory;
     private final DeploymentManagerClientFactory deploymentManagerClientFactory;
     private final ContainerMetadataApi containerMetadataApi;
+    private final InstanceIdHistoryService instanceIdHistoryService;
     private final AppHousingConfigurationProperties configurationProperties;
     private FogIdentification cloud;
 
@@ -62,12 +66,13 @@ public class ApplicationRecoveryImpl implements ApplicationRecovery {
                                    ApplicationClientFactory applicationClientFactory,
                                    DeploymentManagerClientFactory deploymentManagerClientFactory,
                                    ContainerMetadataApi containerMetadataApi,
-                                   AppHousingConfigurationProperties configurationProperties) {
+                                   InstanceIdHistoryService instanceIdHistoryService, AppHousingConfigurationProperties configurationProperties) {
         this.discoveryClient = discoveryClient;
         this.applicationStateMetadataApi = applicationStateMetadataApi;
         this.applicationClientFactory = applicationClientFactory;
         this.deploymentManagerClientFactory = deploymentManagerClientFactory;
         this.containerMetadataApi = containerMetadataApi;
+        this.instanceIdHistoryService = instanceIdHistoryService;
         this.configurationProperties = configurationProperties;
         appRuntimeMetadata = new HashMap<>();
         fogCellMetadata = new HashMap<>();
@@ -100,7 +105,7 @@ public class ApplicationRecoveryImpl implements ApplicationRecovery {
 
     private void recoverApps() {
 
-        for (String instanceId : appRuntimeMetadata.keySet()) {
+        for (String instanceId : new LinkedList<>(appRuntimeMetadata.keySet())) {
             AppRuntimeMetadata appRuntimeMetadata = this.appRuntimeMetadata.get(instanceId);
             if (appRuntimeMetadata.isIgnored() || appRuntimeMetadata.isRetired()) {
                 continue;
@@ -123,6 +128,10 @@ public class ApplicationRecoveryImpl implements ApplicationRecovery {
                 ApplicationStateMetadata stateMetadata = applicationStateMetadataApi.getById(appRuntimeMetadata.getInstanceId());
                 if (stateMetadata == null) {
                     LOG.warn("No state metadata. This might be due to a reset call");
+                    if (appRuntimeMetadata.hasTimeout(240)) {
+                        LOG.debug("Remove obsolete metadata for: " + appRuntimeMetadata.getInstanceId());
+                        this.appRuntimeMetadata.remove(appRuntimeMetadata.getInstanceId());
+                    }
                     continue;
                 }
 
@@ -167,19 +176,26 @@ public class ApplicationRecoveryImpl implements ApplicationRecovery {
                 return false;
             }
 
+            LOG.debug("Failed to recovery in fog cell, start recovery in cloud: " + appRuntimeMetadata.getInstanceId());
             ApplicationManagerClient applicationManagerClient = deploymentManagerClientFactory.createApplicationManagerClient(cloud.getFogIdentification().toUrl());
             appRuntimeMetadata.setLastRecoveryCall(new DateTime());
+
+            if (!applicationStateMetadataApi.deprecateInstance(appRuntimeMetadata.getInstanceId())) {
+                LOG.warn("Failed to deprecate instance: " + appRuntimeMetadata.getInstanceId());
+            }
 
             FogOperationResult fogOperationResult = applicationManagerClient.requestApplicationStart(new ApplicationStartRequest(containerMetadata.getImageMetadataId(), null));
             if (fogOperationResult.isSuccessful()) {
                 LOG.debug("Recovered app: " + appRuntimeMetadata.getInstanceId() + " in cloud. New InstanceID: " + fogOperationResult.getInstanceId());
+
+                if (!instanceIdHistoryService.addToInstanceIdHistory(new AppInstanceIdHistoryInfo(appRuntimeMetadata.getInstanceId(), fogOperationResult.getInstanceId()))) {
+                    LOG.warn("Failed to update instanceId history");
+                }
                 return true;
             } else {
-                LOG.debug("Failed to recovery in fog cell, start recovery in cloud: " + appRuntimeMetadata.getInstanceId());
-                if (!applicationStateMetadataApi.deprecateInstance(appRuntimeMetadata.getInstanceId())) {
-                    LOG.warn("Failed to deprecate instance: " + appRuntimeMetadata.getInstanceId());
-                }
                 LOG.debug("Failed to recover app: " + appRuntimeMetadata.getInstanceId());
+                LOG.error("This is a major problem. We should not be in this state. There is no way implemented to fix this situation.");
+                //TODO: app should not be deprecated otherwise we have no app running anymore
                 return false;
             }
         }
@@ -273,8 +289,11 @@ public class ApplicationRecoveryImpl implements ApplicationRecovery {
             Map<String, String> metadata = instance.getMetadata();
 
             String instanceID = metadata.get("fogInstanceId");
-            if (!StringUtils.isEmpty(instanceID)) {
-                appRuntimeMetadata.putIfAbsent(instanceID, new AppRuntimeMetadata(serviceId, instanceID));
+            if (!StringUtils.isEmpty(instanceID) && !appRuntimeMetadata.containsKey(instanceID)) {
+                if (applicationStateMetadataApi.isActiveInstance(instanceID)) {
+                    LOG.debug("Register new application for recovery: " + instanceID);
+                    appRuntimeMetadata.putIfAbsent(instanceID, new AppRuntimeMetadata(serviceId, instanceID));
+                }
             }
         }
     }

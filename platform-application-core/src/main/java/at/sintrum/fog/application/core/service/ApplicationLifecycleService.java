@@ -5,11 +5,11 @@ package at.sintrum.fog.application.core.service;
  */
 public interface ApplicationLifecycleService {
 
-    boolean moveAppIfRequired();
-
-    boolean upgradeAppIfRequired();
+    boolean executeNextStep();
 
     boolean shouldAcceptRequests();
 
     boolean tearDown();
+
+    void workIsFinished();
 }

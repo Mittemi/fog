@@ -34,4 +34,9 @@ public class ScenarioController {
     public ScenarioExecutionInfo getState() {
         return scenarioService.getExecutionState();
     }
+
+    @RequestMapping(value = "cancel", method = RequestMethod.DELETE)
+    public boolean cancel() {
+        return scenarioService.cancel();
+    }
 }

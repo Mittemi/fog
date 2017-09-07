@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -35,6 +36,7 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
     private final CloudLocatorService cloudLocatorService;
     private final AppEvolutionClient appEvolutionClient;
     private boolean acceptRequests = false;
+    private volatile boolean workFinished = false;
 
     private final ApplicationStateMetadataApi applicationStateMetadataClient;
     private final SimulationClientService simulationClientService;
@@ -188,6 +190,31 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
         }
     }
 
+    @Scheduled(fixedDelay = 15000)
+    public void invoker() {
+        if (workFinished) {
+            executeNextStep();
+        }
+    }
+
+
+    @Override
+    public boolean executeNextStep() {
+        boolean result = false;
+        if (!activeInstanceCheck(environmentInfoService.getInstanceId())) {
+
+            return false;
+        }
+        if (!upgradeAppIfRequired()) {
+            // no upgrade --> check if we should move
+            result = moveAppIfRequired();
+        }
+        // BEGIN Simulation
+        simulationClientService.sendHeartbeat();
+        // END Simulation
+        return result;
+    }
+
     @Override
     public boolean shouldAcceptRequests() {
         return acceptRequests;
@@ -215,6 +242,11 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
     }
 
     @Override
+    public void workIsFinished() {
+        workFinished = true;
+    }
+
+    @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         //TODO: pass right fogIdentification to simulation client (currently it is only the DM but we want the app itself sometimes)
         FogIdentification fogIdentification = getFogIdentification();
@@ -222,6 +254,7 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
 
         synchronized (this) {
             performStartupWork(fogIdentification, instanceId);
+            workFinished = environmentInfoService.isCloud();
             acceptRequests = true;
         }
     }
@@ -275,13 +308,12 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
 
             if (activeInstance) {
                 String latestInstanceId = appEvolutionClient.getLatestInstanceId(instanceId);
-                if (!latestInstanceId.equals(instanceId)) {
+                if (latestInstanceId != null && !latestInstanceId.equals(instanceId)) {
                     LOG.error("Something is wrong. This instanceId is not active anymore. Data is corrupted!");
                 }
-            }
-
-            if (!activeInstance) {
+            } else {
                 LOG.warn("Instance '" + instanceId + "' is not the active instance anymore.");
+                return applicationManagerClient.removeApplication(new ApplicationRemoveRequest(environmentInfoService.getOwnContainerId(), environmentInfoService.getOwnUrl())).isSuccessful();
                 //TODO: impl deprecated instance recovery
             }
             return activeInstance;

@@ -63,8 +63,16 @@ public class ScenarioServiceImpl implements ScenarioService {
         return scenarioExecutionInfo;
     }
 
+    @Override
+    public boolean cancel() {
+        this.taskList = null;
+        return true;
+    }
+
     @Scheduled(fixedDelay = 1000)
     public void executor() {
+
+        TaskListBuilder.TaskListBuilderState taskList = this.taskList;
 
         if (taskList == null) {
             return;
