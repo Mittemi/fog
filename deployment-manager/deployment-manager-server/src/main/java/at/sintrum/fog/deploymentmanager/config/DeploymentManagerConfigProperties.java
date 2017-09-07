@@ -13,6 +13,8 @@ public class DeploymentManagerConfigProperties {
 
     private List<String> protectedContainers = new LinkedList<>();
 
+    private int maxContainers = 30;
+
     private String registry;
 
     public List<String> getProtectedContainers() {
@@ -29,5 +31,13 @@ public class DeploymentManagerConfigProperties {
 
     public void setRegistry(String registry) {
         this.registry = registry;
+    }
+
+    public int getMaxContainers() {
+        return maxContainers;
+    }
+
+    public void setMaxContainers(int maxContainers) {
+        this.maxContainers = maxContainers;
     }
 }
