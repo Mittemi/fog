@@ -113,7 +113,7 @@ public class DockerServiceImpl implements DockerService {
     @Override
     public CreateContainerResult createContainer(CreateContainerRequest createContainerRequest) {
 
-        if (deploymentManagerConfigProperties.getMaxContainers() > getContainers().size()) {
+        if (deploymentManagerConfigProperties.getMaxContainers() < getContainers().size()) {
             LOG.error("Can't start any new containers. This server has reached the max amount of containers.");
             return null;
         }

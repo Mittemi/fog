@@ -154,6 +154,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
                 if (result.isSuccessful()) {
                     //TODO: logging
                     if (!dockerService.startContainer(result.getContainerId())) {
+                        dockerService.removeContainer(result.getContainerId());
                         return new FogOperationResult(result.getContainerId(), false, environmentInfoService.getFogBaseUrl(), "Failed to start container");
                     }
                     //   metadataService.finishStartup(applicationStartRequest);
@@ -422,6 +423,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
         }
 
         if (!dockerService.startContainer(containerInfo.getId())) {
+            dockerService.removeContainer(containerInfo.getId());
             LOG.error("Failed to start container");
             return new FogOperationResult(containerInfo.getId(), false, environmentInfoService.getFogBaseUrl(), "Failed to start the container");
         }
@@ -485,8 +487,10 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
                     appEvolutionClient.rollbackInstanceIdHistory(new AppInstanceIdHistoryInfo(containerMetadata.getInstanceId(), newInstanceId));
                 } catch (Exception ex) {
                     LOG.error("Failed to rollback upgrade history info. Well, that might be a problem and this simulation is worthless!");
-                    finalizeReplaceContainerOperation(false, oldContainerId);
+                    finalizeReplaceContainerOperation(false, newContainerId);   //TODO: check this
                     return new FogOperationResult(oldContainerId, false, environmentInfoService.getFogBaseUrl(), "upgrade failed, metadata corrupted, partial recovery");
+                } finally {
+                    dockerService.removeContainer(newContainerId);
                 }
             }
 

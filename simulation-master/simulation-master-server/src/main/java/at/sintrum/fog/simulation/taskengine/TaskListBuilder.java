@@ -9,9 +9,9 @@ import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.core.dto.ResourceInfo;
 import at.sintrum.fog.deploymentmanager.client.factory.DeploymentManagerClientFactory;
 import at.sintrum.fog.metadatamanager.api.ApplicationStateMetadataApi;
-import at.sintrum.fog.metadatamanager.api.ContainerMetadataApi;
 import at.sintrum.fog.metadatamanager.api.ImageMetadataApi;
 import at.sintrum.fog.metadatamanager.api.dto.DockerImageMetadata;
+import at.sintrum.fog.metadatamanager.client.api.ContainerMetadataClient;
 import at.sintrum.fog.metadatamanager.client.factory.MetadataManagerClientFactory;
 import at.sintrum.fog.simulation.scenario.Scenario;
 import at.sintrum.fog.simulation.service.FogCellStateService;
@@ -44,7 +44,7 @@ public class TaskListBuilder {
     private final ApplicationClientFactory applicationClientFactory;
     private final TestApplicationClientFactory testApplicationClientFactory;
 
-    private final ContainerMetadataApi containerMetadataApi;
+    private final ContainerMetadataClient containerMetadataApi;
     private final ImageMetadataApi imageMetadataApi;
     private final AppEvolutionApi appEvolutionApi;
     private final FogResourceService fogResourceService;
@@ -56,7 +56,7 @@ public class TaskListBuilder {
                            ApplicationStateMetadataApi applicationStateMetadataClient,
                            ApplicationClientFactory applicationClientFactory,
                            TestApplicationClientFactory testApplicationClientFactory,
-                           ContainerMetadataApi containerMetadataApi,
+                           ContainerMetadataClient containerMetadataApi,
                            ImageMetadataApi imageMetadataApi,
                            AppEvolutionApi appEvolutionApi,
                            FogResourceService fogResourceService,
@@ -226,6 +226,10 @@ public class TaskListBuilder {
                 return addTask(new StartContainerTask(offset, trackExecutionState, deploymentManagerClientFactory, deploymentManagerLocation, containerMetadataApi));
             }
 
+            public AppTaskBuilder startContainer(int offset, FogIdentification deploymentManagerLocation, TrackBuilderState state) {
+                return addTask(new StartContainerTask(offset, trackExecutionState, deploymentManagerClientFactory, deploymentManagerLocation, containerMetadataApi, state));
+            }
+
             public AppTaskBuilder checkReachability(int offset, boolean shouldBeReachable) {
                 return addTask(new CheckAppReachabilityTask(offset, trackExecutionState, applicationClientFactory, applicationStateMetadataClient, shouldBeReachable));
             }
@@ -236,6 +240,10 @@ public class TaskListBuilder {
 
             public AppTaskBuilder updateInstanceId(int offset) {
                 return addTask(new UpdateInstanceIdTask(offset, trackExecutionState, appEvolutionApi));
+            }
+
+            public AppTaskBuilder updateScenarioState(int offset, TrackBuilderState trackBuilderState) {
+                return addTask(new UpdateTrackBuilderStateTask(offset, trackExecutionState, trackBuilderState, containerMetadataApi));
             }
         }
 
