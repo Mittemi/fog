@@ -11,6 +11,7 @@ public class AppHousingConfigurationProperties {
     private int appStateMetadataGraceTimeout = 60;
     private int appRecoveryWaitTime = 60;
     private int appHeartbeatTimeout = 60;
+    private int obsoleteMetadataTimeout = 240;
 
     public int getAppStateMetadataGraceTimeout() {
         return appStateMetadataGraceTimeout;
@@ -34,5 +35,13 @@ public class AppHousingConfigurationProperties {
 
     public void setAppHeartbeatTimeout(int appHeartbeatTimeout) {
         this.appHeartbeatTimeout = appHeartbeatTimeout;
+    }
+
+    public int getObsoleteMetadataTimeout() {
+        return obsoleteMetadataTimeout;
+    }
+
+    public void setObsoleteMetadataTimeout(int obsoleteMetadataTimeout) {
+        this.obsoleteMetadataTimeout = obsoleteMetadataTimeout;
     }
 }

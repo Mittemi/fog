@@ -12,4 +12,7 @@ public interface ApplicationInfoApi {
 
     @RequestMapping(value = "info", method = RequestMethod.GET)
     AppInfo info();
+
+    @RequestMapping(value = "isAlive", method = RequestMethod.GET)
+    boolean isAlive();
 }

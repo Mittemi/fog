@@ -1,8 +1,7 @@
 package at.sintrum.fog.applicationhousing.recovery;
 
+import at.sintrum.fog.application.client.api.ApplicationInfoClient;
 import at.sintrum.fog.application.client.factory.ApplicationClientFactory;
-import at.sintrum.fog.application.core.api.ApplicationInfoApi;
-import at.sintrum.fog.application.core.api.dto.AppInfo;
 import at.sintrum.fog.applicationhousing.api.dto.AppInstanceIdHistoryInfo;
 import at.sintrum.fog.applicationhousing.config.AppHousingConfigurationProperties;
 import at.sintrum.fog.applicationhousing.recovery.metadata.AppRuntimeMetadata;
@@ -98,61 +97,68 @@ public class ApplicationRecoveryImpl implements ApplicationRecovery {
     private synchronized void checkApplications() {
         updateKnownFogs();
 
-        updateKnownApps();      //TODO: multithreaded
+        updateKnownApps();  //async!
 
-        recoverApps();          //TODO: multithreaded
+        recoverApps();      //async!
     }
 
     private void recoverApps() {
 
-        for (String instanceId : new LinkedList<>(appRuntimeMetadata.keySet())) {
-            AppRuntimeMetadata appRuntimeMetadata = this.appRuntimeMetadata.get(instanceId);
-            if (appRuntimeMetadata.isIgnored() || appRuntimeMetadata.isRetired()) {
-                continue;
+        new LinkedList<>(appRuntimeMetadata.keySet())
+                .parallelStream()
+                .forEach(this::recoverAppInstance);
+    }
+
+    private void recoverAppInstance(String instanceId) {
+        AppRuntimeMetadata appRuntimeMetadata = this.appRuntimeMetadata.get(instanceId);
+        if (appRuntimeMetadata.isIgnored() || appRuntimeMetadata.isRetired()) {
+            return;
+        }
+
+        if (appRuntimeMetadata.hasTimeout(configurationProperties.getAppHeartbeatTimeout())) {
+            LOG.warn("AppTimeout: " + appRuntimeMetadata.getInstanceId());
+
+            if (!applicationStateMetadataApi.isActiveInstance(appRuntimeMetadata.getInstanceId())) {
+                LOG.debug("This is not an active instance, no need for recovery: " + appRuntimeMetadata.getInstanceId());
+                appRuntimeMetadata.setRetired(true);
+                return;
             }
 
-            if (appRuntimeMetadata.hasTimeout(configurationProperties.getAppHeartbeatTimeout())) {
-                LOG.warn("AppTimeout: " + appRuntimeMetadata.getInstanceId());
+            //1. check if app should be running
+            //2. check if app is reachable
+            //3. check if fog is reachable
+            //4a. tell deployment manager to recover app
+            //4b. recover app in cloud
+            ApplicationStateMetadata stateMetadata = applicationStateMetadataApi.getById(appRuntimeMetadata.getInstanceId());
+            if (stateMetadata == null) {
+                LOG.warn("No state metadata. This might be due to a reset call");
+                if (appRuntimeMetadata.hasTimeout(configurationProperties.getObsoleteMetadataTimeout())) {
+                    LOG.debug("Remove obsolete metadata for: " + appRuntimeMetadata.getInstanceId());
+                    this.appRuntimeMetadata.remove(appRuntimeMetadata.getInstanceId());
+                }
+                return;
+            }
 
-                if (!applicationStateMetadataApi.isActiveInstance(appRuntimeMetadata.getInstanceId())) {
-                    LOG.debug("This is not an active instance, no need for recovery: " + appRuntimeMetadata.getInstanceId());
-                    appRuntimeMetadata.setRetired(true);
-                    continue;
+            if (!hasTimeout(stateMetadata.getLastUpdate(), configurationProperties.getAppStateMetadataGraceTimeout())) {
+                LOG.debug("State metadata update within grace period. Skip this recovery call for instance: " + appRuntimeMetadata.getInstanceId());
+                return;
+            }
+
+            if (shouldRun(stateMetadata, appRuntimeMetadata)) {
+                FogIdentification applicationUrl = applicationStateMetadataApi.getApplicationUrl(appRuntimeMetadata.getInstanceId());
+                if (isAppReachable(applicationUrl)) {
+                    LOG.debug("App is alive, nothing to recover");
+                    return;
                 }
 
-                //1. check if app should be running
-                //2. check if app is reachable
-                //3. check if fog is reachable
-                //4a. tell deployment manager to recover app
-                //4b. recover app in cloud
-                ApplicationStateMetadata stateMetadata = applicationStateMetadataApi.getById(appRuntimeMetadata.getInstanceId());
-                if (stateMetadata == null) {
-                    LOG.warn("No state metadata. This might be due to a reset call");
-                    if (appRuntimeMetadata.hasTimeout(240)) {
-                        LOG.debug("Remove obsolete metadata for: " + appRuntimeMetadata.getInstanceId());
-                        this.appRuntimeMetadata.remove(appRuntimeMetadata.getInstanceId());
+                if (appRuntimeMetadata.getLastRecoveryCall() == null || hasTimeout(appRuntimeMetadata.getLastRecoveryCall(), configurationProperties.getAppRecoveryWaitTime())) {
+                    LOG.debug("Recover app: " + appRuntimeMetadata.getInstanceId());
+
+                    if (!tryRecoverApp(appRuntimeMetadata, stateMetadata)) {
+                        recoverAppInCloud(appRuntimeMetadata, stateMetadata);
                     }
-                    continue;
-                }
-
-                if (!hasTimeout(stateMetadata.getLastUpdate(), configurationProperties.getAppStateMetadataGraceTimeout())) {
-                    LOG.debug("State metadata update within grace period. Skip this recovery call for instance: " + appRuntimeMetadata.getInstanceId());
-                    continue;
-                }
-
-                if (shouldRun(stateMetadata, appRuntimeMetadata)) {
-                    FogIdentification applicationUrl = applicationStateMetadataApi.getApplicationUrl(appRuntimeMetadata.getInstanceId());
-//                    boolean isAppReachable = isAppReachable(applicationUrl);
-
-                    if (appRuntimeMetadata.getLastRecoveryCall() == null || hasTimeout(appRuntimeMetadata.getLastRecoveryCall(), configurationProperties.getAppRecoveryWaitTime())) {
-                        LOG.debug("Recover app: " + appRuntimeMetadata.getInstanceId());
-
-                        if (!tryRecoverApp(appRuntimeMetadata, stateMetadata)) {
-                            recoverAppInCloud(appRuntimeMetadata, stateMetadata);
-                        }
-                    } else {
-                        LOG.debug("Recovery has been called recent for this application. Skip recovery for: " + appRuntimeMetadata.getInstanceId());
-                    }
+                } else {
+                    LOG.debug("Recovery has been called recent for this application. Skip recovery for: " + appRuntimeMetadata.getInstanceId());
                 }
             }
         }
@@ -224,14 +230,26 @@ public class ApplicationRecoveryImpl implements ApplicationRecovery {
         fogCellMetadata.clear();
     }
 
+    private boolean isFogReachable(FogIdentification fogIdentification) {
+        if (fogIdentification == null) return false;
+
+        ApplicationManagerClient applicationManagerClient = deploymentManagerClientFactory.createApplicationManagerClient(fogIdentification.toUrl());
+
+        try {
+            return applicationManagerClient.isAlive();
+        } catch (Exception ex) {
+            LOG.trace("Fog not reachable: " + fogIdentification.toFogId());
+        }
+        return false;
+    }
+
     private boolean isAppReachable(FogIdentification applicationUrl) {
         if (applicationUrl == null) return false;
 
-        ApplicationInfoApi applicationInfoClient = applicationClientFactory.createApplicationInfoClient(applicationUrl.toUrl());
+        ApplicationInfoClient applicationInfoClient = applicationClientFactory.createApplicationInfoClient(applicationUrl.toUrl());
 
         try {
-            AppInfo info = applicationInfoClient.info();
-            return info != null;
+            return applicationInfoClient.isAlive();
         } catch (Exception ex) {
             LOG.trace("App not reachable: " + applicationUrl.toFogId());
         }
@@ -267,18 +285,20 @@ public class ApplicationRecoveryImpl implements ApplicationRecovery {
         for (String serviceId : discoveryClient.getServices()) {
             updateAppMetadata(serviceId);
         }
-        for (AppRuntimeMetadata runtimeMetadata : appRuntimeMetadata.values()) {
 
-            if (runtimeMetadata.isRetired() || runtimeMetadata.isIgnored()) continue;
+        appRuntimeMetadata.values()
+                .parallelStream()
+                .filter(runtimeMetadata -> !(runtimeMetadata.isRetired() || runtimeMetadata.isIgnored()))
+                .forEach((runtimeMetadata) -> {
 
-            FogIdentification applicationUrl = applicationStateMetadataApi.getApplicationUrl(runtimeMetadata.getInstanceId());
-            if (isAppReachable(applicationUrl)) {
-                LOG.debug("App " + runtimeMetadata.getInstanceId() + " is healthy");
-                runtimeMetadata.heartbeat();
-            } else {
-                LOG.warn("App: " + runtimeMetadata.getServiceId() + " (" + runtimeMetadata.getInstanceId() + ") is not reachable");
-            }
-        }
+                    FogIdentification applicationUrl = applicationStateMetadataApi.getApplicationUrl(runtimeMetadata.getInstanceId());
+                    if (isAppReachable(applicationUrl)) {
+                        LOG.debug("App " + runtimeMetadata.getInstanceId() + " is healthy");
+                        runtimeMetadata.heartbeat();
+                    } else {
+                        LOG.warn("App: " + runtimeMetadata.getServiceId() + " (" + runtimeMetadata.getInstanceId() + ") is not reachable");
+                    }
+                });
     }
 
     private void updateAppMetadata(String serviceId) {
@@ -301,8 +321,11 @@ public class ApplicationRecoveryImpl implements ApplicationRecovery {
     private void updateKnownFogs() {
 
         for (FogCellMetadata item : getDeploymentManagers()) {
-            fogCellMetadata.putIfAbsent(item.getFogIdentification().toUrl(), item);
-            fogCellMetadata.get(item.getFogIdentification().toUrl()).heartbeat();
+            FogIdentification fogIdentification = item.getFogIdentification();
+            fogCellMetadata.putIfAbsent(fogIdentification.toUrl(), item);
+            if (isFogReachable(fogIdentification)) {
+                fogCellMetadata.get(fogIdentification.toUrl()).heartbeat();
+            }
         }
 
     }

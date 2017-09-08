@@ -95,4 +95,10 @@ public class ApplicationManagerController implements ApplicationManagerApi {
         LOG.debug("Check resources result: " + result);
         return result;
     }
+
+    @Override
+    @SimulationControlledOperation
+    public boolean isAlive() {
+        return true;
+    }
 }

@@ -29,4 +29,7 @@ public interface ApplicationManagerApi {
 
     @RequestMapping(value = "checkResources", method = RequestMethod.POST)
     boolean checkResources(@RequestBody ResourceInfo resourceInfo);
+
+    @RequestMapping(value = "isAlive", method = RequestMethod.GET)
+    boolean isAlive();
 }

@@ -46,4 +46,9 @@ public class ApplicationInfo implements ApplicationInfoApi {
         appInfo.setCloudBaseUrl(cloudLocatorService.getCloudBaseUrl());
         return appInfo;
     }
+
+    @Override
+    public boolean isAlive() {
+        return true;
+    }
 }
