@@ -2,16 +2,16 @@ package at.sintrum.fog.simulation.taskengine;
 
 import at.sintrum.fog.application.client.factory.ApplicationClientFactory;
 import at.sintrum.fog.application.client.factory.TestApplicationClientFactory;
-import at.sintrum.fog.applicationhousing.api.AppEvolutionApi;
-import at.sintrum.fog.applicationhousing.api.AppRecoveryApi;
 import at.sintrum.fog.applicationhousing.api.dto.AppIdentification;
+import at.sintrum.fog.applicationhousing.client.api.AppEvolutionClient;
+import at.sintrum.fog.applicationhousing.client.api.AppRecoveryClient;
 import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.core.dto.ResourceInfo;
 import at.sintrum.fog.deploymentmanager.client.factory.DeploymentManagerClientFactory;
 import at.sintrum.fog.metadatamanager.api.ApplicationStateMetadataApi;
-import at.sintrum.fog.metadatamanager.api.ImageMetadataApi;
 import at.sintrum.fog.metadatamanager.api.dto.DockerImageMetadata;
 import at.sintrum.fog.metadatamanager.client.api.ContainerMetadataClient;
+import at.sintrum.fog.metadatamanager.client.api.ImageMetadataClient;
 import at.sintrum.fog.metadatamanager.client.factory.MetadataManagerClientFactory;
 import at.sintrum.fog.simulation.scenario.Scenario;
 import at.sintrum.fog.simulation.service.FogCellStateService;
@@ -19,6 +19,7 @@ import at.sintrum.fog.simulation.service.FogResourceService;
 import at.sintrum.fog.simulation.taskengine.log.ExecutionLogging;
 import at.sintrum.fog.simulation.taskengine.tasks.*;
 import org.joda.time.DateTime;
+import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -45,11 +46,12 @@ public class TaskListBuilder {
     private final TestApplicationClientFactory testApplicationClientFactory;
 
     private final ContainerMetadataClient containerMetadataApi;
-    private final ImageMetadataApi imageMetadataApi;
-    private final AppEvolutionApi appEvolutionApi;
+    private final ImageMetadataClient imageMetadataApi;
+    private final AppEvolutionClient appEvolutionApi;
     private final FogResourceService fogResourceService;
     private final FogCellStateService fogCellStateService;
-    private final AppRecoveryApi appRecovery;
+    private final AppRecoveryClient appRecovery;
+    private final RedissonClient redissonClient;
 
     public TaskListBuilder(DeploymentManagerClientFactory deploymentManagerClientFactory,
                            MetadataManagerClientFactory metadataManagerClientFactory,
@@ -57,11 +59,12 @@ public class TaskListBuilder {
                            ApplicationClientFactory applicationClientFactory,
                            TestApplicationClientFactory testApplicationClientFactory,
                            ContainerMetadataClient containerMetadataApi,
-                           ImageMetadataApi imageMetadataApi,
-                           AppEvolutionApi appEvolutionApi,
+                           ImageMetadataClient imageMetadataApi,
+                           AppEvolutionClient appEvolutionApi,
                            FogResourceService fogResourceService,
                            FogCellStateService fogCellStateService,
-                           AppRecoveryApi appRecovery) {
+                           AppRecoveryClient appRecovery,
+                           RedissonClient redissonClient) {
         this.deploymentManagerClientFactory = deploymentManagerClientFactory;
         this.metadataManagerClientFactory = metadataManagerClientFactory;
         this.applicationStateMetadataClient = applicationStateMetadataClient;
@@ -75,6 +78,7 @@ public class TaskListBuilder {
         this.fogResourceService = fogResourceService;
         this.fogCellStateService = fogCellStateService;
         this.appRecovery = appRecovery;
+        this.redissonClient = redissonClient;
     }
 
     public class TaskListBuilderState {
@@ -175,7 +179,7 @@ public class TaskListBuilder {
             }
 
             public AppTaskBuilder startApp(int offset, FogIdentification cloud, DockerImageMetadata metadata) {
-                return addTask(new StartAppTask(0, trackExecutionState, deploymentManagerClientFactory, cloud, metadata.getId()));
+                return addTask(new StartAppTask(0, trackExecutionState, deploymentManagerClientFactory, cloud, metadata.getId(), redissonClient, imageMetadataApi));
             }
 
             public AppTaskBuilder requestApp(int offset, FogIdentification target) {

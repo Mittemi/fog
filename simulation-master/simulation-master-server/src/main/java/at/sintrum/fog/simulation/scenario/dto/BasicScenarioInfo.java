@@ -11,6 +11,10 @@ public class BasicScenarioInfo {
 
     private FogIdentification fogA;
 
+    private FogIdentification fogB;
+
+    private FogIdentification fogC;
+
     public FogIdentification getCloud() {
         return cloud;
     }
@@ -25,5 +29,21 @@ public class BasicScenarioInfo {
 
     public void setFogA(FogIdentification fogA) {
         this.fogA = fogA;
+    }
+
+    public FogIdentification getFogB() {
+        return fogB;
+    }
+
+    public void setFogB(FogIdentification fogB) {
+        this.fogB = fogB;
+    }
+
+    public FogIdentification getFogC() {
+        return fogC;
+    }
+
+    public void setFogC(FogIdentification fogC) {
+        this.fogC = fogC;
     }
 }

@@ -8,6 +8,7 @@ import at.sintrum.fog.metadatamanager.api.ApplicationStateMetadataApi;
 import at.sintrum.fog.metadatamanager.api.ContainerMetadataApi;
 import at.sintrum.fog.metadatamanager.api.dto.DockerContainerMetadata;
 import at.sintrum.fog.simulation.taskengine.TaskListBuilder;
+import feign.RetryableException;
 
 /**
  * Created by Michael Mittermayr on 28.08.2017.
@@ -41,6 +42,8 @@ public class RemoveAppTask extends FogTaskBase {
         if (containerInfo != null) {
             try {
                 applicationClientFactory.createAppLifecycleClient(applicationUrl.toUrl()).tearDownApplication();
+            } catch (RetryableException e) {
+                //this one is expected
             } catch (Exception ex) {
                 getLogger().debug("TearDown call", ex);
             }
