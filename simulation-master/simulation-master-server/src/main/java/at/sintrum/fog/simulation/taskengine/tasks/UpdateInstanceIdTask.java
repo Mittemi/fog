@@ -1,7 +1,7 @@
 package at.sintrum.fog.simulation.taskengine.tasks;
 
 import at.sintrum.fog.applicationhousing.api.AppEvolutionApi;
-import at.sintrum.fog.simulation.taskengine.TaskListBuilder;
+import at.sintrum.fog.simulation.taskengine.TrackExecutionState;
 import org.springframework.util.StringUtils;
 
 /**
@@ -11,7 +11,7 @@ public class UpdateInstanceIdTask extends FogTaskBase {
 
     private final AppEvolutionApi appEvolutionApi;
 
-    public UpdateInstanceIdTask(int offset, TaskListBuilder.TaskListBuilderState.AppTaskBuilder.TrackExecutionState trackExecutionState, AppEvolutionApi appEvolutionApi) {
+    public UpdateInstanceIdTask(int offset, TrackExecutionState trackExecutionState, AppEvolutionApi appEvolutionApi) {
         super(offset, trackExecutionState, UpdateInstanceIdTask.class);
         this.appEvolutionApi = appEvolutionApi;
     }

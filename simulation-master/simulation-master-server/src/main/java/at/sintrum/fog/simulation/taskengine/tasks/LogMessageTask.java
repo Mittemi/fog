@@ -1,6 +1,6 @@
 package at.sintrum.fog.simulation.taskengine.tasks;
 
-import at.sintrum.fog.simulation.taskengine.TaskListBuilder;
+import at.sintrum.fog.simulation.taskengine.TrackExecutionState;
 
 /**
  * Created by Michael Mittermayr on 24.08.2017.
@@ -9,7 +9,7 @@ public class LogMessageTask extends FogTaskBase {
 
     private final String message;
 
-    public LogMessageTask(int offset, String message, TaskListBuilder.TaskListBuilderState.AppTaskBuilder.TrackExecutionState trackExecutionState) {
+    public LogMessageTask(int offset, String message, TrackExecutionState trackExecutionState) {
         super(offset, trackExecutionState, LogMessageTask.class);
         this.message = message;
     }

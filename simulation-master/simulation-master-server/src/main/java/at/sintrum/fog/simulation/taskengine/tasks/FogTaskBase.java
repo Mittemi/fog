@@ -1,6 +1,6 @@
 package at.sintrum.fog.simulation.taskengine.tasks;
 
-import at.sintrum.fog.simulation.taskengine.TaskListBuilder;
+import at.sintrum.fog.simulation.taskengine.TrackExecutionState;
 import org.joda.time.DateTime;
 import org.joda.time.Seconds;
 import org.slf4j.Logger;
@@ -13,14 +13,14 @@ public abstract class FogTaskBase implements FogTask {
 
     private final int offset;
 
-    private final TaskListBuilder.TaskListBuilderState.AppTaskBuilder.TrackExecutionState trackExecutionState;
+    private final TrackExecutionState trackExecutionState;
     private final Logger LOG;
 
     public Logger getLogger() {
         return LOG;
     }
 
-    protected FogTaskBase(int offset, TaskListBuilder.TaskListBuilderState.AppTaskBuilder.TrackExecutionState trackExecutionState, Class<?> clazz) {
+    protected FogTaskBase(int offset, TrackExecutionState trackExecutionState, Class<?> clazz) {
 
         this.offset = offset;
         this.trackExecutionState = trackExecutionState;
@@ -50,7 +50,7 @@ public abstract class FogTaskBase implements FogTask {
 
     protected abstract boolean internalExecute();
 
-    public TaskListBuilder.TaskListBuilderState.AppTaskBuilder.TrackExecutionState getTrackExecutionState() {
+    public TrackExecutionState getTrackExecutionState() {
         return trackExecutionState;
     }
 }

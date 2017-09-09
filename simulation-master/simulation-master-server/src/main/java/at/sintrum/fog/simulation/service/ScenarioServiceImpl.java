@@ -3,17 +3,16 @@ package at.sintrum.fog.simulation.service;
 import at.sintrum.fog.simulation.scenario.Scenario;
 import at.sintrum.fog.simulation.scenario.dto.BasicScenarioInfo;
 import at.sintrum.fog.simulation.scenario.dto.ScenarioExecutionInfo;
+import at.sintrum.fog.simulation.scenario.dto.TrackExecutionInfo;
 import at.sintrum.fog.simulation.taskengine.TaskListAsyncInvoker;
 import at.sintrum.fog.simulation.taskengine.TaskListBuilder;
+import at.sintrum.fog.simulation.taskengine.TrackExecutionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -57,8 +56,14 @@ public class ScenarioServiceImpl implements ScenarioService {
     @Override
     public ScenarioExecutionInfo getExecutionState() {
         if (taskList == null) return null;
-        ScenarioExecutionInfo scenarioExecutionInfo = new ScenarioExecutionInfo(taskList.getScenario().getId(), taskList.isFinished());
 
+        List<TrackExecutionInfo> trackExecutionInfos = new LinkedList<>();
+        ScenarioExecutionInfo scenarioExecutionInfo = new ScenarioExecutionInfo(taskList.getScenario().getId(), taskList.isFinished(), trackExecutionInfos);
+
+        for (Integer trackId : taskList.getTrackIds()) {
+            TrackExecutionState trackState = taskList.getTrackState(trackId);
+            trackExecutionInfos.add(new TrackExecutionInfo(trackId, taskList.isFinished(trackId), trackState.getLogging().getLogs(), trackState.getCurrentTaskIndex()));
+        }
 
         return scenarioExecutionInfo;
     }

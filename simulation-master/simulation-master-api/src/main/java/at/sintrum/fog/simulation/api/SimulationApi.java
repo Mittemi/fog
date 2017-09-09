@@ -1,7 +1,6 @@
 package at.sintrum.fog.simulation.api;
 
 import at.sintrum.fog.core.dto.FogIdentification;
-import at.sintrum.fog.simulation.scenario.dto.SimulationStartInfoDto;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,9 +11,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
  */
 @RequestMapping(value = "simulation")
 public interface SimulationApi {
-
-    @RequestMapping(value = "start", method = RequestMethod.POST)
-    void startSimulation(@RequestBody SimulationStartInfoDto startInfoDto);
 
     @RequestMapping(value = "notifyMove/{instanceId}", method = RequestMethod.POST)
     void notifyMove(@PathVariable("instanceId") String instanceId, @RequestBody FogIdentification targetDeploymentManager);

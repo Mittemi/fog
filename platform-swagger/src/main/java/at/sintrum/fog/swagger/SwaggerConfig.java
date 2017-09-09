@@ -13,7 +13,9 @@ import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
-import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by Michael Mittermayr on 17.05.2017.
@@ -28,16 +30,17 @@ public class SwaggerConfig {
         Logger logger = LoggerFactory.getLogger(SwaggerConfig.class);
         logger.info("Init Swagger");
 
-        Parameter fogIdParameter = new ParameterBuilder()
-                .name("CallerFogId")
-                .allowMultiple(false)
-                .required(false)
-                .modelRef(new ModelRef("string"))
-                .parameterType("header")
-                .build();
+        List<Parameter> parameters = Stream.of("FogId", "FogBaseUrl", "ContainerId")
+                .map(x -> new ParameterBuilder()
+                        .name(x)
+                        .allowMultiple(false)
+                        .required(false)
+                        .modelRef(new ModelRef("string"))
+                        .parameterType("header")
+                        .build()).collect(Collectors.toList());
 
         return new Docket(DocumentationType.SWAGGER_2)
-                .globalOperationParameters(Collections.singletonList(fogIdParameter))
+                .globalOperationParameters(parameters)
                 .select()
                 .apis(this::listEndpoint)
                 .paths(PathSelectors.any())

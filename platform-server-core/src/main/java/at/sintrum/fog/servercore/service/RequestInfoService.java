@@ -7,4 +7,8 @@ public interface RequestInfoService {
     String getCallerFogId();
 
     String getCallerServiceUrl();
+
+    String getFogBaseUrl();
+
+    String getContainerId();
 }

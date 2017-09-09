@@ -2,8 +2,8 @@ package at.sintrum.fog.simulation.taskengine.tasks;
 
 import at.sintrum.fog.metadatamanager.api.dto.DockerContainerMetadata;
 import at.sintrum.fog.metadatamanager.client.api.ContainerMetadataClient;
-import at.sintrum.fog.simulation.taskengine.TaskListBuilder;
 import at.sintrum.fog.simulation.taskengine.TrackBuilderState;
+import at.sintrum.fog.simulation.taskengine.TrackExecutionState;
 
 /**
  * Created by Michael Mittermayr on 07.09.2017.
@@ -13,7 +13,7 @@ public class UpdateTrackBuilderStateTask extends FogTaskBase {
     private final TrackBuilderState trackBuilderState;
     private final ContainerMetadataClient containerMetadataClient;
 
-    public UpdateTrackBuilderStateTask(int offset, TaskListBuilder.TaskListBuilderState.AppTaskBuilder.TrackExecutionState trackExecutionState, TrackBuilderState trackBuilderState, ContainerMetadataClient containerMetadataClient) {
+    public UpdateTrackBuilderStateTask(int offset, TrackExecutionState trackExecutionState, TrackBuilderState trackBuilderState, ContainerMetadataClient containerMetadataClient) {
         super(offset, trackExecutionState, UpdateTrackBuilderStateTask.class);
         this.trackBuilderState = trackBuilderState;
         this.containerMetadataClient = containerMetadataClient;

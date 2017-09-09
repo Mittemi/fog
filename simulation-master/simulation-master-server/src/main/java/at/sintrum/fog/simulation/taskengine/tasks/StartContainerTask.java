@@ -4,8 +4,8 @@ import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.deploymentmanager.client.factory.DeploymentManagerClientFactory;
 import at.sintrum.fog.metadatamanager.api.ContainerMetadataApi;
 import at.sintrum.fog.metadatamanager.api.dto.DockerContainerMetadata;
-import at.sintrum.fog.simulation.taskengine.TaskListBuilder;
 import at.sintrum.fog.simulation.taskengine.TrackBuilderState;
+import at.sintrum.fog.simulation.taskengine.TrackExecutionState;
 import org.springframework.util.StringUtils;
 
 /**
@@ -18,11 +18,11 @@ public class StartContainerTask extends FogTaskBase {
     private final ContainerMetadataApi containerMetadataApi;
     private final TrackBuilderState trackBuilderState;
 
-    public StartContainerTask(int offset, TaskListBuilder.TaskListBuilderState.AppTaskBuilder.TrackExecutionState trackExecutionState, DeploymentManagerClientFactory deploymentManagerClientFactory, FogIdentification deploymentManagerLocation, ContainerMetadataApi containerMetadataApi) {
+    public StartContainerTask(int offset, TrackExecutionState trackExecutionState, DeploymentManagerClientFactory deploymentManagerClientFactory, FogIdentification deploymentManagerLocation, ContainerMetadataApi containerMetadataApi) {
         this(offset, trackExecutionState, deploymentManagerClientFactory, deploymentManagerLocation, containerMetadataApi, null);
     }
 
-    public StartContainerTask(int offset, TaskListBuilder.TaskListBuilderState.AppTaskBuilder.TrackExecutionState trackExecutionState, DeploymentManagerClientFactory deploymentManagerClientFactory, FogIdentification deploymentManagerLocation, ContainerMetadataApi containerMetadataApi, TrackBuilderState trackBuilderState) {
+    public StartContainerTask(int offset, TrackExecutionState trackExecutionState, DeploymentManagerClientFactory deploymentManagerClientFactory, FogIdentification deploymentManagerLocation, ContainerMetadataApi containerMetadataApi, TrackBuilderState trackBuilderState) {
         super(offset, trackExecutionState, StartContainerTask.class);
         this.deploymentManagerClientFactory = deploymentManagerClientFactory;
         this.deploymentManagerLocation = deploymentManagerLocation;

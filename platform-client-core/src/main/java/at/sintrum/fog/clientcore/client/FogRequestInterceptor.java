@@ -19,5 +19,7 @@ public class FogRequestInterceptor implements RequestInterceptor {
     @Override
     public void apply(RequestTemplate template) {
         template.header("FogId", environmentInfoService.getFogId());
+        template.header("FogBaseUrl", environmentInfoService.getFogBaseUrl());
+        template.header("ContainerId", environmentInfoService.getOwnContainerId());
     }
 }

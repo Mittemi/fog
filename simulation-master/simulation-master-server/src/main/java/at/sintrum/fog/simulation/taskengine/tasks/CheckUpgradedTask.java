@@ -6,7 +6,7 @@ import at.sintrum.fog.metadatamanager.api.ContainerMetadataApi;
 import at.sintrum.fog.metadatamanager.api.ImageMetadataApi;
 import at.sintrum.fog.metadatamanager.api.dto.DockerContainerMetadata;
 import at.sintrum.fog.metadatamanager.api.dto.DockerImageMetadata;
-import at.sintrum.fog.simulation.taskengine.TaskListBuilder;
+import at.sintrum.fog.simulation.taskengine.TrackExecutionState;
 
 /**
  * Created by Michael Mittermayr on 03.09.2017.
@@ -18,7 +18,7 @@ public class CheckUpgradedTask extends FogTaskBase {
     private final ContainerMetadataApi containerMetadataApi;
     private final ImageMetadataApi imageMetadataApi;
 
-    public CheckUpgradedTask(int offset, TaskListBuilder.TaskListBuilderState.AppTaskBuilder.TrackExecutionState trackExecutionState, AppEvolutionApi appEvolutionApi, AppIdentification newVersion, ContainerMetadataApi containerMetadataApi, ImageMetadataApi imageMetadataApi) {
+    public CheckUpgradedTask(int offset, TrackExecutionState trackExecutionState, AppEvolutionApi appEvolutionApi, AppIdentification newVersion, ContainerMetadataApi containerMetadataApi, ImageMetadataApi imageMetadataApi) {
         super(offset, trackExecutionState, CheckUpgradedTask.class);
         this.appEvolutionApi = appEvolutionApi;
         this.newVersion = newVersion;

@@ -4,7 +4,7 @@ import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.deploymentmanager.client.factory.DeploymentManagerClientFactory;
 import at.sintrum.fog.metadatamanager.api.ContainerMetadataApi;
 import at.sintrum.fog.metadatamanager.api.dto.DockerContainerMetadata;
-import at.sintrum.fog.simulation.taskengine.TaskListBuilder;
+import at.sintrum.fog.simulation.taskengine.TrackExecutionState;
 
 /**
  * Created by Michael Mittermayr on 04.09.2017.
@@ -15,7 +15,7 @@ public class StopContainerTask extends FogTaskBase {
     private final FogIdentification deploymentManagerLocation;
     private final ContainerMetadataApi containerMetadataApi;
 
-    public StopContainerTask(int offset, TaskListBuilder.TaskListBuilderState.AppTaskBuilder.TrackExecutionState trackExecutionState, DeploymentManagerClientFactory deploymentManagerClientFactory, FogIdentification deploymentManagerLocation, ContainerMetadataApi containerMetadataApi) {
+    public StopContainerTask(int offset, TrackExecutionState trackExecutionState, DeploymentManagerClientFactory deploymentManagerClientFactory, FogIdentification deploymentManagerLocation, ContainerMetadataApi containerMetadataApi) {
         super(offset, trackExecutionState, StopContainerTask.class);
         this.deploymentManagerClientFactory = deploymentManagerClientFactory;
         this.deploymentManagerLocation = deploymentManagerLocation;

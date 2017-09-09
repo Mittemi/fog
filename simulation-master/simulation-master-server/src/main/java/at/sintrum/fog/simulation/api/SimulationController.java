@@ -2,7 +2,6 @@ package at.sintrum.fog.simulation.api;
 
 import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.simulation.model.SimulationState;
-import at.sintrum.fog.simulation.scenario.dto.SimulationStartInfoDto;
 import at.sintrum.fog.simulation.service.SimulationService;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,11 +17,6 @@ public class SimulationController implements SimulationApi {
 
     public SimulationController(SimulationService simulationService) {
         this.simulationService = simulationService;
-    }
-
-    @Override
-    public void startSimulation(@RequestBody SimulationStartInfoDto startInfoDto) {
-        simulationService.startSimulation(startInfoDto);
     }
 
     @Override

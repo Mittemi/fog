@@ -5,7 +5,7 @@ import at.sintrum.fog.applicationhousing.api.AppRecoveryApi;
 import at.sintrum.fog.metadatamanager.api.ApplicationStateMetadataApi;
 import at.sintrum.fog.simulation.service.FogCellStateService;
 import at.sintrum.fog.simulation.service.FogResourceService;
-import at.sintrum.fog.simulation.taskengine.TaskListBuilder;
+import at.sintrum.fog.simulation.taskengine.TrackExecutionState;
 
 /**
  * Created by Michael Mittermayr on 03.09.2017.
@@ -18,7 +18,7 @@ public class ResetMetadataTask extends FogTaskBase {
     private final FogCellStateService fogCellStateService;
     private final AppRecoveryApi appRecovery;
 
-    public ResetMetadataTask(int offset, TaskListBuilder.TaskListBuilderState.AppTaskBuilder.TrackExecutionState trackExecutionState, ApplicationStateMetadataApi applicationStateMetadataApi, AppEvolutionApi appEvolutionApi, AppRecoveryApi appRecovery, FogResourceService fogResourceService, FogCellStateService fogCellStateService) {
+    public ResetMetadataTask(int offset, TrackExecutionState trackExecutionState, ApplicationStateMetadataApi applicationStateMetadataApi, AppEvolutionApi appEvolutionApi, AppRecoveryApi appRecovery, FogResourceService fogResourceService, FogCellStateService fogCellStateService) {
         super(offset, trackExecutionState, ResetMetadataTask.class);
         this.applicationStateMetadataApi = applicationStateMetadataApi;
         this.appEvolutionApi = appEvolutionApi;

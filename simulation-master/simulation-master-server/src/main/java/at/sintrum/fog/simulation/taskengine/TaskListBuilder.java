@@ -16,7 +16,6 @@ import at.sintrum.fog.metadatamanager.client.factory.MetadataManagerClientFactor
 import at.sintrum.fog.simulation.scenario.Scenario;
 import at.sintrum.fog.simulation.service.FogCellStateService;
 import at.sintrum.fog.simulation.service.FogResourceService;
-import at.sintrum.fog.simulation.taskengine.log.ExecutionLogging;
 import at.sintrum.fog.simulation.taskengine.tasks.*;
 import org.joda.time.DateTime;
 import org.redisson.api.RedissonClient;
@@ -84,6 +83,7 @@ public class TaskListBuilder {
     public class TaskListBuilderState {
 
         private final Map<Integer, Queue<FogTask>> tracks;
+        private final Map<Integer, TrackExecutionState> state;
         private final Scenario scenario;
         private int currentId;
 
@@ -102,11 +102,13 @@ public class TaskListBuilder {
             this.scenario = scenario;
             simulationTime = new ConcurrentHashMap<>();
             tracks = new ConcurrentHashMap<>();
+            state = new ConcurrentHashMap<>();
         }
 
         public AppTaskBuilder createTrack() {
             tracks.putIfAbsent(currentId, new ConcurrentLinkedQueue<>());
-            AppTaskBuilder appTaskBuilder = new AppTaskBuilder(tracks.get(currentId));
+            state.putIfAbsent(currentId, new TrackExecutionState(null));
+            AppTaskBuilder appTaskBuilder = new AppTaskBuilder(tracks.get(currentId), getTrackState(currentId));
             currentId++;
             return appTaskBuilder;
         }
@@ -120,41 +122,22 @@ public class TaskListBuilder {
             return scenario;
         }
 
+        public TrackExecutionState getTrackState(int trackId) {
+            return state.get(trackId);
+        }
+
         public class AppTaskBuilder {
 
             private final DockerImageMetadata testAppMetadata;
             private final DockerImageMetadata anotherAppMetadata;
             private final TrackExecutionState trackExecutionState;
 
-            public class TrackExecutionState {
-                private String instanceId;
-
-                private final ExecutionLogging logging;
-
-                public TrackExecutionState(String instanceId) {
-                    this.instanceId = instanceId;
-                    logging = new ExecutionLogging();
-                }
-
-                public String getInstanceId() {
-                    return instanceId;
-                }
-
-                public void setInstanceId(String instanceId) {
-                    this.instanceId = instanceId;
-                }
-
-                public ExecutionLogging getLogging() {
-                    return logging;
-                }
-            }
-
             private final Queue<FogTask> tasks;
 
 
-            private AppTaskBuilder(Queue<FogTask> tasks) {
+            private AppTaskBuilder(Queue<FogTask> tasks, TrackExecutionState state) {
                 this.tasks = tasks;
-                trackExecutionState = new TrackExecutionState(null);
+                trackExecutionState = state;
                 List<DockerImageMetadata> all = metadataManagerClientFactory.createApplicationMetadataClient(null).getAll();
 
                 testAppMetadata = all.stream().filter(x -> x.getApplicationName().equals("test-application") && x.isEnableDebugging() && x.getTag().equals("latest")).findFirst().orElse(null);
@@ -278,6 +261,7 @@ public class TaskListBuilder {
 
                 boolean result = task.execute();
                 if (result || !task.repeatOnError()) {
+                    getTrackState(trackId).taskFinished();
                     privateTaskList.poll();
                 }
 

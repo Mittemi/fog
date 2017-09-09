@@ -7,7 +7,7 @@ import at.sintrum.fog.deploymentmanager.client.factory.DeploymentManagerClientFa
 import at.sintrum.fog.metadatamanager.api.ApplicationStateMetadataApi;
 import at.sintrum.fog.metadatamanager.api.ContainerMetadataApi;
 import at.sintrum.fog.metadatamanager.api.dto.DockerContainerMetadata;
-import at.sintrum.fog.simulation.taskengine.TaskListBuilder;
+import at.sintrum.fog.simulation.taskengine.TrackExecutionState;
 import feign.RetryableException;
 
 /**
@@ -20,7 +20,7 @@ public class RemoveAppTask extends FogTaskBase {
     private final DeploymentManagerClientFactory deploymentManagerClientFactory;
     private final ContainerMetadataApi containerMetadataApi;
 
-    public RemoveAppTask(int offset, TaskListBuilder.TaskListBuilderState.AppTaskBuilder.TrackExecutionState trackExecutionState, ApplicationClientFactory applicationClientFactory, ApplicationStateMetadataApi applicationStateMetadataApi, DeploymentManagerClientFactory deploymentManagerClientFactory, ContainerMetadataApi containerMetadataApi) {
+    public RemoveAppTask(int offset, TrackExecutionState trackExecutionState, ApplicationClientFactory applicationClientFactory, ApplicationStateMetadataApi applicationStateMetadataApi, DeploymentManagerClientFactory deploymentManagerClientFactory, ContainerMetadataApi containerMetadataApi) {
         super(offset, trackExecutionState, RemoveAppTask.class);
         this.applicationClientFactory = applicationClientFactory;
         this.applicationStateMetadataApi = applicationStateMetadataApi;

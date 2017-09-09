@@ -26,4 +26,14 @@ public class RequestInfoServiceImpl implements RequestInfoService {
     public String getCallerServiceUrl() {
         return "http://" + getCallerFogId();
     }
+
+    @Override
+    public String getFogBaseUrl() {
+        return servletRequest.getHeader("FogBaseUrl");
+    }
+
+    @Override
+    public String getContainerId() {
+        return servletRequest.getHeader("ContainerId");
+    }
 }
