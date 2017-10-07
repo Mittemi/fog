@@ -26,13 +26,15 @@ public class SimulationServiceImpl implements SimulationService {
 
     private final TestApplicationClientFactory testApplicationClientFactory;
     private final ApplicationStateMetadataApi applicationStateMetadataClient;
+    private final ScenarioService scenarioService;
 
     public SimulationServiceImpl(DeploymentManagerClientFactory deploymentManagerClientFactory,
                                  RedissonClient redissonClient,
                                  TestApplicationClientFactory testApplicationClientFactory,
                                  ApplicationStateMetadataApi applicationStateMetadataClient,
                                  RequestInfoService requestInfoService,
-                                 ApplicationClientFactory applicationClientFactory) {
+                                 ApplicationClientFactory applicationClientFactory,
+                                 ScenarioService scenarioService) {
         this.deploymentManagerClientFactory = deploymentManagerClientFactory;
         this.redissonClient = redissonClient;
         this.testApplicationClientFactory = testApplicationClientFactory;
@@ -40,6 +42,7 @@ public class SimulationServiceImpl implements SimulationService {
         this.requestInfoService = requestInfoService;
 
         this.applicationClientFactory = applicationClientFactory;
+        this.scenarioService = scenarioService;
     }
 
 

@@ -49,6 +49,8 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
     private final FogResourcesApi fogResourcesApi;
     private final FogIdentification currentFogIdentification;
 
+    private final SimulationFeedbackClient simulationFeedbackClient;
+
     private final ResourceInfo usedResources;
 
     public ApplicationManagerServiceImpl(DockerService dockerService,
@@ -60,7 +62,8 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
                                          DeploymentService deploymentService,
                                          AppEvolutionClient appEvolutionClient,
                                          RedissonClient redissonClient,
-                                         FogResourcesApi fogResourcesApi) {
+                                         FogResourcesApi fogResourcesApi,
+                                         SimulationFeedbackClient simulationFeedbackClient) {
         this.dockerService = dockerService;
         this.imageMetadataApi = imageMetadataApi;
         this.containerMetadataApi = containerMetadataApi;
@@ -72,6 +75,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
         this.redissonClient = redissonClient;
         this.fogResourcesApi = fogResourcesApi;
         currentFogIdentification = FogIdentification.parseFogBaseUrl(environmentInfoService.getFogBaseUrl());
+        this.simulationFeedbackClient = simulationFeedbackClient;
         usedResources = new ResourceInfo();
     }
 
@@ -127,6 +131,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
 
         FogOperationResult fogOperationResult = performStart(applicationStartRequest);
         fogOperationResult.setInstanceId(applicationStartRequest.getInstanceId());
+        simulationFeedbackClient.appStart(applicationStartRequest, fogOperationResult);
         return new AsyncResult<>(fogOperationResult);
     }
 
@@ -251,7 +256,9 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
             LOG.warn("Can't move container. Unknown container '" + applicationMoveRequest.getContainerId() + "'");
             return new AsyncResult<>(new FogOperationResult(applicationMoveRequest.getContainerId(), false, environmentInfoService.getFogBaseUrl(), "unknown container"));
         } else {
-            return new AsyncResult<>(performOperationIfPossible(containerInfo, () -> performMove(applicationMoveRequest, containerInfo)));
+            FogOperationResult result = performOperationIfPossible(containerInfo, () -> performMove(applicationMoveRequest, containerInfo));
+            simulationFeedbackClient.appMove(applicationMoveRequest, result);
+            return new AsyncResult<>(result);
         }
     }
 
@@ -350,7 +357,9 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
             LOG.warn("Can't upgrade container. Unknown container '" + applicationUpgradeRequest.getContainerId() + "'");
             return new AsyncResult<>(new FogOperationResult(null, false, environmentInfoService.getFogBaseUrl(), "unknown container"));
         } else {
-            return new AsyncResult<>(performOperationIfPossible(containerInfo, () -> performUpgrade(applicationUpgradeRequest, containerInfo)));
+            FogOperationResult result = performOperationIfPossible(containerInfo, () -> performUpgrade(applicationUpgradeRequest, containerInfo));
+            simulationFeedbackClient.appUpgrade(applicationUpgradeRequest, result);
+            return new AsyncResult<>(result);
         }
     }
 
@@ -367,7 +376,9 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
             if (containerInfo == null) {
                 LOG.warn("Unable to find the container. Can't recover it");
             } else {
-                return new AsyncResult<>(performOperationIfPossible(containerInfo, () -> performRecover(applicationRecoveryRequest, containerInfo, containerMetadata)));
+                FogOperationResult result = performOperationIfPossible(containerInfo, () -> performRecover(applicationRecoveryRequest, containerInfo, containerMetadata));
+                simulationFeedbackClient.appRecover(applicationRecoveryRequest, result);
+                return new AsyncResult<>(result);
             }
         }
         return new AsyncResult<>(new FogOperationResult(null, false, environmentInfoService.getFogBaseUrl(), "Unable to recover"));
@@ -381,7 +392,9 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
         if (containerInfo == null) {
             LOG.warn("Unable to find the container. Can't remove it");
         } else {
-            return new AsyncResult<>(performOperationIfPossible(containerInfo, () -> performRemove(applicationRemoveRequest, containerInfo)));
+            FogOperationResult result = performOperationIfPossible(containerInfo, () -> performRemove(applicationRemoveRequest, containerInfo));
+            simulationFeedbackClient.appRemove(applicationRemoveRequest, result);
+            return new AsyncResult<>(result);
         }
 
         return new AsyncResult<>(new FogOperationResult(null, false, environmentInfoService.getFogBaseUrl(), "Unable to remove the container"));

@@ -1,6 +1,6 @@
 package at.sintrum.fog.simulation.api;
 
-import at.sintrum.fog.core.dto.FogIdentification;
+import at.sintrum.fog.simulation.api.dto.AppEventInfo;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,24 +12,33 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @RequestMapping(value = "simulation")
 public interface SimulationApi {
 
-    @RequestMapping(value = "notifyMove/{instanceId}", method = RequestMethod.POST)
-    void notifyMove(@PathVariable("instanceId") String instanceId, @RequestBody FogIdentification targetDeploymentManager);
+//    @RequestMapping(value = "next/{step}/{instanceId}", method = RequestMethod.POST)
+//    void nextStep(@PathVariable("instanceId") String instanceId, @PathVariable("step") String step);
 
-    @RequestMapping(value = "notifyStarting/{instanceId}", method = RequestMethod.POST)
-    void notifyStarting(@PathVariable("instanceId") String instanceId, @RequestBody FogIdentification appIdentification);
+    @RequestMapping(value = "starting/{instanceId}", method = RequestMethod.POST)
+    void starting(@PathVariable("instanceId") String instanceId, @RequestBody AppEventInfo appEventInfo);
 
-    @RequestMapping(value = "notifyUpgrade/{instanceId}", method = RequestMethod.POST)
-    void notifyUpgrade(@PathVariable("instanceId") String instanceId, @RequestBody FogIdentification targetCloud);
+    @RequestMapping(value = "started/{instanceId}", method = RequestMethod.POST)
+    void started(@PathVariable("instanceId") String instanceId, @RequestBody AppEventInfo appEventInfo);
 
-    @RequestMapping(value = "notifyStandby/{instanceId}", method = RequestMethod.POST)
-    void notifyStandby(@PathVariable("instanceId") String instanceId, @RequestBody FogIdentification appIdentification);
+    @RequestMapping(value = "recovered/{instanceId}", method = RequestMethod.POST)
+    void recovered(@PathVariable("instanceId") String instanceId, @RequestBody AppEventInfo appEventInfo);
 
-    @RequestMapping(value = "notifyRunning/{instanceId}", method = RequestMethod.POST)
-    void notifyRunning(@PathVariable("instanceId") String instanceId, @RequestBody FogIdentification appIdentification);
+    @RequestMapping(value = "upgrading/{instanceId}", method = RequestMethod.POST)
+    void upgrading(@PathVariable("instanceId") String instanceId, @RequestBody AppEventInfo appEventInfo);
 
-    @RequestMapping(value = "heartbeat/{instanceId}", method = RequestMethod.POST)
-    void sendHeartbeat(@PathVariable("instanceId") String instanceId);
+    @RequestMapping(value = "upgraded/{instanceId}", method = RequestMethod.POST)
+    void upgraded(@PathVariable("instanceId") String instanceId, @RequestBody AppEventInfo appEventInfo);
 
-    @RequestMapping(value = "notifyMoved/{instanceId}", method = RequestMethod.POST)
-    void notifyMoved(@PathVariable("instanceId") String instanceId, @RequestBody FogIdentification appIdentification);
+    @RequestMapping(value = "moving/{instanceId}", method = RequestMethod.POST)
+    void moving(@PathVariable("instanceId") String instanceId, @RequestBody AppEventInfo appEventInfo);
+
+    @RequestMapping(value = "moved/{instanceId}", method = RequestMethod.POST)
+    void moved(@PathVariable("instanceId") String instanceId, @RequestBody AppEventInfo appEventInfo);
+
+    @RequestMapping(value = "standby/{instanceId}", method = RequestMethod.POST)
+    void standby(@PathVariable("instanceId") String instanceId, @RequestBody AppEventInfo appEventInfo);
+
+    @RequestMapping(value = "teardown/{instanceId}", method = RequestMethod.POST)
+    void teardown(@PathVariable("instanceId") String instanceId, @RequestBody AppEventInfo appEventInfo);
 }

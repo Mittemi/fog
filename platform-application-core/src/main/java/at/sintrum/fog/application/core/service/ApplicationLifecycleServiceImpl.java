@@ -66,7 +66,7 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
             setMovingStateMetadata(target);
             travelingCoordinationService.startMove(target);
             // BEGIN Simulation
-            simulationClientService.notifyMove(target);
+            simulationClientService.notifyMoving(target);
             // END Simulation
             FogOperationResult result = applicationManagerClient.moveApplication(new ApplicationMoveRequest(environmentInfoService.getOwnContainerId(), target, environmentInfoService.getOwnUrl()));
             if (!result.isSuccessful()) {
@@ -271,7 +271,7 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
             switch (stateMetadata.getState()) {
                 case Running:
                     // BEGIN Simulation
-                    simulationClientService.notifyRunning();
+                    simulationClientService.notifyStarting();
                     // END Simulation
                     break;
                 case Standby:

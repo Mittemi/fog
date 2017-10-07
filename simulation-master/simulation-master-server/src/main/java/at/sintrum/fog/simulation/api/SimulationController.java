@@ -1,7 +1,6 @@
 package at.sintrum.fog.simulation.api;
 
-import at.sintrum.fog.core.dto.FogIdentification;
-import at.sintrum.fog.simulation.model.SimulationState;
+import at.sintrum.fog.simulation.api.dto.AppEventInfo;
 import at.sintrum.fog.simulation.service.SimulationService;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,38 +18,49 @@ public class SimulationController implements SimulationApi {
         this.simulationService = simulationService;
     }
 
+
     @Override
-    public void notifyMove(@PathVariable("instanceId") String instanceId, @RequestBody FogIdentification targetDeploymentManager) {
-        simulationService.processOperation(instanceId, SimulationState.Moving);
+    public void starting(@PathVariable("instanceId") String instanceId, @RequestBody AppEventInfo appEventInfo) {
+
     }
 
     @Override
-    public void notifyStarting(@PathVariable("instanceId") String instanceId, @RequestBody FogIdentification appIdentification) {
-        simulationService.processOperation(instanceId, SimulationState.Starting);
+    public void started(@PathVariable("instanceId") String instanceId, @RequestBody AppEventInfo appEventInfo) {
+
     }
 
     @Override
-    public void notifyUpgrade(@PathVariable("instanceId") String instanceId, @RequestBody FogIdentification targetCloud) {
-        simulationService.processOperation(instanceId, SimulationState.Upgrading);
+    public void recovered(@PathVariable("instanceId") String instanceId, @RequestBody AppEventInfo appEventInfo) {
+
     }
 
     @Override
-    public void notifyStandby(@PathVariable("instanceId") String instanceId, @RequestBody FogIdentification appIdentification) {
-        simulationService.processOperation(instanceId, SimulationState.Standby);
+    public void upgrading(@PathVariable("instanceId") String instanceId, @RequestBody AppEventInfo appEventInfo) {
+
     }
 
     @Override
-    public void notifyRunning(@PathVariable("instanceId") String instanceId, @RequestBody FogIdentification appIdentification) {
-        simulationService.processOperation(instanceId, SimulationState.Working);
+    public void upgraded(@PathVariable("instanceId") String instanceId, @RequestBody AppEventInfo appEventInfo) {
+
     }
 
     @Override
-    public void sendHeartbeat(@PathVariable("instanceId") String instanceId) {
-        simulationService.heartbeat(instanceId);
+    public void moving(@PathVariable("instanceId") String instanceId, @RequestBody AppEventInfo appEventInfo) {
+
     }
 
     @Override
-    public void notifyMoved(String instanceId, FogIdentification appIdentification) {
+    public void moved(@PathVariable("instanceId") String instanceId, @RequestBody AppEventInfo appEventInfo) {
+
+    }
+
+    @Override
+    public void standby(@PathVariable("instanceId") String instanceId, @RequestBody AppEventInfo appEventInfo) {
+
+    }
+
+    @Override
+    public void teardown(@PathVariable("instanceId") String instanceId, @RequestBody AppEventInfo appEventInfo) {
 
     }
 }

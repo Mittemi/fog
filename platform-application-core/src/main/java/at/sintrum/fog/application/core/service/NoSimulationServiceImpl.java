@@ -30,7 +30,7 @@ public class NoSimulationServiceImpl implements SimulationClientService {
     }
 
     @Override
-    public void notifyMove(FogIdentification target) {
+    public void notifyMoving(FogIdentification target) {
 
     }
 
@@ -44,10 +44,6 @@ public class NoSimulationServiceImpl implements SimulationClientService {
 
     }
 
-    @Override
-    public void notifyRunning() {
-
-    }
 
     @Override
     public void notifyUpgrade() {

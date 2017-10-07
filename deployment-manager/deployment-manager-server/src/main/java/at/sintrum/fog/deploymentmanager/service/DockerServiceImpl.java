@@ -279,6 +279,17 @@ public class DockerServiceImpl implements DockerService {
     }
 
     @Override
+    public boolean deleteImage(String id) {
+        try {
+            dockerClient.removeImageCmd(id).withNoPrune(true).exec();
+            return true;
+        } catch (Exception ex) {
+            //don't care about result
+        }
+        return false;
+    }
+
+    @Override
     public boolean removeContainer(String containerId) {
         try {
             ContainerInfo containerInfo = getContainerInfo(containerId);

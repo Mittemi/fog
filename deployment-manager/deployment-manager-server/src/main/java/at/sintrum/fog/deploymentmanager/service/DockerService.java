@@ -31,6 +31,8 @@ public interface DockerService {
 
     boolean pushImage(PushImageRequest pushImageRequest);
 
+    boolean deleteImage(String name);
+
     boolean removeContainer(String containerId);
 
     boolean copyOrMergeDirectory(String sourceContainerId, String sourceDirectory, String targetContainerId, String targetDirectory);

@@ -11,13 +11,11 @@ public interface SimulationClientService {
 
     void notifyStarting();
 
-    void notifyMove(FogIdentification target);
+    void notifyMoving(FogIdentification target);
 
     void notifyMoved();
 
     void notifyStandby();
-
-    void notifyRunning();
 
     void notifyUpgrade();
 }

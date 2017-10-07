@@ -2,6 +2,7 @@ package at.sintrum.fog.simulation.service;
 
 import at.sintrum.fog.simulation.scenario.dto.BasicScenarioInfo;
 import at.sintrum.fog.simulation.scenario.dto.ScenarioExecutionInfo;
+import at.sintrum.fog.simulation.simulation.ScenarioExecutionResult;
 
 import java.util.List;
 
@@ -15,6 +16,8 @@ public interface ScenarioService {
     ScenarioExecutionInfo run(BasicScenarioInfo basicScenarioInfo, String name);
 
     ScenarioExecutionInfo getExecutionState();
+
+    ScenarioExecutionResult getResult();
 
     boolean cancel();
 }

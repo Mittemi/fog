@@ -3,6 +3,7 @@ package at.sintrum.fog.application.core.service;
 import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.core.service.EnvironmentInfoService;
 import at.sintrum.fog.simulation.api.SimulationApi;
+import at.sintrum.fog.simulation.api.dto.AppEventInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -38,42 +39,35 @@ public class SimulationClientServiceImpl implements SimulationClientService {
     @Async
     public void sendHeartbeat() {
         LOG.debug("Send heartbeat");
-        simulationApiClient.sendHeartbeat(instanceId);
+        //simulationApiClient.sendHeartbeat(instanceId);
     }
 
     @Override
     @Async
     public void notifyStarting() {
         LOG.debug("Notify starting");
-        simulationApiClient.notifyStarting(instanceId, currentFog);
+        simulationApiClient.starting(instanceId, new AppEventInfo(currentFog, currentFog, instanceId, instanceId, true));
     }
 
     @Override
     @Async
-    public void notifyMove(FogIdentification target) {
-        LOG.debug("Notify move");
-        simulationApiClient.notifyMove(instanceId, target);
+    public void notifyMoving(FogIdentification target) {
+        LOG.debug("Notify moving");
+        simulationApiClient.moving(instanceId, new AppEventInfo(currentFog, target, instanceId, instanceId, true));
     }
 
     @Override
     @Async
     public void notifyMoved() {
         LOG.debug("Notify moved");
-        simulationApiClient.notifyMoved(instanceId, appIdentification);
+        simulationApiClient.moved(instanceId, new AppEventInfo(currentFog, currentFog, instanceId, instanceId, true));
     }
 
     @Override
     @Async
     public void notifyStandby() {
         LOG.debug("Notify standby");
-        simulationApiClient.notifyStandby(instanceId, appIdentification);
-    }
-
-    @Override
-    @Async
-    public void notifyRunning() {
-        LOG.debug("Notify running");
-        simulationApiClient.notifyRunning(instanceId, appIdentification);
+        simulationApiClient.standby(instanceId, new AppEventInfo(currentFog, currentFog, instanceId, instanceId, true));
     }
 
     @Override
@@ -81,6 +75,6 @@ public class SimulationClientServiceImpl implements SimulationClientService {
     public void notifyUpgrade() {
         LOG.debug("Notify upgrade");
         FogIdentification cloud = FogIdentification.parseFogBaseUrl(cloudLocatorService.getCloudBaseUrl());
-        simulationApiClient.notifyUpgrade(instanceId, cloud);
+        simulationApiClient.upgrading(instanceId, new AppEventInfo(currentFog, cloud, instanceId, null, true));
     }
 }

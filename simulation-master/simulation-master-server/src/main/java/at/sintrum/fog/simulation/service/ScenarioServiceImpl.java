@@ -4,9 +4,11 @@ import at.sintrum.fog.simulation.scenario.Scenario;
 import at.sintrum.fog.simulation.scenario.dto.BasicScenarioInfo;
 import at.sintrum.fog.simulation.scenario.dto.ScenarioExecutionInfo;
 import at.sintrum.fog.simulation.scenario.dto.TrackExecutionInfo;
+import at.sintrum.fog.simulation.simulation.ScenarioExecutionResult;
 import at.sintrum.fog.simulation.taskengine.TaskListAsyncInvoker;
 import at.sintrum.fog.simulation.taskengine.TaskListBuilder;
 import at.sintrum.fog.simulation.taskengine.TrackExecutionState;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -27,6 +29,8 @@ public class ScenarioServiceImpl implements ScenarioService {
     private static final Logger LOG = LoggerFactory.getLogger(ScenarioServiceImpl.class);
     private final TaskListAsyncInvoker taskListAsyncInvoker;
     private TaskListBuilder.TaskListBuilderState taskList;
+
+    private ScenarioExecutionResult executionResult;
 
     public ScenarioServiceImpl(Set<Scenario> scenarioList, TaskListAsyncInvoker taskListAsyncInvoker) {
         this.taskListAsyncInvoker = taskListAsyncInvoker;
@@ -50,6 +54,7 @@ public class ScenarioServiceImpl implements ScenarioService {
         }
         Scenario scenario = scenarios.get(name);
         taskList = scenario.build(basicScenarioInfo);
+        executionResult = new ScenarioExecutionResult(scenario.getId(), basicScenarioInfo, new DateTime());
         return getExecutionState();
     }
 
@@ -69,8 +74,14 @@ public class ScenarioServiceImpl implements ScenarioService {
     }
 
     @Override
+    public ScenarioExecutionResult getResult() {
+        return executionResult;
+    }
+
+    @Override
     public boolean cancel() {
         this.taskList = null;
+        executionResult = null;
         return true;
     }
 
