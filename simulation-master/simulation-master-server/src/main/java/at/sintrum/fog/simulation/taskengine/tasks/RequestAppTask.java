@@ -1,6 +1,7 @@
 package at.sintrum.fog.simulation.taskengine.tasks;
 
 import at.sintrum.fog.application.client.factory.ApplicationClientFactory;
+import at.sintrum.fog.application.core.api.dto.RequestAppDto;
 import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.metadatamanager.api.ApplicationStateMetadataApi;
 import at.sintrum.fog.simulation.taskengine.TrackExecutionState;
@@ -25,6 +26,6 @@ public class RequestAppTask extends FogTaskBase {
     protected boolean internalExecute() {
         FogIdentification applicationUrl = applicationStateMetadataApi.getApplicationUrl(getTrackExecutionState().getInstanceId());
         if (applicationUrl == null) return false;
-        return applicationClientFactory.createAppLifecycleClient(applicationUrl.toUrl()).requestApplication(targetLocation);
+        return applicationClientFactory.createAppLifecycleClient(applicationUrl.toUrl()).requestApplication(new RequestAppDto(targetLocation));
     }
 }

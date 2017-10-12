@@ -1,5 +1,6 @@
 package at.sintrum.fog.application.core.api;
 
+import at.sintrum.fog.application.core.api.dto.RequestAppDto;
 import at.sintrum.fog.application.core.service.ApplicationLifecycleService;
 import at.sintrum.fog.application.core.service.TravelingCoordinationService;
 import at.sintrum.fog.core.dto.FogIdentification;
@@ -27,9 +28,9 @@ public class AppLifecycleController implements AppLifecycleApi {
     }
 
     @Override
-    public boolean requestApplication(@RequestBody FogIdentification fogIdentification) {
+    public boolean requestApplication(@RequestBody RequestAppDto requestAppDto) {
 
-        return travelingCoordinationService.requestMove(fogIdentification);
+        return travelingCoordinationService.requestMove(requestAppDto);
     }
 
     @Override

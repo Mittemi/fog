@@ -69,6 +69,13 @@
             <groupId>at.sintrum.fog</groupId>
             <artifactId>simulation-master-client</artifactId>
         </dependency>
+
+
+        <dependency>
+            <groupId>at.sintrum.fog</groupId>
+            <artifactId>platform-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>

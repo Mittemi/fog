@@ -1,5 +1,7 @@
 package at.sintrum.fog.application.core.service;
 
+import at.sintrum.fog.application.core.api.dto.RequestAppDto;
+import at.sintrum.fog.application.core.model.AppRequestInfo;
 import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.core.service.EnvironmentInfoService;
 import at.sintrum.fog.metadatamanager.api.ApplicationStateMetadataApi;
@@ -11,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by Michael Mittermayr on 17.07.2017.
@@ -31,17 +34,19 @@ public class TravelingCoordinationServiceImpl implements TravelingCoordinationSe
     }
 
     @Override
-    public boolean requestMove(FogIdentification fogIdentification) {
+    public boolean requestMove(RequestAppDto requestAppDto) {
+
+        FogIdentification fogIdentification = requestAppDto.getTarget();
 
         try {
-            RQueue<FogIdentification> travelQueue = getTravelQueue();
+            RQueue<AppRequestInfo> travelQueue = getTravelQueue();
 
-            if (travelQueue.readAll().stream().anyMatch(x -> x.isSameFog(fogIdentification))) {
+            if (travelQueue.readAll().stream().anyMatch(x -> x.getTarget().isSameFog(fogIdentification))) {
                 LOG.warn("Travel-Queue already contains this a move request from fog: " + fogIdentification.toFogId());
                 return false;
             }
 
-            travelQueue.add(fogIdentification);
+            travelQueue.add(new AppRequestInfo(fogIdentification));
             return true;
         } catch (Exception ex) {
             LOG.error("Failed to add to request queue", ex);
@@ -51,10 +56,10 @@ public class TravelingCoordinationServiceImpl implements TravelingCoordinationSe
 
     @Override
     public List<FogIdentification> getTargets() {
-        return getTravelQueue().readAll();
+        return getTravelQueue().readAll().stream().map(AppRequestInfo::getTarget).collect(Collectors.toList());
     }
 
-    private RQueue<FogIdentification> getTravelQueue() {
+    private RQueue<AppRequestInfo> getTravelQueue() {
         return redissonClient.getQueue("App_Travel_" + environmentInfoService.getApplicationName());
     }
 
@@ -72,7 +77,9 @@ public class TravelingCoordinationServiceImpl implements TravelingCoordinationSe
     public FogIdentification getNextTarget() {
 
         try {
-            return getTravelQueue().peek();
+            AppRequestInfo peek = getTravelQueue().peek();
+
+            return peek != null ? peek.getTarget() : null;
         } catch (Exception ex) {
             LOG.error("Failed to get next travel target", ex);
             return null;
@@ -115,9 +122,9 @@ public class TravelingCoordinationServiceImpl implements TravelingCoordinationSe
     }
 
     private boolean removeTargetFromQueue(FogIdentification currentFog) {
-        FogIdentification peek = getTravelQueue().peek();
+        AppRequestInfo peek = getTravelQueue().peek();
         if (peek != null) {
-            if (peek.isSameFog(currentFog)) {
+            if (peek.getTarget().isSameFog(currentFog)) {
                 if (!getTravelQueue().remove(peek)) {
                     LOG.error("Element not removed from queue, even though it should have been in there");
                     return false;
