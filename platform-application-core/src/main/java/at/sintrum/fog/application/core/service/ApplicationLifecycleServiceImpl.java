@@ -117,14 +117,11 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
                     return false;
                 }
                 // we assume work has been finished and we are ready to move somewhere else
-                if (travelingCoordinationService.hasNextTarget()) {
+                FogIdentification nextTarget = travelingCoordinationService.getNextTarget();
+
+                if (nextTarget != null) {
                     LOG.debug("New application target, let's move");
-                    FogIdentification nextTarget = travelingCoordinationService.getNextTarget();
-                    if (nextTarget != null) {
-                        moveApplication(nextTarget);
-                    } else {
-                        LOG.error("Move target is null. Can't move!");
-                    }
+                    moveApplication(nextTarget);
                 } else {
                     if (!environmentInfoService.isCloud()) {
                         LOG.info("Let's move to the cloud, there is no target in queue right now");

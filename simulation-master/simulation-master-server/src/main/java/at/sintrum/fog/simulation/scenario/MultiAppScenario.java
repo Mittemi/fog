@@ -37,9 +37,9 @@ public class MultiAppScenario implements Scenario {
 
         for (int i = 0; i < basicScenarioInfo.getIterations(); i++) {
             trackA.startTestApp(0, basicScenarioInfo.getCloud())
-                    .requestApp(0, basicScenarioInfo.getFogA())
-                    .requestApp(0, basicScenarioInfo.getFogB())
-                    .requestApp(0, basicScenarioInfo.getFogC())
+                    .requestApp(0, basicScenarioInfo.getFogA(), 11)
+                    .requestApp(0, basicScenarioInfo.getFogB(), 14)
+                    .requestApp(0, basicScenarioInfo.getFogC(), 8)
                     .checkLocation(0, basicScenarioInfo.getFogA())
                     .finishWork(0)
                     .checkLocation(0, basicScenarioInfo.getFogB())
@@ -51,9 +51,9 @@ public class MultiAppScenario implements Scenario {
                     .removeApp(0);
 
             trackB.startAnotherApp(0, basicScenarioInfo.getCloud())
-                    .requestApp(0, basicScenarioInfo.getFogA())
-                    .requestApp(0, basicScenarioInfo.getFogB())
-                    .requestApp(0, basicScenarioInfo.getFogC())
+                    .requestApp(0, basicScenarioInfo.getFogA(), 11)
+                    .requestApp(0, basicScenarioInfo.getFogB(), 8)
+                    .requestApp(0, basicScenarioInfo.getFogC(), 14)
                     .checkLocation(0, basicScenarioInfo.getFogA())
                     .finishWork(0)
                     .checkLocation(0, basicScenarioInfo.getFogB())

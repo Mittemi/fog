@@ -31,12 +31,12 @@ public class MultipleFogsScenario implements Scenario {
 
         track.resetMetadata(0)
                 .startTestApp(0, basicScenarioInfo.getCloud())
-                .requestApp(0, basicScenarioInfo.getFogA());
+                .requestApp(0, basicScenarioInfo.getFogA(), 10);
 
         if (basicScenarioInfo.getFogB() != null)
-            track.requestApp(0, basicScenarioInfo.getFogB());
+            track.requestApp(0, basicScenarioInfo.getFogB(), 10);
         if (basicScenarioInfo.getFogC() != null)
-            track.requestApp(0, basicScenarioInfo.getFogC());
+            track.requestApp(0, basicScenarioInfo.getFogC(), 10);
 
         track.checkLocation(0, basicScenarioInfo.getFogA())
                 .finishWork(0);

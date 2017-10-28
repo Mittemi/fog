@@ -1,12 +1,10 @@
 package at.sintrum.fog.application.core.api;
 
-import at.sintrum.fog.application.core.api.dto.RequestAppDto;
 import at.sintrum.fog.application.core.service.ApplicationLifecycleService;
 import at.sintrum.fog.application.core.service.TravelingCoordinationService;
 import at.sintrum.fog.core.dto.FogIdentification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -27,11 +25,11 @@ public class AppLifecycleController implements AppLifecycleApi {
         this.applicationLifecycleService = applicationLifecycleService;
     }
 
-    @Override
-    public boolean requestApplication(@RequestBody RequestAppDto requestAppDto) {
-
-        return travelingCoordinationService.requestMove(requestAppDto);
-    }
+//    @Override
+//    public boolean requestApplication(@RequestBody RequestAppDto requestAppDto) {
+//
+//        return travelingCoordinationService.requestMove(requestAppDto);
+//    }
 
     @Override
     public boolean tearDownApplication() {

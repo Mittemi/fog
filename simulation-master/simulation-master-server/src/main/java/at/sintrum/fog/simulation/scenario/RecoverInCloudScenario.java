@@ -33,7 +33,7 @@ public class RecoverInCloudScenario implements Scenario {
                 .resetMetadata(0)
 
                 .startTestApp(0, basicScenarioInfo.getCloud())
-                .requestApp(5, basicScenarioInfo.getFogA())
+                .requestApp(5, basicScenarioInfo.getFogA(), 10)
                 .checkLocation(5, basicScenarioInfo.getFogA())
                 .logMessage(0, "App now in fog")
                 .setFogNetworkState(0, basicScenarioInfo.getFogA(), false, true)

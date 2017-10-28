@@ -1,0 +1,6 @@
+redis:
+  host: ${REDIS_HOST:192.168.2.100}
+  port: ${REDIS_PORT:46379}
+
+fog.metadatamanager:
+

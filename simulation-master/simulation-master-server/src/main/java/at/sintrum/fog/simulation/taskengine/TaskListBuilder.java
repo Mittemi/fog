@@ -10,6 +10,7 @@ import at.sintrum.fog.core.dto.ResourceInfo;
 import at.sintrum.fog.deploymentmanager.client.factory.DeploymentManagerClientFactory;
 import at.sintrum.fog.metadatamanager.api.ApplicationStateMetadataApi;
 import at.sintrum.fog.metadatamanager.api.dto.DockerImageMetadata;
+import at.sintrum.fog.metadatamanager.client.api.AppRequestClient;
 import at.sintrum.fog.metadatamanager.client.api.ContainerMetadataClient;
 import at.sintrum.fog.metadatamanager.client.api.ImageMetadataClient;
 import at.sintrum.fog.metadatamanager.client.factory.MetadataManagerClientFactory;
@@ -47,6 +48,7 @@ public class TaskListBuilder {
     private final ContainerMetadataClient containerMetadataApi;
     private final ImageMetadataClient imageMetadataApi;
     private final AppEvolutionClient appEvolutionApi;
+    private final AppRequestClient appRequestClient;
     private final FogResourceService fogResourceService;
     private final FogCellStateService fogCellStateService;
     private final AppRecoveryClient appRecovery;
@@ -60,6 +62,7 @@ public class TaskListBuilder {
                            ContainerMetadataClient containerMetadataApi,
                            ImageMetadataClient imageMetadataApi,
                            AppEvolutionClient appEvolutionApi,
+                           AppRequestClient appRequestClient,
                            FogResourceService fogResourceService,
                            FogCellStateService fogCellStateService,
                            AppRecoveryClient appRecovery,
@@ -74,6 +77,7 @@ public class TaskListBuilder {
 
 
         this.appEvolutionApi = appEvolutionApi;
+        this.appRequestClient = appRequestClient;
         this.fogResourceService = fogResourceService;
         this.fogCellStateService = fogCellStateService;
         this.appRecovery = appRecovery;
@@ -114,7 +118,7 @@ public class TaskListBuilder {
         }
 
         public TaskListBuilderState resetMetadata() {
-            ResetMetadataTask.reset(applicationStateMetadataClient, appEvolutionApi, appRecovery, fogResourceService, fogCellStateService);
+            ResetMetadataTask.reset(applicationStateMetadataClient, appEvolutionApi, appRecovery, fogResourceService, fogCellStateService, appRequestClient);
             return this;
         }
 
@@ -165,8 +169,12 @@ public class TaskListBuilder {
                 return addTask(new StartAppTask(0, trackExecutionState, deploymentManagerClientFactory, cloud, metadata.getId(), redissonClient, imageMetadataApi));
             }
 
-            public AppTaskBuilder requestApp(int offset, FogIdentification target) {
-                return addTask(new RequestAppTask(offset, trackExecutionState, target, applicationClientFactory, applicationStateMetadataClient));
+            public AppTaskBuilder requestApp(int offset, FogIdentification target, int estimatedDuration) {
+                return addTask(new RequestAppTask(offset, trackExecutionState, target, appRequestClient, estimatedDuration, new AppRequestState()));
+            }
+
+            public AppTaskBuilder requestApp(int offset, FogIdentification target, int estimatedDuration, AppRequestState appRequestState) {
+                return addTask(new RequestAppTask(offset, trackExecutionState, target, appRequestClient, estimatedDuration, appRequestState));
             }
 
             public AppTaskBuilder checkLocation(int offset, FogIdentification expectedLocation) {
@@ -198,7 +206,7 @@ public class TaskListBuilder {
             }
 
             public AppTaskBuilder resetMetadata(int offset) {
-                return addTask(new ResetMetadataTask(offset, trackExecutionState, applicationStateMetadataClient, appEvolutionApi, appRecovery, fogResourceService, fogCellStateService));
+                return addTask(new ResetMetadataTask(offset, trackExecutionState, applicationStateMetadataClient, appEvolutionApi, appRecovery, fogResourceService, fogCellStateService, appRequestClient));
             }
 
             public AppTaskBuilder setResourceLimit(int offset, FogIdentification fogIdentification, ResourceInfo resourceInfo) {

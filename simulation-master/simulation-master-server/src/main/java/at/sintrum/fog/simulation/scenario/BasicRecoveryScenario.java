@@ -35,7 +35,7 @@ public class BasicRecoveryScenario implements Scenario {
                 .checkReachability(10, true)
                 .checkLocation(2, basicScenarioInfo.getCloud())
                 .logMessage(0, "Container recovery in cloud")
-                .requestApp(0, basicScenarioInfo.getFogA())
+                .requestApp(0, basicScenarioInfo.getFogA(), 10)
                 .checkLocation(10, basicScenarioInfo.getFogA())
                 .stopAppContainer(0, basicScenarioInfo.getFogA())
                 .checkReachability(10, true)

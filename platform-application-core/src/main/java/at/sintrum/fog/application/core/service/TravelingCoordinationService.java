@@ -1,6 +1,5 @@
 package at.sintrum.fog.application.core.service;
 
-import at.sintrum.fog.application.core.api.dto.RequestAppDto;
 import at.sintrum.fog.core.dto.FogIdentification;
 
 import java.util.List;
@@ -10,17 +9,11 @@ import java.util.List;
  */
 public interface TravelingCoordinationService {
 
-    boolean requestMove(RequestAppDto requestAppDto);
-
     List<FogIdentification> getTargets();
-
-    boolean hasNextTarget();
 
     FogIdentification getNextTarget();
 
     boolean startMove(FogIdentification target);
 
     boolean finishMove(FogIdentification currentFog);
-
-    void reset();
 }

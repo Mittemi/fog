@@ -37,7 +37,7 @@ public class ResourceLimitScenario implements Scenario {
                 .checkLocation(10, basicScenarioInfo.getCloud())
                 .logMessage(0, "Set resource limits for fog")
                 .setResourceLimit(0, basicScenarioInfo.getFogA(), ResourceInfo.fixedSized(0))
-                .requestApp(0, basicScenarioInfo.getFogA())
+                .requestApp(0, basicScenarioInfo.getFogA(), 10)
                 .checkLocation(60, basicScenarioInfo.getCloud())
                 .logMessage(0, "Remove resource limits from fog")
                 .setResourceLimit(0, basicScenarioInfo.getFogA(), null)

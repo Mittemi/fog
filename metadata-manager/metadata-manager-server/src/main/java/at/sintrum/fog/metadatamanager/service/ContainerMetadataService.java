@@ -1,12 +1,14 @@
 package at.sintrum.fog.metadatamanager.service;
 
 import at.sintrum.fog.metadatamanager.api.dto.DockerContainerMetadata;
+import at.sintrum.fog.metadatamanager.api.dto.MetadataBase;
 import org.apache.commons.lang.StringUtils;
 import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,5 +41,9 @@ public class ContainerMetadataService extends RedissonMetadataServiceBase<Docker
 
     public List<DockerContainerMetadata> getByInstance(String instanceId) {
         return toFlatList().stream().filter(x -> instanceId.equals(x.getInstanceId())).collect(Collectors.toList());
+    }
+
+    public DockerContainerMetadata getLatestByInstance(String instanceId) {
+        return getByInstance(instanceId).stream().sorted(Comparator.comparing(MetadataBase::getLastUpdate).reversed()).findFirst().orElse(null);
     }
 }

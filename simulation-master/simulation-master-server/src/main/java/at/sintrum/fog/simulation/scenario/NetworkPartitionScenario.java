@@ -32,7 +32,7 @@ public class NetworkPartitionScenario implements Scenario {
                 .checkLocation(10, basicScenarioInfo.getCloud())
                 .logMessage(0, "Set fog network offline")
                 .setFogNetworkState(0, basicScenarioInfo.getFogA(), false, true)
-                .requestApp(0, basicScenarioInfo.getFogA())
+                .requestApp(0, basicScenarioInfo.getFogA(), 10)
                 .logMessage(0, "App should stay in cloud")
                 .checkLocation(30, basicScenarioInfo.getCloud())
                 .logMessage(0, "App still in cloud, wait another 30 seconds")

@@ -29,7 +29,7 @@ public class BasicTravelScenario implements Scenario {
                 .resetMetadata(0)
                 .startTestApp(0, basicScenarioInfo.getCloud())
                 .checkLocation(10, basicScenarioInfo.getCloud())
-                .requestApp(0, basicScenarioInfo.getFogA())
+                .requestApp(0, basicScenarioInfo.getFogA(), 10)
                 .checkLocation(10, basicScenarioInfo.getFogA())
                 .finishWork(0)
                 .checkLocation(10, basicScenarioInfo.getCloud())
