@@ -8,4 +8,20 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "fog.metadatamanager")
 public class MetadataManagerConfigProperties {
 
+    private boolean useAuction;
+
+    public MetadataManagerConfigProperties(boolean useAuction) {
+        this.useAuction = useAuction;
+    }
+
+    public MetadataManagerConfigProperties() {
+    }
+
+    public boolean isUseAuction() {
+        return useAuction;
+    }
+
+    public void setUseAuction(boolean useAuction) {
+        this.useAuction = useAuction;
+    }
 }

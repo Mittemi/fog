@@ -170,11 +170,19 @@ public class TaskListBuilder {
             }
 
             public AppTaskBuilder requestApp(int offset, FogIdentification target, int estimatedDuration) {
-                return addTask(new RequestAppTask(offset, trackExecutionState, target, appRequestClient, estimatedDuration, new AppRequestState()));
+                return requestApp(offset, target, estimatedDuration, new AppRequestState(), 1);
             }
 
-            public AppTaskBuilder requestApp(int offset, FogIdentification target, int estimatedDuration, AppRequestState appRequestState) {
-                return addTask(new RequestAppTask(offset, trackExecutionState, target, appRequestClient, estimatedDuration, appRequestState));
+            public AppTaskBuilder requestApp(int offset, FogIdentification target, int estimatedDuration, int credits) {
+                return requestApp(offset, target, estimatedDuration, new AppRequestState(), credits);
+            }
+
+            public AppTaskBuilder requestApp(int offset, FogIdentification target, int estimatedDuration, AppRequestState appRequestState, int credits) {
+                return requestAppWithCredits(offset, target, estimatedDuration, appRequestState, credits);
+            }
+
+            public AppTaskBuilder requestAppWithCredits(int offset, FogIdentification target, int estimatedDuration, AppRequestState appRequestState, int credits) {
+                return addTask(new RequestAppTask(offset, trackExecutionState, target, appRequestClient, estimatedDuration, appRequestState, credits));
             }
 
             public AppTaskBuilder checkLocation(int offset, FogIdentification expectedLocation) {

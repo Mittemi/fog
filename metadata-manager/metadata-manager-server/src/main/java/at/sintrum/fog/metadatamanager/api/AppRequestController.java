@@ -2,6 +2,7 @@ package at.sintrum.fog.metadatamanager.api;
 
 import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.metadatamanager.api.dto.AppRequest;
+import at.sintrum.fog.metadatamanager.api.dto.AppRequestDto;
 import at.sintrum.fog.metadatamanager.api.dto.AppRequestResult;
 import at.sintrum.fog.metadatamanager.service.requests.AppRequestServiceImpl;
 import org.slf4j.Logger;
@@ -27,9 +28,13 @@ public class AppRequestController implements AppRequestsApi {
     }
 
     @Override
-    public AppRequestResult request(@RequestBody AppRequest appRequest) {
+    public AppRequestResult request(@RequestBody AppRequestDto appRequestDto) {
+        AppRequest appRequest = appRequestDto.getAppRequest();
+
         LOG.debug("Request move for app: " + appRequest.getInstanceId() + " to target " + appRequest.getTarget().toFogId());
-        return appRequestService.request(appRequest);
+        AppRequestResult result = appRequestService.request(appRequestDto.getCredits(), appRequestDto.getInternalId(), appRequest);
+        LOG.debug("New credits for: " + appRequest.getInstanceId() + ", " + result.getCreditsTotal() + "(" + result.getInternalId() + ")");
+        return result;
     }
 
     @Override

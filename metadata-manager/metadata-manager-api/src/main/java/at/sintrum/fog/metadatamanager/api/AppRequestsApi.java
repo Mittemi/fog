@@ -2,6 +2,7 @@ package at.sintrum.fog.metadatamanager.api;
 
 import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.metadatamanager.api.dto.AppRequest;
+import at.sintrum.fog.metadatamanager.api.dto.AppRequestDto;
 import at.sintrum.fog.metadatamanager.api.dto.AppRequestResult;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,7 +18,7 @@ import java.util.List;
 public interface AppRequestsApi {
 
     @RequestMapping(value = "request", method = RequestMethod.POST)
-    AppRequestResult request(@RequestBody AppRequest appRequest);
+    AppRequestResult request(@RequestBody AppRequestDto appRequestDto);
 
     @RequestMapping(value = "{appName}", method = RequestMethod.GET)
     List<AppRequest> getRequests(@PathVariable("appName") String appName);

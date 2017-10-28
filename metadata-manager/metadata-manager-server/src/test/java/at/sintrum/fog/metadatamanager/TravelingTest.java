@@ -6,6 +6,7 @@ import at.sintrum.fog.metadatamanager.api.dto.AppRequest;
 import at.sintrum.fog.metadatamanager.api.dto.AppRequestResult;
 import at.sintrum.fog.metadatamanager.api.dto.DockerContainerMetadata;
 import at.sintrum.fog.metadatamanager.api.dto.DockerImageMetadata;
+import at.sintrum.fog.metadatamanager.config.MetadataManagerConfigProperties;
 import at.sintrum.fog.metadatamanager.service.ContainerMetadataService;
 import at.sintrum.fog.metadatamanager.service.ImageMetadataService;
 import at.sintrum.fog.metadatamanager.service.requests.AppRequestServiceImpl;
@@ -74,7 +75,7 @@ public class TravelingTest {
     @Test
     public void testTravelFifo() {
 
-        AppRequestServiceImpl appRequestService = new AppRequestServiceImpl(redissonClient, containerMetadataService, imageMetadataService);
+        AppRequestServiceImpl appRequestService = new AppRequestServiceImpl(redissonClient, containerMetadataService, imageMetadataService, new MetadataManagerConfigProperties(false));
 
         appRequestService.reset();
         assertThat(appRequestService.getNextRequest(instanceId)).isNull();
@@ -84,8 +85,8 @@ public class TravelingTest {
         AppRequest requestB = new AppRequest(targetB, instanceId, 1);
 
 
-        AppRequestResult firstRequestResult = appRequestService.request(requestA);
-        AppRequestResult lastRequestResult = appRequestService.request(requestB);
+        AppRequestResult firstRequestResult = appRequestService.request(1, null, requestA);
+        AppRequestResult lastRequestResult = appRequestService.request(1, null, requestB);
         assertThat(firstRequestResult.getInternalId()).isNotEqualToIgnoringCase(lastRequestResult.getInternalId());
 
 

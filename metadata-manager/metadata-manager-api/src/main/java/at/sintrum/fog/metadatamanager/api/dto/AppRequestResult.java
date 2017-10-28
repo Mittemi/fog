@@ -7,12 +7,15 @@ public class AppRequestResult {
 
     private String internalId;
 
+    private int creditsTotal;
+
     public AppRequestResult() {
     }
 
-    public AppRequestResult(String internalId) {
+    public AppRequestResult(String internalId, int creditsTotal) {
 
         this.internalId = internalId;
+        this.creditsTotal = creditsTotal;
     }
 
     public String getInternalId() {
@@ -21,5 +24,13 @@ public class AppRequestResult {
 
     public void setInternalId(String internalId) {
         this.internalId = internalId;
+    }
+
+    public int getCreditsTotal() {
+        return creditsTotal;
+    }
+
+    public void setCreditsTotal(int creditsTotal) {
+        this.creditsTotal = creditsTotal;
     }
 }

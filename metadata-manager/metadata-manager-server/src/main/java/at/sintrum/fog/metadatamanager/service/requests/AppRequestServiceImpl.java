@@ -5,17 +5,24 @@ import at.sintrum.fog.metadatamanager.api.dto.AppRequest;
 import at.sintrum.fog.metadatamanager.api.dto.AppRequestResult;
 import at.sintrum.fog.metadatamanager.api.dto.DockerContainerMetadata;
 import at.sintrum.fog.metadatamanager.api.dto.DockerImageMetadata;
+import at.sintrum.fog.metadatamanager.config.MetadataManagerConfigProperties;
 import at.sintrum.fog.metadatamanager.service.ContainerMetadataService;
 import at.sintrum.fog.metadatamanager.service.ImageMetadataService;
 import com.google.common.collect.ImmutableList;
-import org.redisson.api.*;
+import org.redisson.api.RBucket;
+import org.redisson.api.RMap;
+import org.redisson.api.RSet;
+import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by Michael Mittermayr on 28.10.2017.
@@ -26,27 +33,42 @@ public class AppRequestServiceImpl {
     private final RedissonClient redissonClient;
     private final ContainerMetadataService containerMetadataService;
     private final ImageMetadataService imageMetadataService;
+    private final MetadataManagerConfigProperties configProperties;
 
 
     private final Logger LOG = LoggerFactory.getLogger(AppRequestServiceImpl.class);
 
-    public AppRequestServiceImpl(RedissonClient redissonClient, ContainerMetadataService containerMetadataService, ImageMetadataService imageMetadataService) {
+    public AppRequestServiceImpl(RedissonClient redissonClient, ContainerMetadataService containerMetadataService, ImageMetadataService imageMetadataService, MetadataManagerConfigProperties configProperties) {
         this.redissonClient = redissonClient;
         this.containerMetadataService = containerMetadataService;
         this.imageMetadataService = imageMetadataService;
+        this.configProperties = configProperties;
+
+        if (configProperties.isUseAuction()) {
+            LOG.debug("Auctioning is enabled!");
+        }
     }
 
-    public AppRequestResult request(AppRequest appRequest) {
-        AppRequestInfo requestInfo = new AppRequestInfo(appRequest);
-        boolean result = getTravelQueueByInstanceId(appRequest.getInstanceId()).add(requestInfo);
-        return result ? new AppRequestResult(requestInfo.getInternalId()) : null;
+    public AppRequestResult request(int credits, String internalId, AppRequest appRequest) {
+        if (StringUtils.isEmpty(internalId)) {
+            LOG.debug("Add new request");
+            AppRequestInfo requestInfo = new AppRequestInfo(appRequest, credits);
+            getTravelQueueByInstanceId(appRequest.getInstanceId()).put(requestInfo.getInternalId(), requestInfo);
+
+            return new AppRequestResult(requestInfo.getInternalId(), credits);
+        } else {
+            LOG.debug("Bid for existing request");
+            AppRequestInfo appRequestInfo = getTravelQueueByInstanceId(appRequest.getInstanceId()).get(internalId);
+            appRequestInfo.incrementCredits(credits);
+            return new AppRequestResult(internalId, appRequestInfo.getCredits());
+        }
     }
 
     private RSet<String> getMetadataList() {
         return redissonClient.getSet("App_Travel_Known_Apps");
     }
 
-    private RList<AppRequestInfo> getTravelQueueByInstanceId(String instanceId) {
+    private RMap<String, AppRequestInfo> getTravelQueueByInstanceId(String instanceId) {
 
         DockerContainerMetadata containerMetadata = containerMetadataService.getLatestByInstance(instanceId);
         DockerImageMetadata imageMetadata = imageMetadataService.get(null, containerMetadata.getImageMetadataId());
@@ -54,14 +76,9 @@ public class AppRequestServiceImpl {
         return getTravelQueue(name);
     }
 
-    private RList<AppRequestInfo> getTravelQueue(String name) {
-        boolean add = getMetadataList().add(name);
-
-        RList<AppRequestInfo> result = redissonClient.getList(name);
-        if (add) {
-            //    result.trySetComparator(new SortByDateComparator());
-        }
-        return result;
+    private RMap<String, AppRequestInfo> getTravelQueue(String name) {
+        getMetadataList().add(name);
+        return redissonClient.getMap(name);
     }
 
     public void reset() {
@@ -85,10 +102,17 @@ public class AppRequestServiceImpl {
     }
 
     public AppRequest getNextRequest(String instanceId) {
-        AppRequestInfo peek = getTravelQueueByInstanceId(instanceId).stream().min(Comparator.comparing(AppRequestInfo::getCreationDate)).orElse(null);
+        AppRequestInfo peek = getTravelQueueByInstanceId(instanceId).values().stream().sorted(getNextRequestComparator()).findFirst().orElse(null);
         if (peek == null) return null;
         getActiveRequestBucket(instanceId).set(peek);
         return peek.getAppRequest();
+    }
+
+    private Comparator<AppRequestInfo> getNextRequestComparator() {
+        if (configProperties.isUseAuction()) {
+            return Comparator.comparing(AppRequestInfo::getCredits).reversed();
+        }
+        return Comparator.comparing(AppRequestInfo::getCreationDate);
     }
 
     public AppRequest finishMove(String instanceId, FogIdentification currentFog) {
@@ -101,11 +125,14 @@ public class AppRequestServiceImpl {
             LOG.warn("No active move. Finish not possible!");
         }
 
-        RList<AppRequestInfo> travelQueue = getTravelQueueByInstanceId(instanceId);
+        RMap<String, AppRequestInfo> travelQueue = getTravelQueueByInstanceId(instanceId);
 
-        List<AppRequestInfo> removeList = travelQueue.readAll().stream().filter(appRequestInfo -> (active == null || appRequestInfo.getInternalId().equals(active.getInternalId())) && appRequestInfo.getTargetFog().equals(currentFog.toFogId())).collect(Collectors.toList());
+        List<AppRequestInfo> removeList = getAffectedRequests(currentFog, active, travelQueue.values());
         if (removeList.size() > 0) {
-            travelQueue.removeAll(removeList);
+            for (AppRequestInfo appRequestInfo : removeList) {
+                travelQueue.remove(appRequestInfo.getInternalId());
+                getFinishedRequestsMap().put(appRequestInfo.getInternalId(), appRequestInfo);
+            }
         } else {
             return null;
         }
@@ -113,11 +140,19 @@ public class AppRequestServiceImpl {
         if (removeList.size() != 1) {
             LOG.warn("FinishedMove: affected apps list contains != 1 elements. (" + removeList.size() + " Elements)");
         }
-
-        for (AppRequestInfo appRequestInfo : removeList) {
-            getFinishedRequestsMap().put(appRequestInfo.getInternalId(), appRequestInfo);
-        }
         activeRequestBucket.delete();
-        return active == null ? null : active.getAppRequest();      //dangerous
+        return active == null ? null : active.getAppRequest();
+    }
+
+    protected List<AppRequestInfo> getAffectedRequests(FogIdentification currentFog, AppRequestInfo activeRequestInfo, Collection<AppRequestInfo> travelQueue) {
+        Stream<AppRequestInfo> stream = travelQueue.stream();
+
+        if (activeRequestInfo != null) {
+            stream = stream.filter(appRequestInfo -> (appRequestInfo.getInternalId().equals(activeRequestInfo.getInternalId())));
+        }
+
+        stream = stream.filter(appRequestInfo -> appRequestInfo.getTargetFog().equals(currentFog.toFogId()));
+
+        return stream.collect(Collectors.toList());
     }
 }

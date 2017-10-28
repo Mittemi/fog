@@ -28,9 +28,10 @@ public class AppRequestInfo {
         return creationDate;
     }
 
-    public AppRequestInfo(AppRequest appRequest) {
+    public AppRequestInfo(AppRequest appRequest, int credits) {
         this.appRequest = appRequest;
         this.targetFog = appRequest.getTarget().toFogId();
+        this.credits = credits;
         this.creationDate = new DateTime();
         this.internalId = UUID.randomUUID().toString();
     }
@@ -68,5 +69,9 @@ public class AppRequestInfo {
 
     public void setInternalId(String internalId) {
         this.internalId = internalId;
+    }
+
+    public void incrementCredits(int credits) {
+        this.credits += credits;
     }
 }

@@ -2,6 +2,7 @@ package at.sintrum.fog.simulation.taskengine.tasks;
 
 import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.metadatamanager.api.dto.AppRequest;
+import at.sintrum.fog.metadatamanager.api.dto.AppRequestDto;
 import at.sintrum.fog.metadatamanager.api.dto.AppRequestResult;
 import at.sintrum.fog.metadatamanager.client.api.AppRequestClient;
 import at.sintrum.fog.simulation.taskengine.AppRequestState;
@@ -16,19 +17,22 @@ public class RequestAppTask extends FogTaskBase {
     private final AppRequestClient appRequestClient;
     private final int estimatedDuration;
     private final AppRequestState appRequestState;
+    private final int credits;
 
-    public RequestAppTask(int offset, TrackExecutionState trackExecutionState, FogIdentification targetLocation, AppRequestClient appRequestClient, int estimatedDuration, AppRequestState appRequestState) {
+    public RequestAppTask(int offset, TrackExecutionState trackExecutionState, FogIdentification targetLocation, AppRequestClient appRequestClient, int estimatedDuration, AppRequestState appRequestState, int credits) {
         super(offset, trackExecutionState, RequestAppTask.class);
         this.targetLocation = targetLocation;
         this.appRequestClient = appRequestClient;
         this.estimatedDuration = estimatedDuration;
         this.appRequestState = appRequestState;
+        this.credits = credits;
     }
 
     @Override
     protected boolean internalExecute() {
+
         AppRequest appRequest = new AppRequest(targetLocation, getTrackExecutionState().getInstanceId(), estimatedDuration);
-        AppRequestResult request = appRequestClient.request(appRequest);
+        AppRequestResult request = appRequestClient.request(new AppRequestDto(appRequest, credits, appRequestState.getRequestId()));
         if (request != null) {
             appRequestState.setRequestId(request.getInternalId());
             return true;
