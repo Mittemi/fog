@@ -1,0 +1,25 @@
+version: '2'
+
+services:
+
+  mongo:
+    image: mongo:latest
+    container_name: simulation_mongo
+    volumes:
+      - ./data:/data/db
+    ports:
+      - "27017:27017"
+    environment:
+#      - "ES_JAVA_OPTS=\"-Xmx256m -Xms256m\""
+      - "xpack.security.enabled=false"
+    stdin_open: true
+    tty: true
+    restart: always
+  mongoui:
+    image: mongo-express
+    container_name: simulation_mongo_ui
+    ports:
+      - "58081:8081"
+    links:
+      - "mongo:mongo"
+    restart: always
