@@ -41,6 +41,11 @@ public class ImageMetadataController implements ImageMetadataApi {
     }
 
     @Override
+    public DockerImageMetadata getBaseImageMetadata(@PathVariable("id") String id) {
+        return metadataService.getBaseImageMetadata(id);
+    }
+
+    @Override
     public void delete(@PathVariable("id") String id) {
         metadataService.delete(null, id);
     }

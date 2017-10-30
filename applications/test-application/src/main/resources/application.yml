@@ -20,5 +20,5 @@ management.security.enabled: false
 endpoints.shutdown.enabled: true
 
 fog.app:
-  enable-simulation-mode: false
+  enable-simulation-mode: true
   enable-autocomplete-work-mode: true

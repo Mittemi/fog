@@ -1,15 +1,20 @@
 package at.sintrum.fog.simulation.service;
 
-import at.sintrum.fog.application.client.factory.ApplicationClientFactory;
-import at.sintrum.fog.application.client.factory.TestApplicationClientFactory;
-import at.sintrum.fog.deploymentmanager.client.factory.DeploymentManagerClientFactory;
-import at.sintrum.fog.metadatamanager.api.ApplicationStateMetadataApi;
-import at.sintrum.fog.servercore.service.RequestInfoService;
-import at.sintrum.fog.simulation.model.SimulationState;
-import org.redisson.api.RedissonClient;
+import at.sintrum.fog.applicationhousing.client.api.AppEvolutionClient;
+import at.sintrum.fog.metadatamanager.api.dto.DockerImageMetadata;
+import at.sintrum.fog.metadatamanager.client.api.ImageMetadataClient;
+import at.sintrum.fog.simulation.api.dto.AppEventInfo;
+import at.sintrum.fog.simulation.simulation.AppEvent;
+import at.sintrum.fog.simulation.simulation.AppExecutionLogging;
+import at.sintrum.fog.simulation.simulation.ScenarioExecutionResult;
+import at.sintrum.fog.simulation.simulation.mongo.SimulationDbEntry;
+import at.sintrum.fog.simulation.simulation.mongo.respositories.SimulationDbEntryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by Michael Mittermayr on 08.08.2017.
@@ -17,42 +22,61 @@ import org.springframework.stereotype.Service;
 @Service
 public class SimulationServiceImpl implements SimulationService {
 
-    private final DeploymentManagerClientFactory deploymentManagerClientFactory;
-    private final RedissonClient redissonClient;
-
     private static final Logger LOG = LoggerFactory.getLogger(SimulationServiceImpl.class);
-    private final RequestInfoService requestInfoService;
-    private final ApplicationClientFactory applicationClientFactory;
-
-    private final TestApplicationClientFactory testApplicationClientFactory;
-    private final ApplicationStateMetadataApi applicationStateMetadataClient;
     private final ScenarioService scenarioService;
+    private final AppEvolutionClient appEvolutionClient;
+    private final ImageMetadataClient imageMetadataClient;
+    private final SimulationDbEntryRepository simulationDbEntryRepository;
 
-    public SimulationServiceImpl(DeploymentManagerClientFactory deploymentManagerClientFactory,
-                                 RedissonClient redissonClient,
-                                 TestApplicationClientFactory testApplicationClientFactory,
-                                 ApplicationStateMetadataApi applicationStateMetadataClient,
-                                 RequestInfoService requestInfoService,
-                                 ApplicationClientFactory applicationClientFactory,
-                                 ScenarioService scenarioService) {
-        this.deploymentManagerClientFactory = deploymentManagerClientFactory;
-        this.redissonClient = redissonClient;
-        this.testApplicationClientFactory = testApplicationClientFactory;
-        this.applicationStateMetadataClient = applicationStateMetadataClient;
-        this.requestInfoService = requestInfoService;
+    private final ConcurrentHashMap<String, String> imageMetadataMap;
 
-        this.applicationClientFactory = applicationClientFactory;
+
+    public SimulationServiceImpl(ScenarioService scenarioService,
+                                 AppEvolutionClient appEvolutionClient,
+                                 ImageMetadataClient imageMetadataClient,
+                                 SimulationDbEntryRepository simulationDbEntryRepository) {
+
         this.scenarioService = scenarioService;
+        this.appEvolutionClient = appEvolutionClient;
+        this.imageMetadataClient = imageMetadataClient;
+        this.simulationDbEntryRepository = simulationDbEntryRepository;
+        imageMetadataMap = new ConcurrentHashMap<String, String>();
     }
 
 
     @Override
-    public void processOperation(String instanceId, SimulationState state) {
+    public void processOperation(String instanceId, AppEvent appEvent, AppEventInfo eventInfo) {
+        ScenarioExecutionResult executionResult = scenarioService.getExecutionResult();
 
+        if (executionResult == null) {
+            LOG.error("No running scenario! Can't log event!");
+            return;
+        }
+
+        SimulationDbEntry simulationDbEntry = new SimulationDbEntry();
+        simulationDbEntry.setAppEventInfo(eventInfo);
+        simulationDbEntry.setSimulationRunId(executionResult.getExecutionId());
+
+        String imageMetadataId = getImageMetadataId(eventInfo);
+        AppExecutionLogging appExecutionLogging = executionResult.addOrGetAppExecutionLogging(imageMetadataId);
+
+        appExecutionLogging.addEvent(appEvent);
     }
 
-    @Override
-    public void heartbeat(String instanceId) {
+    private String getImageMetadataId(AppEventInfo eventInfo) {
 
+        String result = imageMetadataMap.getOrDefault(eventInfo.getImageMetadataId(), null);
+
+        if (StringUtils.isEmpty(result)) {
+            DockerImageMetadata baseImageMetadata = imageMetadataClient.getBaseImageMetadata(eventInfo.getImageMetadataId());
+            if (baseImageMetadata != null) {
+                imageMetadataMap.put(eventInfo.getImageMetadataId(), baseImageMetadata.getId());
+                return baseImageMetadata.getId();
+            } else {
+                return eventInfo.getImageMetadataId();
+            }
+        }
+
+        return result;
     }
 }

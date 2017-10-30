@@ -32,6 +32,10 @@ public class ScenarioServiceImpl implements ScenarioService {
 
     private ScenarioExecutionResult executionResult;
 
+    public ScenarioExecutionResult getExecutionResult() {
+        return executionResult;
+    }
+
     public ScenarioServiceImpl(Set<Scenario> scenarioList, TaskListAsyncInvoker taskListAsyncInvoker) {
         this.taskListAsyncInvoker = taskListAsyncInvoker;
         scenarios = new ConcurrentHashMap<>();

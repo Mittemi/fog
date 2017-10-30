@@ -11,6 +11,8 @@ import java.util.List;
  */
 public interface ScenarioService {
 
+    ScenarioExecutionResult getExecutionResult();
+
     List<String> getScenarioNames();
 
     ScenarioExecutionInfo run(BasicScenarioInfo basicScenarioInfo, String name);

@@ -4,6 +4,7 @@ import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.simulation.scenario.dto.BasicScenarioInfo;
 import at.sintrum.fog.simulation.scenario.dto.ScenarioExecutionInfo;
 import at.sintrum.fog.simulation.service.ScenarioService;
+import at.sintrum.fog.simulation.simulation.ScenarioExecutionResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -44,6 +45,12 @@ public class ScenarioController {
     @RequestMapping(value = "state", method = RequestMethod.GET)
     public ScenarioExecutionInfo getState() {
         return scenarioService.getExecutionState();
+    }
+
+
+    @RequestMapping(value = "result", method = RequestMethod.GET)
+    public ScenarioExecutionResult getResult() {
+        return scenarioService.getResult();
     }
 
     @RequestMapping(value = "cancel", method = RequestMethod.DELETE)

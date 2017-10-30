@@ -57,20 +57,11 @@ public class UpdateMetadataServiceImpl implements UpdateMetadataService {
     }
 
     private String getBaseImageId(AppIdentification currentVersion) {
-
-        DockerImageMetadata currentImageMetadata = imageMetadataApi.getById(currentVersion.getImageMetadataId());
-
-        if (currentImageMetadata == null) {
-            LOG.error("Metadata not found for the currentVersion: " + currentVersion.getImageMetadataId());
-            return currentVersion.getImageMetadataId();
+        DockerImageMetadata baseImageMetadata = imageMetadataApi.getBaseImageMetadata(currentVersion.getImageMetadataId());
+        if (baseImageMetadata != null) {
+            return baseImageMetadata.getId();
         }
-
-        if (StringUtils.isEmpty(currentImageMetadata.getBaseImageId())) {
-            return currentVersion.getImageMetadataId();
-        } else {
-            // image is a checkpoint
-            return currentImageMetadata.getBaseImageId();
-        }
+        return null;
     }
 
     @Override

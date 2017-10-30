@@ -5,11 +5,14 @@ import org.joda.time.DateTime;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by Michael Mittermayr on 09.09.2017.
  */
 public class ScenarioExecutionResult {
+
+    private String executionId;
 
     private DateTime start;
 
@@ -30,6 +33,7 @@ public class ScenarioExecutionResult {
     }
 
     public ScenarioExecutionResult() {
+        appResults = new LinkedList<>();
     }
 
     public ScenarioExecutionResult(String scenarioName, BasicScenarioInfo scenarioInfo, DateTime start) {
@@ -37,6 +41,7 @@ public class ScenarioExecutionResult {
         this.scenarioName = scenarioName;
         this.scenarioInfo = scenarioInfo;
         appResults = new LinkedList<>();
+        executionId = UUID.randomUUID().toString();
     }
 
     public DateTime getStart() {
@@ -69,5 +74,24 @@ public class ScenarioExecutionResult {
 
     public void setScenarioInfo(BasicScenarioInfo scenarioInfo) {
         this.scenarioInfo = scenarioInfo;
+    }
+
+    public String getExecutionId() {
+        return executionId;
+    }
+
+    public void setExecutionId(String executionId) {
+        this.executionId = executionId;
+    }
+
+    public synchronized AppExecutionLogging addOrGetAppExecutionLogging(String imageMetadataId) {
+
+        AppExecutionLogging appExecutionLogging = getAppResults().stream().filter(x -> x.getImageMetadataId().equals(imageMetadataId)).findFirst().orElse(null);
+        if (appExecutionLogging == null) {
+            appExecutionLogging = new AppExecutionLogging(imageMetadataId);
+            getAppResults().add(appExecutionLogging);
+            return appExecutionLogging;
+        }
+        return appExecutionLogging;
     }
 }

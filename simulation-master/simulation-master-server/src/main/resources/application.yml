@@ -1,6 +1,10 @@
 server:
   port: ${SERVER_PORT:8082}
 
+spring.data.mongodb:
+  host: ${MONGO_DB_HOST:192.168.2.100}
+  database: ${MONGO_DB_NAME:simulation}
+
 eureka:
   instance:
     leaseRenewalIntervalInSeconds: 10

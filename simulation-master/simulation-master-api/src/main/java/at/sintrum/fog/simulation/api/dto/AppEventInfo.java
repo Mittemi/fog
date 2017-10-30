@@ -7,6 +7,7 @@ import at.sintrum.fog.core.dto.FogIdentification;
  */
 public class AppEventInfo {
 
+    private String imageMetadataId;
     private FogIdentification originalLocation;
 
     private FogIdentification newLocation;
@@ -21,7 +22,8 @@ public class AppEventInfo {
     public AppEventInfo() {
     }
 
-    public AppEventInfo(FogIdentification originalLocation, FogIdentification newLocation, String originalInstanceId, String newInstanceId, boolean successful) {
+    public AppEventInfo(String imageMetadataId, FogIdentification originalLocation, FogIdentification newLocation, String originalInstanceId, String newInstanceId, boolean successful) {
+        this.imageMetadataId = imageMetadataId;
         this.originalLocation = originalLocation;
         this.newLocation = newLocation;
         this.originalInstanceId = originalInstanceId;
@@ -67,5 +69,13 @@ public class AppEventInfo {
 
     public void setSuccessful(boolean successful) {
         this.successful = successful;
+    }
+
+    public String getImageMetadataId() {
+        return imageMetadataId;
+    }
+
+    public void setImageMetadataId(String imageMetadataId) {
+        this.imageMetadataId = imageMetadataId;
     }
 }

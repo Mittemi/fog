@@ -56,4 +56,20 @@ public class ImageMetadataService extends RedissonMetadataServiceBase<DockerImag
         store(dockerImageMetadata);
         return dockerImageMetadata;
     }
+
+    public DockerImageMetadata getBaseImageMetadata(String id) {
+        DockerImageMetadata currentImageMetadata = get(null, id);
+
+        if (currentImageMetadata == null) {
+            LOG.error("Metadata not found for the currentVersion: " + id);
+            return null;
+        }
+
+        if (StringUtils.isEmpty(currentImageMetadata.getBaseImageId())) {
+            return currentImageMetadata;
+        } else {
+            // image is a checkpoint
+            return get(null, currentImageMetadata.getBaseImageId());
+        }
+    }
 }

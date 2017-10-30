@@ -30,4 +30,8 @@ public class AppExecutionLogging {
     public void setImageMetadataId(String imageMetadataId) {
         this.imageMetadataId = imageMetadataId;
     }
+
+    public synchronized void addEvent(AppEvent event) {
+        events.add(event);
+    }
 }

@@ -23,6 +23,9 @@ public interface ImageMetadataApi {
     @RequestMapping(value = "getById/{id}", method = RequestMethod.GET)
     DockerImageMetadata getById(@PathVariable("id") String id);
 
+    @RequestMapping(value = "getBaseImageMetadata/{id}", method = RequestMethod.GET)
+    DockerImageMetadata getBaseImageMetadata(@PathVariable("id") String id);
+
     @RequestMapping(value = "{id}", method = RequestMethod.DELETE)
     void delete(@PathVariable("id") String id);
 

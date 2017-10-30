@@ -8,6 +8,7 @@ import at.sintrum.fog.deploymentmanager.client.DeploymentManagerClientConfig;
 import at.sintrum.fog.metadatamanager.client.MetadataManagerClientConfig;
 import at.sintrum.fog.redis.RedissonConfig;
 import at.sintrum.fog.servercore.ServerCoreConfig;
+import at.sintrum.fog.simulation.simulation.mongo.MongoDbConfig;
 import at.sintrum.fog.swagger.SwaggerConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -29,7 +30,9 @@ import org.springframework.context.annotation.Import;
         MetadataManagerClientConfig.class,
         ApplicationHousingClientConfig.class,
         ApplicationClientConfig.class,
-        TestApplicationClientConfig.class
+        TestApplicationClientConfig.class,
+
+        MongoDbConfig.class
 })
 public class SimulationServerApplication {
 

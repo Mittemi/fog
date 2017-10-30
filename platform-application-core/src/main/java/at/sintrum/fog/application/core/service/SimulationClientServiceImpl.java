@@ -24,14 +24,17 @@ public class SimulationClientServiceImpl implements SimulationClientService {
     private final CloudLocatorService cloudLocatorService;
 
     private static final Logger LOG = LoggerFactory.getLogger(SimulationClientServiceImpl.class);
+    private final String imageMetadataId;
 
     public SimulationClientServiceImpl(SimulationApi simulationApiClient, EnvironmentInfoService environmentInfoService, CloudLocatorService cloudLocatorService) {
         LOG.debug("Simulation mode enabled");
         this.simulationApiClient = simulationApiClient;
         instanceId = environmentInfoService.getInstanceId();
+        imageMetadataId = environmentInfoService.getMetadataId();
         currentFog = FogIdentification.parseFogBaseUrl(environmentInfoService.getFogBaseUrl());
         appIdentification = new FogIdentification(environmentInfoService.getEurekaClientIp(), environmentInfoService.getPort());
         this.cloudLocatorService = cloudLocatorService;
+
     }
 
 
@@ -46,28 +49,28 @@ public class SimulationClientServiceImpl implements SimulationClientService {
     @Async
     public void notifyStarting() {
         LOG.debug("Notify starting");
-        simulationApiClient.starting(instanceId, new AppEventInfo(currentFog, currentFog, instanceId, instanceId, true));
+        simulationApiClient.starting(instanceId, new AppEventInfo(imageMetadataId, currentFog, currentFog, instanceId, instanceId, true));
     }
 
     @Override
     @Async
     public void notifyMoving(FogIdentification target) {
         LOG.debug("Notify moving");
-        simulationApiClient.moving(instanceId, new AppEventInfo(currentFog, target, instanceId, instanceId, true));
+        simulationApiClient.moving(instanceId, new AppEventInfo(imageMetadataId, currentFog, target, instanceId, instanceId, true));
     }
 
     @Override
     @Async
     public void notifyMoved() {
         LOG.debug("Notify moved");
-        simulationApiClient.moved(instanceId, new AppEventInfo(currentFog, currentFog, instanceId, instanceId, true));
+        simulationApiClient.moved(instanceId, new AppEventInfo(imageMetadataId, currentFog, currentFog, instanceId, instanceId, true));
     }
 
     @Override
     @Async
     public void notifyStandby() {
         LOG.debug("Notify standby");
-        simulationApiClient.standby(instanceId, new AppEventInfo(currentFog, currentFog, instanceId, instanceId, true));
+        simulationApiClient.standby(instanceId, new AppEventInfo(imageMetadataId, currentFog, currentFog, instanceId, instanceId, true));
     }
 
     @Override
@@ -75,6 +78,6 @@ public class SimulationClientServiceImpl implements SimulationClientService {
     public void notifyUpgrade() {
         LOG.debug("Notify upgrade");
         FogIdentification cloud = FogIdentification.parseFogBaseUrl(cloudLocatorService.getCloudBaseUrl());
-        simulationApiClient.upgrading(instanceId, new AppEventInfo(currentFog, cloud, instanceId, null, true));
+        simulationApiClient.upgrading(instanceId, new AppEventInfo(imageMetadataId, currentFog, cloud, instanceId, null, true));
     }
 }
