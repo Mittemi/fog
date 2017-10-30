@@ -4,6 +4,7 @@ import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.metadatamanager.api.dto.AppRequest;
 import at.sintrum.fog.metadatamanager.api.dto.AppRequestDto;
 import at.sintrum.fog.metadatamanager.api.dto.AppRequestResult;
+import at.sintrum.fog.metadatamanager.api.dto.RequestState;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,6 +32,9 @@ public interface AppRequestsApi {
 
     @RequestMapping(value = "finishMove/{instanceId}", method = RequestMethod.POST)
     AppRequest finishMove(@PathVariable("instanceId") String instanceId, @RequestBody FogIdentification currentFog);
+
+    @RequestMapping(value = "info/{internalId}", method = RequestMethod.GET)
+    RequestState getRequestState(@PathVariable("internalId") String internalId);
 
     @RequestMapping(value = "reset", method = RequestMethod.DELETE)
     void reset();

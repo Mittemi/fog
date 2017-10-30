@@ -2,10 +2,7 @@ package at.sintrum.fog.metadatamanager;
 
 import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.core.service.EnvironmentInfoService;
-import at.sintrum.fog.metadatamanager.api.dto.AppRequest;
-import at.sintrum.fog.metadatamanager.api.dto.AppRequestResult;
-import at.sintrum.fog.metadatamanager.api.dto.DockerContainerMetadata;
-import at.sintrum.fog.metadatamanager.api.dto.DockerImageMetadata;
+import at.sintrum.fog.metadatamanager.api.dto.*;
 import at.sintrum.fog.metadatamanager.config.MetadataManagerConfigProperties;
 import at.sintrum.fog.metadatamanager.service.ContainerMetadataService;
 import at.sintrum.fog.metadatamanager.service.ImageMetadataService;
@@ -86,9 +83,22 @@ public class TravelingTest {
 
 
         AppRequestResult firstRequestResult = appRequestService.request(1, null, requestA);
+
+        RequestState firstRequestState = appRequestService.requestInfo(firstRequestResult.getInternalId());
+        assertThat(firstRequestState).isNotNull();
+        assertThat(firstRequestState.isFinished()).isFalse();
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+        }
+
         AppRequestResult lastRequestResult = appRequestService.request(1, null, requestB);
         assertThat(firstRequestResult.getInternalId()).isNotEqualToIgnoringCase(lastRequestResult.getInternalId());
 
+        RequestState lastRequestState = appRequestService.requestInfo(lastRequestResult.getInternalId());
+        assertThat(lastRequestState).isNotNull();
+        assertThat(lastRequestState.isFinished()).isFalse();
 
         assertThat(appRequestService.getNextRequest(instanceId)).isNotNull();
         assertThat(appRequestService.getNextRequest(instanceId)).isNotNull();
@@ -100,20 +110,27 @@ public class TravelingTest {
         AppRequest request = appRequestService.finishMove(instanceId, firstRequest.getTarget());
         assertThat(request).isNotNull();
         assertThat(request.getInstanceId()).isNotEmpty();
+        assertThat(appRequestService.requestInfo(firstRequestResult.getInternalId()).isFinished()).isTrue();
+        assertThat(appRequestService.requestInfo(lastRequestResult.getInternalId()).isFinished()).isFalse();
 
         assertThat(appRequestService.finishMove(instanceId, firstRequest.getTarget())).isNull();
+        assertThat(appRequestService.requestInfo(firstRequestResult.getInternalId()).isFinished()).isTrue();
+        assertThat(appRequestService.requestInfo(lastRequestResult.getInternalId()).isFinished()).isFalse();
 
         AppRequest lastRequest = appRequestService.getNextRequest(instanceId);
         assertThat(lastRequest).isNotNull();
 
         //ordering (fifo)
-        assertThat(firstRequest.getTarget()).isEqualTo(requestA.getTarget());
-        assertThat(lastRequest.getTarget()).isEqualTo(requestB.getTarget());
+        assertThat(firstRequest.getTarget().isSameFog(requestA.getTarget())).isTrue();
+        assertThat(lastRequest.getTarget().isSameFog(requestB.getTarget())).isTrue();
 
         appRequestService.finishMove(instanceId, lastRequest.getTarget());
 
         assertThat(appRequestService.getNextRequest(instanceId)).isNull();
 
         assertThat(appRequestService.finishMove(instanceId, lastRequest.getTarget())).isNull();
+
+        assertThat(appRequestService.requestInfo(firstRequestResult.getInternalId()).isFinished()).isTrue();
+        assertThat(appRequestService.requestInfo(lastRequestResult.getInternalId()).isFinished()).isTrue();
     }
 }

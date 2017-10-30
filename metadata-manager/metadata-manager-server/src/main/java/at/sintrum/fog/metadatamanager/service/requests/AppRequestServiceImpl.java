@@ -1,10 +1,7 @@
 package at.sintrum.fog.metadatamanager.service.requests;
 
 import at.sintrum.fog.core.dto.FogIdentification;
-import at.sintrum.fog.metadatamanager.api.dto.AppRequest;
-import at.sintrum.fog.metadatamanager.api.dto.AppRequestResult;
-import at.sintrum.fog.metadatamanager.api.dto.DockerContainerMetadata;
-import at.sintrum.fog.metadatamanager.api.dto.DockerImageMetadata;
+import at.sintrum.fog.metadatamanager.api.dto.*;
 import at.sintrum.fog.metadatamanager.config.MetadataManagerConfigProperties;
 import at.sintrum.fog.metadatamanager.service.ContainerMetadataService;
 import at.sintrum.fog.metadatamanager.service.ImageMetadataService;
@@ -52,8 +49,12 @@ public class AppRequestServiceImpl {
     public AppRequestResult request(int credits, String internalId, AppRequest appRequest) {
         if (StringUtils.isEmpty(internalId)) {
             LOG.debug("Add new request");
-            AppRequestInfo requestInfo = new AppRequestInfo(appRequest, credits);
+            AppRequestInfo requestInfo = null;
+            do {
+                requestInfo = new AppRequestInfo(appRequest, credits);
+            } while (getInstanceLookupMap().containsKey(requestInfo.getInternalId()));
             getTravelQueueByInstanceId(appRequest.getInstanceId()).put(requestInfo.getInternalId(), requestInfo);
+            getInstanceLookupMap().put(requestInfo.getInternalId(), appRequest.getInstanceId());
 
             return new AppRequestResult(requestInfo.getInternalId(), credits);
         } else {
@@ -66,6 +67,10 @@ public class AppRequestServiceImpl {
 
     private RSet<String> getMetadataList() {
         return redissonClient.getSet("App_Travel_Known_Apps");
+    }
+
+    private RMap<String, String> getInstanceLookupMap() {
+        return redissonClient.getMap("App_Travel_Instance_Lookup");
     }
 
     private RMap<String, AppRequestInfo> getTravelQueueByInstanceId(String instanceId) {
@@ -86,6 +91,7 @@ public class AppRequestServiceImpl {
             getTravelQueue(name).delete();
         }
         getMetadataList().delete();
+        getInstanceLookupMap().delete();
         getFinishedRequestsMap().delete();
     }
 
@@ -154,5 +160,23 @@ public class AppRequestServiceImpl {
         stream = stream.filter(appRequestInfo -> appRequestInfo.getTargetFog().equals(currentFog.toFogId()));
 
         return stream.collect(Collectors.toList());
+    }
+
+    public RequestState requestInfo(String internalId) {
+        String instanceId = getInstanceLookupMap().get(internalId);
+
+        if (StringUtils.isEmpty(instanceId)) {
+            return null;
+        }
+
+        AppRequestInfo requestInfo = getFinishedRequestsMap().get(internalId);
+        if (requestInfo == null) {
+            requestInfo = getTravelQueueByInstanceId(instanceId).get(internalId);
+        }
+
+        if (requestInfo == null) {
+            return null;
+        }
+        return new RequestState(requestInfo.getInternalId(), requestInfo.getCredits(), requestInfo.getCreationDate(), getFinishedRequestsMap().containsKey(internalId));
     }
 }

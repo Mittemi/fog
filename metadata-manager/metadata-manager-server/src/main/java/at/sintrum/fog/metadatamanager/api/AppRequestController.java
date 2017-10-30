@@ -4,6 +4,7 @@ import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.metadatamanager.api.dto.AppRequest;
 import at.sintrum.fog.metadatamanager.api.dto.AppRequestDto;
 import at.sintrum.fog.metadatamanager.api.dto.AppRequestResult;
+import at.sintrum.fog.metadatamanager.api.dto.RequestState;
 import at.sintrum.fog.metadatamanager.service.requests.AppRequestServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,6 +64,11 @@ public class AppRequestController implements AppRequestsApi {
     public AppRequest finishMove(@PathVariable("instanceId") String instanceId, @RequestBody FogIdentification currentFog) {
         LOG.debug("Finish move for app: " + instanceId + " to target " + currentFog.toFogId());
         return appRequestService.finishMove(instanceId, currentFog);
+    }
+
+    @Override
+    public RequestState getRequestState(@PathVariable("internalId") String internalId) {
+        return appRequestService.requestInfo(internalId);
     }
 
     @Override
