@@ -52,9 +52,10 @@ public class AppRequestServiceImpl {
             AppRequestInfo requestInfo = null;
             do {
                 requestInfo = new AppRequestInfo(appRequest, credits);
-            } while (getInstanceLookupMap().containsKey(requestInfo.getInternalId()));
-            getTravelQueueByInstanceId(appRequest.getInstanceId()).put(requestInfo.getInternalId(), requestInfo);
-            getInstanceLookupMap().put(requestInfo.getInternalId(), appRequest.getInstanceId());
+            } while (getInternalIdQueueNameLookup().containsKey(requestInfo.getInternalId()));
+            String queueName = getQueueName(appRequest.getInstanceId());
+            getTravelQueue(queueName).put(requestInfo.getInternalId(), requestInfo);
+            getInternalIdQueueNameLookup().put(requestInfo.getInternalId(), queueName);
 
             return new AppRequestResult(requestInfo.getInternalId(), credits);
         } else {
@@ -69,16 +70,20 @@ public class AppRequestServiceImpl {
         return redissonClient.getSet("App_Travel_Known_Apps");
     }
 
-    private RMap<String, String> getInstanceLookupMap() {
-        return redissonClient.getMap("App_Travel_Instance_Lookup");
+    private RMap<String, String> getInternalIdQueueNameLookup() {
+        return redissonClient.getMap("App_Travel_QueueName_Lookup");
     }
 
     private RMap<String, AppRequestInfo> getTravelQueueByInstanceId(String instanceId) {
 
+        String name = getQueueName(instanceId);
+        return getTravelQueue(name);
+    }
+
+    private String getQueueName(String instanceId) {
         DockerContainerMetadata containerMetadata = containerMetadataService.getLatestByInstance(instanceId);
         DockerImageMetadata imageMetadata = imageMetadataService.get(null, containerMetadata.getImageMetadataId());
-        String name = "App_Travel_" + imageMetadata.getApplicationName();
-        return getTravelQueue(name);
+        return "App_Travel_" + imageMetadata.getApplicationName();
     }
 
     private RMap<String, AppRequestInfo> getTravelQueue(String name) {
@@ -91,7 +96,7 @@ public class AppRequestServiceImpl {
             getTravelQueue(name).delete();
         }
         getMetadataList().delete();
-        getInstanceLookupMap().delete();
+        getInternalIdQueueNameLookup().delete();
         getFinishedRequestsMap().delete();
     }
 
@@ -163,15 +168,15 @@ public class AppRequestServiceImpl {
     }
 
     public RequestState requestInfo(String internalId) {
-        String instanceId = getInstanceLookupMap().get(internalId);
+        String queueName = getInternalIdQueueNameLookup().get(internalId);
 
-        if (StringUtils.isEmpty(instanceId)) {
+        if (StringUtils.isEmpty(queueName)) {
             return null;
         }
 
         AppRequestInfo requestInfo = getFinishedRequestsMap().get(internalId);
         if (requestInfo == null) {
-            requestInfo = getTravelQueueByInstanceId(instanceId).get(internalId);
+            requestInfo = getTravelQueue(queueName).get(internalId);
         }
 
         if (requestInfo == null) {

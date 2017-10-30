@@ -23,6 +23,8 @@ public class TravelingCoordinationServiceImpl implements TravelingCoordinationSe
 
     private final AppRequestClient appRequestClient;
 
+    private int estimatedWorkingTime;
+
     public TravelingCoordinationServiceImpl(EnvironmentInfoService environmentInfoService, AppRequestClient appRequestClient) {
         this.environmentInfoService = environmentInfoService;
         this.appRequestClient = appRequestClient;
@@ -56,7 +58,15 @@ public class TravelingCoordinationServiceImpl implements TravelingCoordinationSe
     public boolean finishMove(FogIdentification currentFog) {
 
         AppRequest appRequest = appRequestClient.finishMove(environmentInfoService.getInstanceId(), currentFog);
-
+        if (appRequest != null) {
+            estimatedWorkingTime = appRequest.getEstimatedDuration();
+        } else {
+            estimatedWorkingTime = -1;
+        }
         return appRequest != null;
+    }
+
+    public int getEstimatedWorkingTime() {
+        return estimatedWorkingTime;
     }
 }

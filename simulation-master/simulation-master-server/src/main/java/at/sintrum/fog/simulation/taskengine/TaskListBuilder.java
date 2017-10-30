@@ -185,6 +185,14 @@ public class TaskListBuilder {
                 return addTask(new RequestAppTask(offset, trackExecutionState, target, appRequestClient, estimatedDuration, appRequestState, credits));
             }
 
+            public AppTaskBuilder updateAppRequestState(int offset, AppRequestState appRequestState) {
+                return addTask(new UpdateRequestStateTask(offset, trackExecutionState, appRequestState, appRequestClient, false));
+            }
+
+            public AppTaskBuilder waitForAppToFinishRequest(int offset, AppRequestState appRequestState) {
+                return addTask(new UpdateRequestStateTask(offset, trackExecutionState, appRequestState, appRequestClient, true));
+            }
+
             public AppTaskBuilder checkLocation(int offset, FogIdentification expectedLocation) {
                 return addTask(new CheckFogLocationTask(offset, trackExecutionState, expectedLocation, applicationStateMetadataClient));
             }
