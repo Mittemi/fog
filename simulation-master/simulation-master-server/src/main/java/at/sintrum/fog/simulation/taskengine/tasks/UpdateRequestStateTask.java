@@ -22,8 +22,7 @@ public class UpdateRequestStateTask extends FogTaskBase {
 
     @Override
     protected boolean internalExecute() {
-        RequestState requestState = appRequestClient.getRequestState(appRequestState.getRequestId());
-        appRequestState.setRequestState(requestState);
+        RequestState requestState = updateRequestState(appRequestClient, appRequestState);
         return !waitForFinished || requestState.isFinished();
     }
 }

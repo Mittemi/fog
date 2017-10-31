@@ -1,6 +1,13 @@
 package at.sintrum.fog.simulation.taskengine.tasks;
 
 import at.sintrum.fog.applicationhousing.client.api.AppEvolutionClient;
+import at.sintrum.fog.core.dto.FogIdentification;
+import at.sintrum.fog.metadatamanager.api.dto.AppRequest;
+import at.sintrum.fog.metadatamanager.api.dto.AppRequestDto;
+import at.sintrum.fog.metadatamanager.api.dto.AppRequestResult;
+import at.sintrum.fog.metadatamanager.api.dto.RequestState;
+import at.sintrum.fog.metadatamanager.client.api.AppRequestClient;
+import at.sintrum.fog.simulation.taskengine.AppRequestState;
 import at.sintrum.fog.simulation.taskengine.TrackExecutionState;
 import org.joda.time.DateTime;
 import org.joda.time.Seconds;
@@ -56,12 +63,28 @@ public abstract class FogTaskBase implements FogTask {
         return trackExecutionState;
     }
 
-    static boolean updateInstanceId(AppEvolutionClient appEvolutionClient, TrackExecutionState trackExecutionState) {
+    public static boolean updateInstanceId(AppEvolutionClient appEvolutionClient, TrackExecutionState trackExecutionState) {
         String latestInstanceId = appEvolutionClient.getLatestInstanceId(trackExecutionState.getInstanceId());
         if (!StringUtils.isEmpty(latestInstanceId) && !trackExecutionState.getInstanceId().equals(latestInstanceId)) {
             trackExecutionState.setInstanceId(latestInstanceId);
             return true;
         }
         return false;
+    }
+
+    public static boolean requestApp(FogIdentification targetLocation, int estimatedDuration, int credits, AppRequestClient appRequestClient, AppRequestState appRequestState, TrackExecutionState trackExecutionState) {
+        AppRequest appRequest = new AppRequest(targetLocation, trackExecutionState.getInstanceId(), estimatedDuration);
+        AppRequestResult request = appRequestClient.request(new AppRequestDto(appRequest, credits, appRequestState.getRequestId()));
+        if (request != null) {
+            appRequestState.setRequestId(request.getInternalId());
+            return true;
+        }
+        return false;
+    }
+
+    public static RequestState updateRequestState(AppRequestClient appRequestClient, AppRequestState appRequestState) {
+        RequestState requestState = appRequestClient.getRequestState(appRequestState.getRequestId());
+        appRequestState.setRequestState(requestState);
+        return requestState;
     }
 }

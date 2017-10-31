@@ -15,6 +15,7 @@ import at.sintrum.fog.metadatamanager.client.api.ContainerMetadataClient;
 import at.sintrum.fog.metadatamanager.client.api.ImageMetadataClient;
 import at.sintrum.fog.metadatamanager.client.factory.MetadataManagerClientFactory;
 import at.sintrum.fog.simulation.scenario.Scenario;
+import at.sintrum.fog.simulation.scenario.evaluation.FogRequestsManager;
 import at.sintrum.fog.simulation.service.FogCellStateService;
 import at.sintrum.fog.simulation.service.FogResourceService;
 import at.sintrum.fog.simulation.taskengine.tasks.*;
@@ -141,6 +142,9 @@ public class TaskListBuilder {
 
             private final Queue<FogTask> tasks;
 
+            public TrackExecutionState getTrackExecutionState() {
+                return trackExecutionState;
+            }
 
             private AppTaskBuilder(Queue<FogTask> tasks, TrackExecutionState state) {
                 this.tasks = tasks;
@@ -284,6 +288,15 @@ public class TaskListBuilder {
 
             public AppTaskBuilder codedTask(int offset, Supplier<Boolean> function) {
                 return addTask(new CodedTask(offset, trackExecutionState, function));
+            }
+
+            public FogRequestsManager createFogRequestManager(List<TrackExecutionState> applicationTracks, Map<String, Integer> fogCredits, int secondsBetweenRequests, List<FogRequestsManager.RequestInfo> requestInfos) {
+                FogRequestsManager task = new FogRequestsManager(applicationTracks, fogCredits, secondsBetweenRequests, appRequestClient, requestInfos, appEvolutionApi);
+                return task;
+            }
+
+            public AppTaskBuilder runFogRequestManager(FogRequestsManager fogRequestsManager) {
+                return addTask(fogRequestsManager);
             }
         }
 

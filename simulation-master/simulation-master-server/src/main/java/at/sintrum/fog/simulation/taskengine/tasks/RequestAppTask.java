@@ -1,9 +1,6 @@
 package at.sintrum.fog.simulation.taskengine.tasks;
 
 import at.sintrum.fog.core.dto.FogIdentification;
-import at.sintrum.fog.metadatamanager.api.dto.AppRequest;
-import at.sintrum.fog.metadatamanager.api.dto.AppRequestDto;
-import at.sintrum.fog.metadatamanager.api.dto.AppRequestResult;
 import at.sintrum.fog.metadatamanager.client.api.AppRequestClient;
 import at.sintrum.fog.simulation.taskengine.AppRequestState;
 import at.sintrum.fog.simulation.taskengine.TrackExecutionState;
@@ -30,13 +27,6 @@ public class RequestAppTask extends FogTaskBase {
 
     @Override
     protected boolean internalExecute() {
-
-        AppRequest appRequest = new AppRequest(targetLocation, getTrackExecutionState().getInstanceId(), estimatedDuration);
-        AppRequestResult request = appRequestClient.request(new AppRequestDto(appRequest, credits, appRequestState.getRequestId()));
-        if (request != null) {
-            appRequestState.setRequestId(request.getInternalId());
-            return true;
-        }
-        return false;
+        return requestApp(targetLocation, estimatedDuration, credits, appRequestClient, appRequestState, getTrackExecutionState());
     }
 }

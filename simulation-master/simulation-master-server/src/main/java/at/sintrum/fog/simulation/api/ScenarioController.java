@@ -27,6 +27,12 @@ public class ScenarioController {
         if (basicScenarioInfo == null || basicScenarioInfo.getCloud() == null) {
             basicScenarioInfo = new BasicScenarioInfo();
             basicScenarioInfo.setIterations(1);
+            basicScenarioInfo.setSecondsBetweenRequests(180);
+            basicScenarioInfo.setCreditsA(100);
+            basicScenarioInfo.setCreditsB(150);
+            basicScenarioInfo.setCreditsC(200);
+            basicScenarioInfo.setCreditsD(300);
+            basicScenarioInfo.setCreditsE(300);
             basicScenarioInfo.setCloud(FogIdentification.parseFogBaseUrl("192.168.1.21:28080"));
             basicScenarioInfo.setFogA(FogIdentification.parseFogBaseUrl("192.168.1.101:28080"));
             basicScenarioInfo.setFogB(FogIdentification.parseFogBaseUrl("192.168.1.102:28080"));

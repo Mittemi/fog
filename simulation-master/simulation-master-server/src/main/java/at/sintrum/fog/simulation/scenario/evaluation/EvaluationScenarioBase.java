@@ -9,15 +9,14 @@ import at.sintrum.fog.simulation.scenario.Scenario;
 import at.sintrum.fog.simulation.scenario.dto.BasicScenarioInfo;
 import at.sintrum.fog.simulation.service.FogResourceService;
 import at.sintrum.fog.simulation.taskengine.TaskListBuilder;
+import at.sintrum.fog.simulation.taskengine.TrackExecutionState;
 import at.sintrum.fog.simulation.taskengine.tasks.WaitTillFinishedTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by Michael Mittermayr on 31.10.2017.
@@ -78,6 +77,16 @@ public abstract class EvaluationScenarioBase implements Scenario {
         fogResourceService.setResourceRestriction(basicScenarioInfo.getFogE(), ResourceInfo.fixedSized(5));
     }
 
+    protected Map<String, Integer> getFogCredits(BasicScenarioInfo basicScenarioInfo) {
+        Map<String, Integer> fogCredits = new ConcurrentHashMap<>();
+        fogCredits.putIfAbsent(basicScenarioInfo.getFogA().toFogId(), basicScenarioInfo.getCreditsA());
+        fogCredits.putIfAbsent(basicScenarioInfo.getFogB().toFogId(), basicScenarioInfo.getCreditsB());
+        fogCredits.putIfAbsent(basicScenarioInfo.getFogC().toFogId(), basicScenarioInfo.getCreditsC());
+        fogCredits.putIfAbsent(basicScenarioInfo.getFogD().toFogId(), basicScenarioInfo.getCreditsD());
+        fogCredits.putIfAbsent(basicScenarioInfo.getFogE().toFogId(), basicScenarioInfo.getCreditsE());
+        return fogCredits;
+    }
+
     private void setupImages(String registry) {
 
         applications = new LinkedList<>();
@@ -118,15 +127,14 @@ public abstract class EvaluationScenarioBase implements Scenario {
         TaskListBuilder.TaskListBuilderState.AppTaskBuilder simulationControlTrack = taskListBuilderState.createTrack();
         simulationControlTrack
                 .codedTask(120, () -> simulationState.getRunningApplications() == 10)
-                .logMessage(0, "All apps running!")
-                .codedTask(0, () -> {
-                    simulationState.setAllRequestsCompleted(true);
-                    return true;
-                });
+                .logMessage(0, "All apps running!");
+
+        List<TrackExecutionState> applicationStates = new ArrayList<>();
 
         for (int i = 0; i < applications.size(); i++) {
             LOG.debug("Setup track: " + i);
             TaskListBuilder.TaskListBuilderState.AppTaskBuilder track = taskListBuilderState.createTrack();
+            applicationStates.add(track.getTrackExecutionState());
             taskBuilders.add(track);
             track.logMessage(0, "Track for: " + applications.get(i).getApplicationName());
 
@@ -146,8 +154,15 @@ public abstract class EvaluationScenarioBase implements Scenario {
                     .logMessage(0, "Track finished");
         }
 
-        setupSimulation(simulationControlTrack, taskListBuilderState, basicScenarioInfo, applications, useAuction, taskBuilders);
+        setupSimulation(simulationControlTrack, taskListBuilderState, basicScenarioInfo, applicationStates, useAuction, taskBuilders);
+
+        simulationControlTrack
+                .logMessage(0, "Simulation specific tasks finished, init cleanup. Apps can be still in the cloud!")
+                .codedTask(0, () -> {
+                    simulationState.setAllRequestsCompleted(true);
+                    return true;
+                });
     }
 
-    protected abstract void setupSimulation(TaskListBuilder.TaskListBuilderState.AppTaskBuilder simulationControlTrack, TaskListBuilder.TaskListBuilderState taskListBuilderState, BasicScenarioInfo basicScenarioInfo, LinkedList<DockerImageMetadata> applications, boolean useAuction, ArrayList<TaskListBuilder.TaskListBuilderState.AppTaskBuilder> taskBuilders);
+    protected abstract void setupSimulation(TaskListBuilder.TaskListBuilderState.AppTaskBuilder simulationControlTrack, TaskListBuilder.TaskListBuilderState taskListBuilderState, BasicScenarioInfo basicScenarioInfo, List<TrackExecutionState> applications, boolean useAuction, ArrayList<TaskListBuilder.TaskListBuilderState.AppTaskBuilder> taskBuilders);
 }

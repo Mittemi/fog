@@ -11,15 +11,27 @@ public class BasicScenarioInfo {
 
     private FogIdentification fogA;
 
+    private int creditsA;
+
     private FogIdentification fogB;
+
+    private int creditsB;
 
     private FogIdentification fogC;
 
+    private int creditsC;
+
     private FogIdentification fogD;
+
+    private int creditsD;
 
     private FogIdentification fogE;
 
+    private int creditsE;
+
     private int iterations;
+
+    private int secondsBetweenRequests;
 
     public FogIdentification getCloud() {
         return cloud;
@@ -75,5 +87,53 @@ public class BasicScenarioInfo {
 
     public void setFogD(FogIdentification fogD) {
         this.fogD = fogD;
+    }
+
+    public int getCreditsA() {
+        return creditsA;
+    }
+
+    public void setCreditsA(int creditsA) {
+        this.creditsA = creditsA;
+    }
+
+    public int getCreditsB() {
+        return creditsB;
+    }
+
+    public void setCreditsB(int creditsB) {
+        this.creditsB = creditsB;
+    }
+
+    public int getCreditsC() {
+        return creditsC;
+    }
+
+    public void setCreditsC(int creditsC) {
+        this.creditsC = creditsC;
+    }
+
+    public int getCreditsD() {
+        return creditsD;
+    }
+
+    public void setCreditsD(int creditsD) {
+        this.creditsD = creditsD;
+    }
+
+    public int getCreditsE() {
+        return creditsE;
+    }
+
+    public void setCreditsE(int creditsE) {
+        this.creditsE = creditsE;
+    }
+
+    public int getSecondsBetweenRequests() {
+        return secondsBetweenRequests;
+    }
+
+    public void setSecondsBetweenRequests(int secondsBetweenRequests) {
+        this.secondsBetweenRequests = secondsBetweenRequests;
     }
 }
