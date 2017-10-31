@@ -8,5 +8,5 @@ import org.springframework.stereotype.Service;
  * Created by Michael Mittermayr on 30.10.2017.
  */
 @Service
-public interface SimulationDbEntryRepository extends CrudRepository<SimulationDbEntry, Long> {
+public interface SimulationDbEntryRepository extends CrudRepository<SimulationDbEntry, String> {
 }

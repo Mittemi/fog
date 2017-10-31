@@ -52,15 +52,18 @@ public class SimulationServiceImpl implements SimulationService {
             LOG.error("No running scenario! Can't log event!");
             return;
         }
+        String imageMetadataId = getImageMetadataId(eventInfo);
+
+        AppExecutionLogging appExecutionLogging = executionResult.addOrGetAppExecutionLogging(imageMetadataId);
+        appExecutionLogging.addEvent(appEvent);
 
         SimulationDbEntry simulationDbEntry = new SimulationDbEntry();
         simulationDbEntry.setAppEventInfo(eventInfo);
+        simulationDbEntry.setAppEvent(appEvent);
+        simulationDbEntry.setMetadataId(imageMetadataId);
         simulationDbEntry.setSimulationRunId(executionResult.getExecutionId());
 
-        String imageMetadataId = getImageMetadataId(eventInfo);
-        AppExecutionLogging appExecutionLogging = executionResult.addOrGetAppExecutionLogging(imageMetadataId);
-
-        appExecutionLogging.addEvent(appEvent);
+        simulationDbEntryRepository.save(simulationDbEntry);
     }
 
     private String getImageMetadataId(AppEventInfo eventInfo) {

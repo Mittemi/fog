@@ -1,6 +1,7 @@
 package at.sintrum.fog.simulation.simulation.mongo;
 
 import at.sintrum.fog.simulation.api.dto.AppEventInfo;
+import at.sintrum.fog.simulation.simulation.AppEvent;
 import org.springframework.data.annotation.Id;
 
 /**
@@ -9,11 +10,13 @@ import org.springframework.data.annotation.Id;
 public class SimulationDbEntry {
 
     @Id
-    private long id;
+    private String id;
 
     private String simulationRunId;
 
     private AppEventInfo appEventInfo;
+    private AppEvent appEvent;
+    private String metadataId;
 
     public String getSimulationRunId() {
         return simulationRunId;
@@ -31,11 +34,27 @@ public class SimulationDbEntry {
         this.appEventInfo = appEventInfo;
     }
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
+    }
+
+    public void setAppEvent(AppEvent appEvent) {
+        this.appEvent = appEvent;
+    }
+
+    public AppEvent getAppEvent() {
+        return appEvent;
+    }
+
+    public void setMetadataId(String metadataId) {
+        this.metadataId = metadataId;
+    }
+
+    public String getMetadataId() {
+        return metadataId;
     }
 }
