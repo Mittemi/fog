@@ -112,7 +112,7 @@ public class BasicEvalScenario extends EvaluationScenarioBase {
                         continue;
                     }
                     if (i % frequency == 0) {
-                        requests.add(createRequest(appIdx, 60 * i, fogs[fogIdx], duration[fogIdx]));
+                        requests.add(createRequest(appIdx, 60 * i, fogs[fogIdx], 60 * duration[fogIdx] - 30));
                     }
                 }
             }

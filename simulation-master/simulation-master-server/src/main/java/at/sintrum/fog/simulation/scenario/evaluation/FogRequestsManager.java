@@ -100,7 +100,7 @@ public class FogRequestsManager extends FogTaskBase {
     @Override
     protected boolean internalExecute() {
         nextIteration();
-        return requestInfos.size() == 0;
+        return requestInfos.stream().allMatch(RequestInfo::isFinished);
     }
 
     public static class RequestInfo {
