@@ -22,7 +22,7 @@ public class MultiAppScenario implements Scenario {
     }
 
     @Override
-    public TaskListBuilder.TaskListBuilderState build(BasicScenarioInfo basicScenarioInfo) {
+    public TaskListBuilder.TaskListBuilderState build(BasicScenarioInfo basicScenarioInfo, boolean useAuction) {
 
         if (basicScenarioInfo.getIterations() == 0) {
             basicScenarioInfo.setIterations(1);

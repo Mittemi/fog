@@ -22,9 +22,8 @@ public class ScenarioController {
         this.scenarioService = scenarioService;
     }
 
-    @RequestMapping(value = "run/{name}", method = RequestMethod.POST)
-    public ScenarioExecutionInfo runScenario(@PathVariable("name") String name, @RequestBody BasicScenarioInfo basicScenarioInfo) {
-
+    @RequestMapping(value = "run/{name}/{useAuction}", method = RequestMethod.POST)
+    public ScenarioExecutionInfo runScenario(@PathVariable("name") String name, @PathVariable("useAuction") boolean useAuction, @RequestBody BasicScenarioInfo basicScenarioInfo) {
         if (basicScenarioInfo == null || basicScenarioInfo.getCloud() == null) {
             basicScenarioInfo = new BasicScenarioInfo();
             basicScenarioInfo.setIterations(1);
@@ -32,9 +31,11 @@ public class ScenarioController {
             basicScenarioInfo.setFogA(FogIdentification.parseFogBaseUrl("192.168.1.101:28080"));
             basicScenarioInfo.setFogB(FogIdentification.parseFogBaseUrl("192.168.1.102:28080"));
             basicScenarioInfo.setFogC(FogIdentification.parseFogBaseUrl("192.168.1.103:28080"));
+            basicScenarioInfo.setFogD(FogIdentification.parseFogBaseUrl("192.168.1.104:28080"));
+            basicScenarioInfo.setFogE(FogIdentification.parseFogBaseUrl("192.168.1.105:28080"));
         }
 
-        return scenarioService.run(basicScenarioInfo, name);
+        return scenarioService.run(basicScenarioInfo, name, useAuction);
     }
 
     @RequestMapping(value = "", method = RequestMethod.GET)

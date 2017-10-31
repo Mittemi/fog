@@ -15,6 +15,10 @@ public class BasicScenarioInfo {
 
     private FogIdentification fogC;
 
+    private FogIdentification fogD;
+
+    private FogIdentification fogE;
+
     private int iterations;
 
     public FogIdentification getCloud() {
@@ -55,5 +59,21 @@ public class BasicScenarioInfo {
 
     public void setIterations(int iterations) {
         this.iterations = iterations;
+    }
+
+    public FogIdentification getFogE() {
+        return fogE;
+    }
+
+    public void setFogE(FogIdentification fogE) {
+        this.fogE = fogE;
+    }
+
+    public FogIdentification getFogD() {
+        return fogD;
+    }
+
+    public void setFogD(FogIdentification fogD) {
+        this.fogD = fogD;
     }
 }

@@ -5,6 +5,7 @@ import at.sintrum.fog.metadatamanager.api.dto.AppRequest;
 import at.sintrum.fog.metadatamanager.api.dto.AppRequestDto;
 import at.sintrum.fog.metadatamanager.api.dto.AppRequestResult;
 import at.sintrum.fog.metadatamanager.api.dto.RequestState;
+import at.sintrum.fog.metadatamanager.config.MetadataManagerConfigProperties;
 import at.sintrum.fog.metadatamanager.service.requests.AppRequestServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,9 +24,11 @@ public class AppRequestController implements AppRequestsApi {
     private final Logger LOG = LoggerFactory.getLogger(AppRequestController.class);
 
     private final AppRequestServiceImpl appRequestService;
+    private final MetadataManagerConfigProperties configProperties;
 
-    public AppRequestController(AppRequestServiceImpl appRequestService) {
+    public AppRequestController(AppRequestServiceImpl appRequestService, MetadataManagerConfigProperties configProperties) {
         this.appRequestService = appRequestService;
+        this.configProperties = configProperties;
     }
 
     @Override
@@ -74,5 +77,22 @@ public class AppRequestController implements AppRequestsApi {
     @Override
     public void reset() {
         appRequestService.reset();
+    }
+
+    @Override
+    public boolean isAuctionEnabled() {
+        return configProperties.isUseAuction();
+    }
+
+    @Override
+    public void enableAuction() {
+        LOG.debug("Auctioning enabled");
+        configProperties.setUseAuction(true);
+    }
+
+    @Override
+    public void disableAuction() {
+        LOG.debug("Auctioning disabled");
+        configProperties.setUseAuction(false);
     }
 }

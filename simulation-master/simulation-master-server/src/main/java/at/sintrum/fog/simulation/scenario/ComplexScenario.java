@@ -29,7 +29,7 @@ public class ComplexScenario implements Scenario {
     }
 
     @Override
-    public TaskListBuilder.TaskListBuilderState build(BasicScenarioInfo basicScenarioInfo) {
+    public TaskListBuilder.TaskListBuilderState build(BasicScenarioInfo basicScenarioInfo, boolean useAuction) {
 
         List<DockerImageMetadata> all = imageMetadataClient.getAll();
         DockerImageMetadata debugVersion = all.stream().filter(x -> x.getApplicationName().equals("test-application") && x.getTag().equals("latest") && x.isEnableDebugging()).findFirst().orElse(null);

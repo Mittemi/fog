@@ -18,3 +18,8 @@ eureka:
     registryFetchIntervalSeconds: 5
     serviceUrl:
       defaultZone: ${EUREKA_SERVICE_URL:http://localhost:8761}/eureka/
+
+
+fog:
+  simulation:
+    registry-url: ubu1604.internal.sintrum.at

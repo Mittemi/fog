@@ -18,6 +18,8 @@ import at.sintrum.fog.simulation.scenario.Scenario;
 import at.sintrum.fog.simulation.service.FogCellStateService;
 import at.sintrum.fog.simulation.service.FogResourceService;
 import at.sintrum.fog.simulation.taskengine.tasks.*;
+import at.sintrum.fog.simulation.taskengine.tasks.helpers.CodedTask;
+import at.sintrum.fog.simulation.taskengine.tasks.helpers.SteppedTask;
 import org.joda.time.DateTime;
 import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
@@ -30,6 +32,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.function.Supplier;
 
 /**
  * Created by Michael Mittermayr on 01.09.2017.
@@ -194,7 +197,11 @@ public class TaskListBuilder {
             }
 
             public AppTaskBuilder checkLocation(int offset, FogIdentification expectedLocation) {
-                return addTask(new CheckFogLocationTask(offset, trackExecutionState, expectedLocation, applicationStateMetadataClient));
+                return addTask(createCheckLocationTask(offset, expectedLocation));
+            }
+
+            private CheckFogLocationTask createCheckLocationTask(int offset, FogIdentification expectedLocation) {
+                return new CheckFogLocationTask(offset, trackExecutionState, expectedLocation, applicationStateMetadataClient);
             }
 
             public AppTaskBuilder finishWork(int offset) {
@@ -242,7 +249,11 @@ public class TaskListBuilder {
             }
 
             public AppTaskBuilder checkReachability(int offset, boolean shouldBeReachable) {
-                return addTask(new CheckAppReachabilityTask(offset, trackExecutionState, applicationClientFactory, applicationStateMetadataClient, shouldBeReachable));
+                return addTask(createCheckReachableTask(offset, shouldBeReachable));
+            }
+
+            private CheckAppReachabilityTask createCheckReachableTask(int offset, boolean shouldBeReachable) {
+                return new CheckAppReachabilityTask(offset, trackExecutionState, applicationClientFactory, applicationStateMetadataClient, shouldBeReachable);
             }
 
             public AppTaskBuilder setFogNetworkState(int offset, FogIdentification fogIdentification, boolean isOnline, boolean serviceOnly) {
@@ -250,11 +261,29 @@ public class TaskListBuilder {
             }
 
             public AppTaskBuilder updateInstanceId(int offset) {
-                return addTask(new UpdateInstanceIdTask(offset, trackExecutionState, appEvolutionApi));
+                return addTask(createUpdateInstanceIdTask(offset));
+            }
+
+            private UpdateInstanceIdTask createUpdateInstanceIdTask(int offset) {
+                return new UpdateInstanceIdTask(offset, trackExecutionState, appEvolutionApi);
             }
 
             public AppTaskBuilder updateScenarioState(int offset, TrackBuilderState trackBuilderState) {
                 return addTask(new UpdateTrackBuilderStateTask(offset, trackExecutionState, trackBuilderState, containerMetadataApi));
+            }
+
+            public AppTaskBuilder waitForRequestsToFinish(int offset, WaitTillFinishedTask.State state) {
+                return addTask(new WaitTillFinishedTask(offset, trackExecutionState, appEvolutionApi, state));
+            }
+
+            public AppTaskBuilder ensureLocation(int offset, FogIdentification location) {
+                UpdateInstanceIdTask updateIdTask = createUpdateInstanceIdTask(0);
+                CheckFogLocationTask checkLocationTask = createCheckLocationTask(0, location);
+                return addTask(new SteppedTask(0, trackExecutionState, updateIdTask, true, false, checkLocationTask, false));
+            }
+
+            public AppTaskBuilder codedTask(int offset, Supplier<Boolean> function) {
+                return addTask(new CodedTask(offset, trackExecutionState, function));
             }
         }
 

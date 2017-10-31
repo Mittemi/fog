@@ -24,7 +24,7 @@ public class ResourceLimitScenario implements Scenario {
     }
 
     @Override
-    public TaskListBuilder.TaskListBuilderState build(BasicScenarioInfo basicScenarioInfo) {
+    public TaskListBuilder.TaskListBuilderState build(BasicScenarioInfo basicScenarioInfo, boolean useAuction) {
 
         TaskListBuilder.TaskListBuilderState taskList = taskListBuilder.newTaskList(this);
 

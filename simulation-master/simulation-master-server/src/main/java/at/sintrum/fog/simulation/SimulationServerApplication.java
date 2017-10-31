@@ -12,6 +12,7 @@ import at.sintrum.fog.simulation.simulation.mongo.MongoDbConfig;
 import at.sintrum.fog.swagger.SwaggerConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
@@ -34,6 +35,7 @@ import org.springframework.context.annotation.Import;
 
         MongoDbConfig.class
 })
+@EnableConfigurationProperties({SimulationServerConfig.class})
 public class SimulationServerApplication {
 
     public static void main(String[] args) {

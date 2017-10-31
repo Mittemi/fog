@@ -15,7 +15,7 @@ public interface ScenarioService {
 
     List<String> getScenarioNames();
 
-    ScenarioExecutionInfo run(BasicScenarioInfo basicScenarioInfo, String name);
+    ScenarioExecutionInfo run(BasicScenarioInfo basicScenarioInfo, String name, boolean useAuction);
 
     ScenarioExecutionInfo getExecutionState();
 

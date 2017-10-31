@@ -38,4 +38,13 @@ public interface AppRequestsApi {
 
     @RequestMapping(value = "reset", method = RequestMethod.DELETE)
     void reset();
+
+    @RequestMapping(value = "isAuctionEnabled", method = RequestMethod.GET)
+    boolean isAuctionEnabled();
+
+    @RequestMapping(value = "enableAuction", method = RequestMethod.POST)
+    void enableAuction();
+
+    @RequestMapping(value = "disableAuction", method = RequestMethod.POST)
+    void disableAuction();
 }

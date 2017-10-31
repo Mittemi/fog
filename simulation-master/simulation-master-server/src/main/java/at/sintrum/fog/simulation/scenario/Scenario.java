@@ -10,5 +10,5 @@ public interface Scenario {
 
     String getId();
 
-    TaskListBuilder.TaskListBuilderState build(BasicScenarioInfo basicScenarioInfo);
+    TaskListBuilder.TaskListBuilderState build(BasicScenarioInfo basicScenarioInfo, boolean useAuction);
 }

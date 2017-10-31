@@ -50,14 +50,14 @@ public class ScenarioServiceImpl implements ScenarioService {
     }
 
     @Override
-    public ScenarioExecutionInfo run(BasicScenarioInfo basicScenarioInfo, String name) {
+    public ScenarioExecutionInfo run(BasicScenarioInfo basicScenarioInfo, String name, boolean useAuction) {
 
         //TODO: improve
         if (taskList != null && !taskList.isFinished()) {
             return null;
         }
         Scenario scenario = scenarios.get(name);
-        taskList = scenario.build(basicScenarioInfo);
+        taskList = scenario.build(basicScenarioInfo, useAuction);
         executionResult = new ScenarioExecutionResult(scenario.getId(), basicScenarioInfo, new DateTime());
         return getExecutionState();
     }
