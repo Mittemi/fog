@@ -10,7 +10,6 @@ import at.sintrum.fog.deploymentmanager.client.api.ApplicationManagerClient;
 import at.sintrum.fog.deploymentmanager.client.factory.DeploymentManagerClientFactory;
 import at.sintrum.fog.hostinfo.HostInfoProviderConfig;
 import at.sintrum.fog.metadatamanager.client.MetadataManagerClientConfig;
-import at.sintrum.fog.redis.RedissonConfig;
 import at.sintrum.fog.simulation.client.SimulationClientConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +35,7 @@ import javax.annotation.PostConstruct;
         ApplicationHousingClientConfig.class,
         DeploymentManagerClientConfig.class,
         MetadataManagerClientConfig.class,
-        RedissonConfig.class,
+        //  RedissonConfig.class,
         SimulationClientConfig.class
 })
 @EnableDiscoveryClient

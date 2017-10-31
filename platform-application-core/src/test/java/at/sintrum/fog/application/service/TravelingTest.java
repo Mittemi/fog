@@ -8,8 +8,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.redisson.api.RedissonClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -22,8 +20,6 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 @SpringBootTest(classes = {TestConfig.class})
 public class TravelingTest {
 
-    @Autowired
-    private RedissonClient redissonClient;
 
     @Mock
     private EnvironmentInfoService environmentInfoService;
@@ -47,7 +43,7 @@ public class TravelingTest {
     public void initTest() {
 
         assertThat(environmentInfoService).isNotNull();
-        assertThat(redissonClient).isNotNull();
+//        assertThat(redissonClient).isNotNull();
         assertThat(applicationStateMetadataClient).isNotNull();
 
         assertThat(environmentInfoService.getInstanceId()).isNotEmpty();

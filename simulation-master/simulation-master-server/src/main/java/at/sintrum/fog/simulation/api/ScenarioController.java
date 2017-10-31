@@ -27,7 +27,7 @@ public class ScenarioController {
         if (basicScenarioInfo == null || basicScenarioInfo.getCloud() == null) {
             basicScenarioInfo = new BasicScenarioInfo();
             basicScenarioInfo.setIterations(1);
-            basicScenarioInfo.setSecondsBetweenRequests(180);
+            basicScenarioInfo.setSecondsBetweenRequests(60);
             basicScenarioInfo.setCreditsA(100);
             basicScenarioInfo.setCreditsB(150);
             basicScenarioInfo.setCreditsC(200);

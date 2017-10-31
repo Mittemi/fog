@@ -58,7 +58,7 @@ public class FogRequestsManager extends FogTaskBase {
     }
 
     public void start() {
-        simulationStart = new DateTime();
+        simulationStart = new DateTime().minusMinutes(4);
     }
 
     public void nextIteration() {
@@ -66,7 +66,7 @@ public class FogRequestsManager extends FogTaskBase {
             LOG.debug("Simulation not yet started");
             return;
         }
-        if (lastIteration != null && Seconds.secondsBetween(lastIteration, new DateTime()).isLessThan(Seconds.seconds(secondsBetweenRequests))) {
+        if (lastIteration != null && Seconds.secondsBetween(lastIteration, new DateTime()).isLessThan(Seconds.seconds(10))) {
             return;
         }
 
@@ -86,9 +86,12 @@ public class FogRequestsManager extends FogTaskBase {
                 String fogId = requestInfo.getFog().toFogId();
                 int credits = fogCredits.get(fogId) / appsPerFog.get(fogId).size();
 
-                TrackExecutionState trackExecutionState = applicationTracks.get(requestInfo.applicationIndex);
-                updateInstanceId(appEvolutionClient, trackExecutionState);
-                requestApp(requestInfo.fog, requestInfo.estimatedDuration, credits, appRequestClient, requestInfo.appRequestState, trackExecutionState);
+                if (requestInfo.getLastRequest() == null || Seconds.secondsBetween(requestInfo.getLastRequest(), new DateTime()).isGreaterThan(Seconds.seconds(secondsBetweenRequests))) {
+                    TrackExecutionState trackExecutionState = applicationTracks.get(requestInfo.applicationIndex);
+                    updateInstanceId(appEvolutionClient, trackExecutionState);
+                    requestApp(requestInfo.fog, requestInfo.estimatedDuration, credits, appRequestClient, requestInfo.appRequestState, trackExecutionState);
+                    requestInfo.setLastRequest(new DateTime());
+                }
             }
         }
     }
@@ -110,6 +113,9 @@ public class FogRequestsManager extends FogTaskBase {
         private FogIdentification fog;
         @Transient
         private AppRequestState appRequestState;
+
+        @Transient
+        private DateTime lastRequest;
 
         public RequestInfo() {
         }
@@ -160,6 +166,14 @@ public class FogRequestsManager extends FogTaskBase {
 
         public void setEstimatedDuration(int estimatedDuration) {
             this.estimatedDuration = estimatedDuration;
+        }
+
+        public DateTime getLastRequest() {
+            return lastRequest;
+        }
+
+        public void setLastRequest(DateTime lastRequest) {
+            this.lastRequest = lastRequest;
         }
     }
 }

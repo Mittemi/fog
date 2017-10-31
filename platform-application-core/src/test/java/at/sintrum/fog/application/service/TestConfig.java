@@ -1,7 +1,6 @@
 package at.sintrum.fog.application.service;
 
 import at.sintrum.fog.core.PlatformCoreConfig;
-import at.sintrum.fog.redis.RedissonConfig;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
@@ -10,8 +9,7 @@ import org.springframework.context.annotation.Import;
  */
 @Configuration
 @Import({
-        PlatformCoreConfig.class,
-        RedissonConfig.class
+        PlatformCoreConfig.class
 })
 public class TestConfig {
 }

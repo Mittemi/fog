@@ -60,11 +60,14 @@ public class AppRequestServiceImpl {
             getInternalIdQueueNameLookup().put(requestInfo.getInternalId(), queueName);
 
             return new AppRequestResult(requestInfo.getInternalId(), credits);
-        } else {
+        } else if (configProperties.isUseAuction()) {
             LOG.debug("Bid for existing request");
             AppRequestInfo appRequestInfo = getTravelQueueByInstanceId(appRequest.getInstanceId()).get(internalId);
             appRequestInfo.incrementCredits(credits);
             return new AppRequestResult(internalId, appRequestInfo.getCredits());
+        } else {
+            LOG.debug("Auction disabled!");
+            return new AppRequestResult(internalId, credits);
         }
     }
 

@@ -83,6 +83,9 @@ public abstract class FogTaskBase implements FogTask {
     }
 
     public static RequestState updateRequestState(AppRequestClient appRequestClient, AppRequestState appRequestState) {
+        if (StringUtils.isEmpty(appRequestState.getRequestId())) {
+            return null;
+        }
         RequestState requestState = appRequestClient.getRequestState(appRequestState.getRequestId());
         appRequestState.setRequestState(requestState);
         return requestState;
