@@ -6,12 +6,11 @@ import at.sintrum.fog.metadatamanager.api.dto.AppRequestDto;
 import at.sintrum.fog.metadatamanager.api.dto.AppRequestResult;
 import at.sintrum.fog.metadatamanager.api.dto.RequestState;
 import at.sintrum.fog.metadatamanager.config.MetadataManagerConfigProperties;
+import at.sintrum.fog.metadatamanager.service.requests.AppRequestInfo;
 import at.sintrum.fog.metadatamanager.service.requests.AppRequestServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -94,5 +93,10 @@ public class AppRequestController implements AppRequestsApi {
     public void disableAuction() {
         LOG.debug("Auctioning disabled");
         configProperties.setUseAuction(false);
+    }
+
+    @RequestMapping(value = "getFinishedRequests", method = RequestMethod.GET)
+    public List<AppRequestInfo> getFinishedRequests() {
+        return appRequestService.getFinishedRequests();
     }
 }

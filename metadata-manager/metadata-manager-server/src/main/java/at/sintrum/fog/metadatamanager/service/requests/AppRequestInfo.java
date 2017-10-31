@@ -14,6 +14,8 @@ public class AppRequestInfo {
 
     private DateTime creationDate;
 
+    private DateTime finishedDate;
+
     private String targetFog;
 
     private int credits;
@@ -73,5 +75,13 @@ public class AppRequestInfo {
 
     public void incrementCredits(int credits) {
         this.credits += credits;
+    }
+
+    public DateTime getFinishedDate() {
+        return finishedDate;
+    }
+
+    public void setFinishedDate(DateTime finishedDate) {
+        this.finishedDate = finishedDate;
     }
 }

@@ -6,6 +6,7 @@ import at.sintrum.fog.metadatamanager.config.MetadataManagerConfigProperties;
 import at.sintrum.fog.metadatamanager.service.ContainerMetadataService;
 import at.sintrum.fog.metadatamanager.service.ImageMetadataService;
 import com.google.common.collect.ImmutableList;
+import org.joda.time.DateTime;
 import org.redisson.api.RBucket;
 import org.redisson.api.RMap;
 import org.redisson.api.RSet;
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -126,6 +128,10 @@ public class AppRequestServiceImpl {
         return Comparator.comparing(AppRequestInfo::getCreationDate);
     }
 
+    public List<AppRequestInfo> getFinishedRequests() {
+        return new ArrayList<>(getFinishedRequestsMap().values());
+    }
+
     public AppRequest finishMove(String instanceId, FogIdentification currentFog) {
 
         RBucket<AppRequestInfo> activeRequestBucket = getActiveRequestBucket(instanceId);
@@ -141,6 +147,7 @@ public class AppRequestServiceImpl {
         List<AppRequestInfo> removeList = getAffectedRequests(currentFog, active, travelQueue.values());
         if (removeList.size() > 0) {
             for (AppRequestInfo appRequestInfo : removeList) {
+                appRequestInfo.setFinishedDate(new DateTime());
                 travelQueue.remove(appRequestInfo.getInternalId());
                 getFinishedRequestsMap().put(appRequestInfo.getInternalId(), appRequestInfo);
             }
