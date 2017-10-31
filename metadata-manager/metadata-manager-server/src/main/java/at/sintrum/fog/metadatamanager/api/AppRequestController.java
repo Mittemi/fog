@@ -42,7 +42,7 @@ public class AppRequestController implements AppRequestsApi {
 
     @Override
     public List<AppRequest> getRequests(@PathVariable("appName") String appName) {
-        return null;
+        return appRequestService.getRequests(appName);
     }
 
     @Override
@@ -95,8 +95,18 @@ public class AppRequestController implements AppRequestsApi {
         configProperties.setUseAuction(false);
     }
 
+    @Override
+    public void resetApp(@PathVariable("appName") String appName) {
+        appRequestService.reset(appName);
+    }
+
     @RequestMapping(value = "getFinishedRequests", method = RequestMethod.GET)
     public List<AppRequestInfo> getFinishedRequests() {
         return appRequestService.getFinishedRequests();
+    }
+
+    @RequestMapping(value = "getNextRequests", method = RequestMethod.GET)
+    public List<AppRequestInfo> getNextRequests() {
+        return appRequestService.getNextRequests();
     }
 }

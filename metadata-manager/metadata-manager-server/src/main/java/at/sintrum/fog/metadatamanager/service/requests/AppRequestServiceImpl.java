@@ -16,10 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -88,7 +85,11 @@ public class AppRequestServiceImpl {
     private String getQueueName(String instanceId) {
         DockerContainerMetadata containerMetadata = containerMetadataService.getLatestByInstance(instanceId);
         DockerImageMetadata imageMetadata = imageMetadataService.get(null, containerMetadata.getImageMetadataId());
-        return "App_Travel_" + imageMetadata.getApplicationName();
+        return buildQueueName(imageMetadata.getApplicationName());
+    }
+
+    private String buildQueueName(String appName) {
+        return "App_Travel_" + appName;
     }
 
     private RMap<String, AppRequestInfo> getTravelQueue(String name) {
@@ -98,6 +99,7 @@ public class AppRequestServiceImpl {
 
     public void reset() {
         for (String name : getMetadataList().readAll()) {
+            LOG.debug("Delete queue for: " + name);
             getTravelQueue(name).delete();
         }
         getMetadataList().delete();
@@ -142,7 +144,11 @@ public class AppRequestServiceImpl {
         final AppRequestInfo active = activeRequestBucket.isExists() ? activeRequestBucket.get() : null;
 
         if (active == null) {
-            LOG.warn("No active move. Finish not possible!");
+            //Should only be the case for the cloud (there it is a valid thing)
+            LOG.warn("No active move. Finish not possible! Fog: " + currentFog.toFogId() + " InstanceID: " + instanceId);
+            if (!currentFog.getIp().equals("192.168.1.21")) {
+                LOG.error("This could be a problem! Check it. No active move set for target != cloud.");
+            }
         }
 
         RMap<String, AppRequestInfo> travelQueue = getTravelQueueByInstanceId(instanceId);
@@ -193,5 +199,25 @@ public class AppRequestServiceImpl {
             return null;
         }
         return new RequestState(requestInfo.getInternalId(), requestInfo.getCredits(), requestInfo.getCreationDate(), getFinishedRequestsMap().containsKey(internalId));
+    }
+
+    public void reset(String appName) {
+        getTravelQueue(buildQueueName(appName)).delete();
+    }
+
+    public List<AppRequest> getRequests(String appName) {
+        return getTravelQueue(buildQueueName(appName)).values().stream().map(AppRequestInfo::getAppRequest).collect(Collectors.toList());
+    }
+
+    public List<AppRequestInfo> getNextRequests() {
+        List<AppRequestInfo> result = new LinkedList<>();
+        for (String app : getKnownApps()) {
+            AppRequestInfo requestInfo = getTravelQueue(app).values().stream().sorted(getNextRequestComparator()).findFirst().orElse(null);
+
+            if (requestInfo != null) {
+                result.add(requestInfo);
+            }
+        }
+        return result;
     }
 }

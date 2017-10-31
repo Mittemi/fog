@@ -29,15 +29,18 @@ public abstract class EvaluationScenarioBase implements Scenario {
     private final FogResourceService fogResourceService;
     private final AppRequestClient appRequestClient;
 
+    private final int NUMBER_OF_APPS;
+
     private static final Logger LOG = LoggerFactory.getLogger(EvaluationScenarioBase.class);
     private LinkedList<DockerImageMetadata> applications;
 
-    protected EvaluationScenarioBase(TaskListBuilder taskListBuilder, ImageMetadataClient imageMetadataClient, SimulationServerConfig config, FogResourceService fogResourceService, AppRequestClient appRequestClient) {
+    protected EvaluationScenarioBase(TaskListBuilder taskListBuilder, ImageMetadataClient imageMetadataClient, SimulationServerConfig config, FogResourceService fogResourceService, AppRequestClient appRequestClient, int numberOfApps) {
         this.taskListBuilder = taskListBuilder;
         this.imageMetadataClient = imageMetadataClient;
         this.config = config;
         this.fogResourceService = fogResourceService;
         this.appRequestClient = appRequestClient;
+        NUMBER_OF_APPS = numberOfApps;
     }
 
     @Override
@@ -91,7 +94,7 @@ public abstract class EvaluationScenarioBase implements Scenario {
 
         applications = new LinkedList<>();
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < NUMBER_OF_APPS; i++) {
             applications.add(createImageMetadata(registry, "eval-app" + i, 12000 + i, true));
         }
     }
@@ -126,7 +129,7 @@ public abstract class EvaluationScenarioBase implements Scenario {
 
         TaskListBuilder.TaskListBuilderState.AppTaskBuilder simulationControlTrack = taskListBuilderState.createTrack();
         simulationControlTrack
-                .codedTask(120, () -> simulationState.getRunningApplications() == 10)
+                .codedTask(120, () -> simulationState.getRunningApplications() == NUMBER_OF_APPS)
                 .logMessage(0, "All apps running!");
 
         List<TrackExecutionState> applicationStates = new ArrayList<>();

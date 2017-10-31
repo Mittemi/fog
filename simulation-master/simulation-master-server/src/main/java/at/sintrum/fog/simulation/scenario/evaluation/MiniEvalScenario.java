@@ -20,16 +20,16 @@ import java.util.List;
  * Created by Michael Mittermayr on 31.10.2017.
  */
 @Service
-public class BasicEvalScenario extends EvaluationScenarioBase {
+public class MiniEvalScenario extends EvaluationScenarioBase {
 
-    private Logger LOG = LoggerFactory.getLogger(BasicEvalScenario.class);
+    private Logger LOG = LoggerFactory.getLogger(MiniEvalScenario.class);
 
-    public BasicEvalScenario(TaskListBuilder taskListBuilder,
-                             ImageMetadataClient imageMetadataClient,
-                             SimulationServerConfig simulationServerConfig,
-                             FogResourceService fogResourceService,
-                             AppRequestClient appRequestClient) {
-        super(taskListBuilder, imageMetadataClient, simulationServerConfig, fogResourceService, appRequestClient, 10);
+    public MiniEvalScenario(TaskListBuilder taskListBuilder,
+                            ImageMetadataClient imageMetadataClient,
+                            SimulationServerConfig simulationServerConfig,
+                            FogResourceService fogResourceService,
+                            AppRequestClient appRequestClient) {
+        super(taskListBuilder, imageMetadataClient, simulationServerConfig, fogResourceService, appRequestClient, 2);
     }
 
     @Override
@@ -37,7 +37,7 @@ public class BasicEvalScenario extends EvaluationScenarioBase {
         List<FogRequestsManager.RequestInfo> requests = new LinkedList<>();
 
         int[][] requestMatrix = new int[5][10];
-        //FOG 0
+        //FOG A
         requestMatrix[0][0] = 0;
         requestMatrix[0][1] = 5;
         requestMatrix[0][2] = 10;
@@ -48,7 +48,7 @@ public class BasicEvalScenario extends EvaluationScenarioBase {
         requestMatrix[0][7] = 5;
         requestMatrix[0][8] = 0;
         requestMatrix[0][9] = 30;
-        //FOG 1
+        //FOG B
         requestMatrix[1][0] = 20;
         requestMatrix[1][1] = 30;
         requestMatrix[1][2] = 10;
@@ -59,7 +59,7 @@ public class BasicEvalScenario extends EvaluationScenarioBase {
         requestMatrix[1][7] = 0;
         requestMatrix[1][8] = 8;
         requestMatrix[1][9] = 0;
-        //FOG 2
+        //FOG C
         requestMatrix[2][0] = 0;
         requestMatrix[2][1] = 5;
         requestMatrix[2][2] = 0;
@@ -70,7 +70,7 @@ public class BasicEvalScenario extends EvaluationScenarioBase {
         requestMatrix[2][7] = 0;
         requestMatrix[2][8] = 0;
         requestMatrix[2][9] = 7;
-        //FOG 3
+        //FOG D
         requestMatrix[3][0] = 15;
         requestMatrix[3][1] = 30;
         requestMatrix[3][2] = 10;
@@ -81,7 +81,7 @@ public class BasicEvalScenario extends EvaluationScenarioBase {
         requestMatrix[3][7] = 15;
         requestMatrix[3][8] = 0;
         requestMatrix[3][9] = 9;
-        //FOG 4
+        //FOG E
         requestMatrix[4][0] = 5;
         requestMatrix[4][1] = 0;
         requestMatrix[4][2] = 0;
@@ -106,7 +106,7 @@ public class BasicEvalScenario extends EvaluationScenarioBase {
 
         for (int i = 1; i < 20; i++) {
             for (int fogIdx = 0; fogIdx < 5; fogIdx++) {
-                for (int appIdx = 0; appIdx < 10; appIdx++) {
+                for (int appIdx = 0; appIdx < applications.size(); appIdx++) {
                     int frequency = requestMatrix[fogIdx][appIdx];
                     if (frequency == 0) {
                         continue;
@@ -136,6 +136,6 @@ public class BasicEvalScenario extends EvaluationScenarioBase {
 
     @Override
     public String getId() {
-        return "basicEval";
+        return "miniEval";
     }
 }

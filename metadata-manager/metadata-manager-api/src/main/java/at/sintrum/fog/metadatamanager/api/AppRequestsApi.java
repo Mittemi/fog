@@ -47,4 +47,7 @@ public interface AppRequestsApi {
 
     @RequestMapping(value = "disableAuction", method = RequestMethod.POST)
     void disableAuction();
+
+    @RequestMapping(value = "resetApp/{appName}", method = RequestMethod.DELETE)
+    void resetApp(@PathVariable("appName") String appName);
 }

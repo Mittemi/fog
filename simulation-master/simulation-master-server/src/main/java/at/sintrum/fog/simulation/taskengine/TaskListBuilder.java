@@ -173,6 +173,7 @@ public class TaskListBuilder {
             }
 
             public AppTaskBuilder startApp(int offset, FogIdentification cloud, DockerImageMetadata metadata) {
+                appRequestClient.resetApp(metadata.getApplicationName());
                 return addTask(new StartAppTask(0, trackExecutionState, deploymentManagerClientFactory, cloud, metadata.getId(), redissonClient, imageMetadataApi));
             }
 
