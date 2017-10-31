@@ -206,7 +206,7 @@ public class AppRequestServiceImpl {
     }
 
     public List<AppRequest> getRequests(String appName) {
-        return getTravelQueue(buildQueueName(appName)).values().stream().map(AppRequestInfo::getAppRequest).collect(Collectors.toList());
+        return getTravelQueue(buildQueueName(appName)).values().stream().filter(x -> x.getFinishedDate() == null).map(AppRequestInfo::getAppRequest).collect(Collectors.toList());
     }
 
     public List<AppRequestInfo> getNextRequests() {

@@ -29,7 +29,7 @@ public class MiniEvalScenario extends EvaluationScenarioBase {
                             SimulationServerConfig simulationServerConfig,
                             FogResourceService fogResourceService,
                             AppRequestClient appRequestClient) {
-        super(taskListBuilder, imageMetadataClient, simulationServerConfig, fogResourceService, appRequestClient, 2);
+        super(taskListBuilder, imageMetadataClient, simulationServerConfig, fogResourceService, appRequestClient, 3);
     }
 
     @Override
@@ -112,7 +112,7 @@ public class MiniEvalScenario extends EvaluationScenarioBase {
                         continue;
                     }
                     if (i % frequency == 0) {
-                        requests.add(createRequest(appIdx, 60 * i, fogs[fogIdx], 60 * duration[fogIdx] - 30));
+                        requests.add(createRequest(appIdx, 60 * i, fogs[fogIdx], 60 * duration[fogIdx]));
                     }
                 }
             }

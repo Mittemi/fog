@@ -102,7 +102,12 @@ public abstract class EvaluationScenarioBase implements Scenario {
 
     private DockerImageMetadata createImageMetadata(String registy, String name, int port, boolean enableDebug) {
 
-        Optional<DockerImageMetadata> first = imageMetadataClient.getAll().stream().filter(x -> x.isEnableDebugging() == enableDebug && x.getApplicationName().equals(name)).findFirst();
+        Optional<DockerImageMetadata> first = imageMetadataClient.getAll()
+                .stream()
+                .filter(x -> x.isEnableDebugging() == enableDebug
+                        && x.getApplicationName().equals(name)
+                        && x.getTag().equals("latest"))
+                .findFirst();
 
         if (first.isPresent()) {
             return first.get();
