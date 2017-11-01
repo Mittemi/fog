@@ -1,8 +1,6 @@
 package at.sintrum.fog.docker;
 
-import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
-import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,8 +21,7 @@ public class DockerConfig {
     private final String dockerHost;
 
     @Bean
-    public DockerClient client() {
-
+    public DockerClientConfig dockerClientConfig() {
         Logger logger = LoggerFactory.getLogger(DockerConfig.class);
         logger.info("Docker-Host: " + dockerHost);
         if (dockerHost.startsWith("unix:///") && System.getProperty("os.name").toLowerCase().startsWith("windows")) {
@@ -42,6 +39,11 @@ public class DockerConfig {
                 .withApiVersion("1.30")
                 .withRegistryUrl("https://index.docker.io/v1/")
                 .build();
-        return DockerClientBuilder.getInstance(config).build();
+        return config;
     }
+
+//    @Bean
+//    public DockerClient client(DockerClientConfig config) {
+//        return DockerClientBuilder.getInstance(config).build();
+//    }
 }

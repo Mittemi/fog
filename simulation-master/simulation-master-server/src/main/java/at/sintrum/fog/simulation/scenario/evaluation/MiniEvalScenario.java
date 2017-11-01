@@ -29,7 +29,7 @@ public class MiniEvalScenario extends EvaluationScenarioBase {
                             SimulationServerConfig simulationServerConfig,
                             FogResourceService fogResourceService,
                             AppRequestClient appRequestClient) {
-        super(taskListBuilder, imageMetadataClient, simulationServerConfig, fogResourceService, appRequestClient, 3);
+        super(taskListBuilder, imageMetadataClient, simulationServerConfig, fogResourceService, appRequestClient, 7);
     }
 
     @Override

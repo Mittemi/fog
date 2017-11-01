@@ -6,6 +6,8 @@ import at.sintrum.fog.deploymentmanager.utils.TarUtils;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.*;
 import com.github.dockerjava.api.model.*;
+import com.github.dockerjava.core.DockerClientBuilder;
+import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 import com.github.dockerjava.core.command.PushImageResultCallback;
 import org.slf4j.Logger;
@@ -27,15 +29,16 @@ import java.util.stream.Collectors;
 public class DockerServiceImpl implements DockerService {
 
     private final boolean disableRegistry;
-    private final DockerClient dockerClient;
+    private final ThreadLocal<DockerClient> dockerClient;
     private DeploymentManagerConfigProperties deploymentManagerConfigProperties;
     private final DeploymentService deploymentService;
 
     private final Logger LOG = LoggerFactory.getLogger(DockerServiceImpl.class);
 
-    public DockerServiceImpl(@Value("${DISABLE_REGISTRY:false}") boolean disableRegistry, DockerClient dockerClient, DeploymentManagerConfigProperties deploymentManagerConfigProperties, DeploymentService deploymentService) {
+    public DockerServiceImpl(@Value("${DISABLE_REGISTRY:false}") boolean disableRegistry, DockerClientConfig dockerClientConfig, DeploymentManagerConfigProperties deploymentManagerConfigProperties, DeploymentService deploymentService) {
         this.disableRegistry = disableRegistry;
-        this.dockerClient = dockerClient;
+        this.dockerClient = ThreadLocal.withInitial(() -> DockerClientBuilder.getInstance(dockerClientConfig).build());
+
         this.deploymentManagerConfigProperties = deploymentManagerConfigProperties;
         this.deploymentService = deploymentService;
     }
@@ -43,14 +46,14 @@ public class DockerServiceImpl implements DockerService {
     @Override
     public List<ContainerInfo> getContainers() {
 
-        List<Container> listResult = dockerClient.listContainersCmd().withShowAll(true).exec();
+        List<Container> listResult = dockerClient.get().listContainersCmd().withShowAll(true).exec();
 
         return listResult.stream().map(DockerServiceImpl::mapToDto).filter(x -> !isProtectedContainer(x)).collect(Collectors.toList());
     }
 
     @Override
     public List<ImageInfo> getImages() {
-        List<Image> listResult = dockerClient.listImagesCmd().exec();
+        List<Image> listResult = dockerClient.get().listImagesCmd().exec();
 
         return listResult.stream().map(DockerServiceImpl::mapImageToDto).collect(Collectors.toList());
     }
@@ -89,7 +92,7 @@ public class DockerServiceImpl implements DockerService {
         ContainerInfo containerInfo = getContainerInfo(id);
         if (containerInfo != null) {
             LOG.debug("Start Container: " + containerInfo);
-            dockerClient.startContainerCmd(containerInfo.getId()).exec();
+            dockerClient.get().startContainerCmd(containerInfo.getId()).exec();
             return true;
         } else {
             LOG.warn("Start failed, container not found or protected: " + id);
@@ -102,7 +105,7 @@ public class DockerServiceImpl implements DockerService {
 
         if (containerInfo != null) {
             LOG.debug("Stop Container: " + containerInfo);
-            dockerClient.stopContainerCmd(containerInfo.getId()).exec();
+            dockerClient.get().stopContainerCmd(containerInfo.getId()).exec();
             return true;
         } else {
             LOG.warn("Stop failed, container not found or protected: " + id);
@@ -119,7 +122,7 @@ public class DockerServiceImpl implements DockerService {
         }
 
         try {
-            CreateContainerCmd createContainerCmd = dockerClient.createContainerCmd(createContainerRequest.getImage());
+            CreateContainerCmd createContainerCmd = dockerClient.get().createContainerCmd(createContainerRequest.getImage());
             createContainerCmd.withTty(createContainerRequest.isWithTty());
             createContainerCmd.withEnv(createContainerRequest.getEnvironment());
             if (!StringUtils.isEmpty(createContainerRequest.getName())) {
@@ -152,7 +155,7 @@ public class DockerServiceImpl implements DockerService {
             ContainerInfo containerInfo = getContainerInfo(commitContainerRequest.getContainerId());
             String repository = deploymentService.getRepositoryName(containerInfo.getImage());
 
-            CommitCmd commitCmd = dockerClient.commitCmd(commitContainerRequest.getContainerId());
+            CommitCmd commitCmd = dockerClient.get().commitCmd(commitContainerRequest.getContainerId());
             commitCmd.withRepository(repository);
             commitCmd.withTag(temporaryTag);
 
@@ -171,7 +174,7 @@ public class DockerServiceImpl implements DockerService {
     @Override
     public boolean tagImage(String imageId, String repository, String tag) {
         try {
-            TagImageCmd tagImageCmd = dockerClient.tagImageCmd(imageId, repository, tag);
+            TagImageCmd tagImageCmd = dockerClient.get().tagImageCmd(imageId, repository, tag);
             tagImageCmd.exec();
             return true;
         } catch (Exception ex) {
@@ -231,7 +234,7 @@ public class DockerServiceImpl implements DockerService {
 
         try {
             String repository = deploymentService.getRepositoryName(pullImageRequest.getName());
-            PullImageCmd pullImageCmd = dockerClient.pullImageCmd(repository);
+            PullImageCmd pullImageCmd = dockerClient.get().pullImageCmd(repository);
 
             if (StringUtils.isEmpty(pullImageRequest.getTag())) {
                 LOG.warn("Pull image without tag! Fallback to: latest");
@@ -261,7 +264,7 @@ public class DockerServiceImpl implements DockerService {
         }
 
         try {
-            PushImageCmd pushImageCmd = dockerClient.pushImageCmd(pushImageRequest.getName());
+            PushImageCmd pushImageCmd = dockerClient.get().pushImageCmd(pushImageRequest.getName());
 
             if (StringUtils.isEmpty(pushImageRequest.getTag())) {
                 LOG.warn("Push image without tag!");
@@ -281,7 +284,7 @@ public class DockerServiceImpl implements DockerService {
     @Override
     public boolean deleteImage(String id) {
         try {
-            dockerClient.removeImageCmd(id).withNoPrune(true).exec();
+            dockerClient.get().removeImageCmd(id).withNoPrune(true).exec();
             return true;
         } catch (Exception ex) {
             //don't care about result
@@ -300,7 +303,7 @@ public class DockerServiceImpl implements DockerService {
                 if (containerInfo.isRunning()) {
                     LOG.error("Failed to remove container with id '" + containerId + "'. Stop container first.");
                 } else {
-                    dockerClient.removeContainerCmd(containerId).withRemoveVolumes(true).exec();
+                    dockerClient.get().removeContainerCmd(containerId).withRemoveVolumes(true).exec();
                 }
             }
             return true;
@@ -334,14 +337,14 @@ public class DockerServiceImpl implements DockerService {
                 return false;
             }
 
-            try (InputStream sourceFileStream = dockerClient.copyArchiveFromContainerCmd(sourceContainerInfo.getId(), sourceDirectory).withHostPath(sourceDirectory).exec()) {
+            try (InputStream sourceFileStream = dockerClient.get().copyArchiveFromContainerCmd(sourceContainerInfo.getId(), sourceDirectory).withHostPath(sourceDirectory).exec()) {
 
                 if (sourceFileStream == null) {
                     LOG.warn("Failed to get source files");
                     return false;
                 }
 
-                try (InputStream targetFileStream = dockerClient.copyArchiveFromContainerCmd(targetContainerInfo.getId(), targetDirectory).withHostPath(targetDirectory).exec()) {
+                try (InputStream targetFileStream = dockerClient.get().copyArchiveFromContainerCmd(targetContainerInfo.getId(), targetDirectory).withHostPath(targetDirectory).exec()) {
 
                     if (targetFileStream == null) {
                         LOG.warn("Failed to get target files");
@@ -369,7 +372,7 @@ public class DockerServiceImpl implements DockerService {
                             // archive contains folder with the name of the last folder
                             String remotePath = getParentDir(targetDirectory);
 
-                            dockerClient.copyArchiveToContainerCmd(targetContainerInfo.getId())
+                            dockerClient.get().copyArchiveToContainerCmd(targetContainerInfo.getId())
                                     .withTarInputStream(inputStream)
                                     .withNoOverwriteDirNonDir(false)
                                     .withDirChildrenOnly(true)

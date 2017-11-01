@@ -21,6 +21,7 @@ import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -124,7 +125,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
         }
     }
 
-    //   @Async
+    @Async
     @Override
     public Future<FogOperationResult> start(ApplicationStartRequest applicationStartRequest) {
 
@@ -251,7 +252,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
         return false;
     }
 
-    //   @Async
+    @Async
     @Override
     public Future<FogOperationResult> move(ApplicationMoveRequest applicationMoveRequest) {
 
@@ -353,7 +354,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
         return dockerService.stopContainer(containerId);
     }
 
-    //    @Async
+    @Async
     @Override
     public Future<FogOperationResult> upgrade(ApplicationUpgradeRequest applicationUpgradeRequest) {
         ContainerInfo containerInfo = dockerService.getContainerInfo(applicationUpgradeRequest.getContainerId());
@@ -368,7 +369,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
         }
     }
 
-    //   @Async
+    @Async
     @Override
     public Future<FogOperationResult> recover(ApplicationRecoveryRequest applicationRecoveryRequest) {
 
@@ -389,7 +390,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
         return new AsyncResult<>(new FogOperationResult(null, false, environmentInfoService.getFogBaseUrl(), "Unable to recover"));
     }
 
-    //   @Async
+    @Async
     @Override
     public Future<FogOperationResult> remove(ApplicationRemoveRequest applicationRemoveRequest) {
 

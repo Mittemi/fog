@@ -3,7 +3,6 @@ package at.sintrum.fog.deploymentmanager.config;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -23,9 +22,13 @@ public class AsyncConfig implements AsyncConfigurer {
 
     @Override
     public Executor getAsyncExecutor() {
-        SimpleAsyncTaskExecutor simpleAsyncTaskExecutor = new SimpleAsyncTaskExecutor();
-        simpleAsyncTaskExecutor.setConcurrencyLimit(2);
-        return simpleAsyncTaskExecutor;
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(15);
+        executor.setMaxPoolSize(30);
+        executor.setQueueCapacity(500);
+        executor.setThreadNamePrefix("DM-");
+        executor.initialize();
+        return executor;
     }
 
     @Override
@@ -36,14 +39,14 @@ public class AsyncConfig implements AsyncConfigurer {
     @Bean(name = PUSH_IMAGE_TASK_EXECUTOR)
     public TaskExecutor pushImageTaskExecutor() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
-        threadPoolTaskExecutor.setMaxPoolSize(2);
+        threadPoolTaskExecutor.setMaxPoolSize(15);
         return threadPoolTaskExecutor;
     }
 
     @Bean(name = PULL_IMAGE_TASK_EXECUTOR)
     public TaskExecutor pullImageTaskExecutor() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
-        threadPoolTaskExecutor.setMaxPoolSize(2);
+        threadPoolTaskExecutor.setMaxPoolSize(15);
         return threadPoolTaskExecutor;
     }
 }
