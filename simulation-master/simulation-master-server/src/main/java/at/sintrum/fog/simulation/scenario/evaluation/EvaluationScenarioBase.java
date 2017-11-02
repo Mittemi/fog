@@ -1,5 +1,6 @@
 package at.sintrum.fog.simulation.scenario.evaluation;
 
+import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.core.dto.ResourceInfo;
 import at.sintrum.fog.metadatamanager.api.dto.DockerImageMetadata;
 import at.sintrum.fog.metadatamanager.client.api.AppRequestClient;
@@ -63,7 +64,7 @@ public abstract class EvaluationScenarioBase implements Scenario {
         setFogCapacities(basicScenarioInfo);
 
         LOG.debug("Setup application images");
-        setupImages(config.getRegistryUrl());
+        setupImages();
 
         LOG.debug("Setup tracks");
         setupTracks(taskListBuilderState, basicScenarioInfo, applications, useAuction);
@@ -90,31 +91,33 @@ public abstract class EvaluationScenarioBase implements Scenario {
         return fogCredits;
     }
 
-    private void setupImages(String registry) {
+    private void setupImages() {
 
         applications = new LinkedList<>();
 
         for (int i = 0; i < NUMBER_OF_APPS; i++) {
-            applications.add(createImageMetadata(registry, "eval-app" + i, 12000 + i, true));
+            applications.add(createImageMetadata("eval-app" + i, 12000 + i, true, false));
         }
     }
 
 
-    private DockerImageMetadata createImageMetadata(String registy, String name, int port, boolean enableDebug) {
+    protected DockerImageMetadata createImageMetadata(String name, int port, boolean enableDebug, boolean createNew) {
 
-        Optional<DockerImageMetadata> first = imageMetadataClient.getAll()
-                .stream()
-                .filter(x -> x.isEnableDebugging() == enableDebug
-                        && x.getApplicationName().equals(name)
-                        && x.getTag().equals("latest"))
-                .findFirst();
+        if (!createNew) {
+            Optional<DockerImageMetadata> first = imageMetadataClient.getAll()
+                    .stream()
+                    .filter(x -> x.isEnableDebugging() == enableDebug
+                            && x.getApplicationName().equals(name)
+                            && x.getTag().equals("latest"))
+                    .findFirst();
 
-        if (first.isPresent()) {
-            return first.get();
+            if (first.isPresent()) {
+                return first.get();
+            }
         }
 
         DockerImageMetadata imageMetadata = new DockerImageMetadata();
-        imageMetadata.setImage(registy + ":5000/test-application");
+        imageMetadata.setImage(config.getRegistryUrl() + ":5000/test-application");
         imageMetadata.setApplicationName(name);
         imageMetadata.setTag("latest");
         imageMetadata.setEurekaEnabled(true);
@@ -162,6 +165,19 @@ public abstract class EvaluationScenarioBase implements Scenario {
                     .logMessage(0, "Track finished");
         }
 
+        List<FogRequestsManager.RequestInfo> requests = buildRequests(basicScenarioInfo);
+
+        FogRequestsManager fogRequestManager = simulationControlTrack.createFogRequestManager(applicationStates, getFogCredits(basicScenarioInfo), basicScenarioInfo.getSecondsBetweenRequests(), requests);
+
+        simulationControlTrack
+                .logMessage(0, "Start fog request manager")
+                .codedTask(0, () -> {
+                    fogRequestManager.start();
+                    return true;
+                })
+                .runFogRequestManager(fogRequestManager)
+                .logMessage(0, "Fog request manager completed");
+
         setupSimulation(simulationControlTrack, taskListBuilderState, basicScenarioInfo, applicationStates, useAuction, taskBuilders);
 
         simulationControlTrack
@@ -171,6 +187,49 @@ public abstract class EvaluationScenarioBase implements Scenario {
                     return true;
                 });
     }
+
+    protected int[] getDuration() {
+        return new int[]{1, 2, 2, 3, 3};
+    }
+
+
+    protected List<FogRequestsManager.RequestInfo> buildRequests(BasicScenarioInfo basicScenarioInfo) {
+        List<FogRequestsManager.RequestInfo> requests = new LinkedList<>();
+
+        int[][] requestMatrix = getRequestMatrix();
+
+        FogIdentification[] fogs = new FogIdentification[]{
+                basicScenarioInfo.getFogA(),
+                basicScenarioInfo.getFogB(),
+                basicScenarioInfo.getFogC(),
+                basicScenarioInfo.getFogD(),
+                basicScenarioInfo.getFogE()
+        };
+
+        int[] duration = getDuration();
+
+
+        for (int i = 1; i < 20; i++) {
+            for (int fogIdx = 0; fogIdx < 5; fogIdx++) {
+                for (int appIdx = 0; appIdx < 10; appIdx++) {
+                    int frequency = requestMatrix[fogIdx][appIdx];
+                    if (frequency == 0) {
+                        continue;
+                    }
+                    if (i % frequency == 0) {
+                        requests.add(createRequest(appIdx, 60 * i, fogs[fogIdx], 60 * duration[fogIdx] - 30));
+                    }
+                }
+            }
+        }
+        return requests;
+    }
+
+    protected FogRequestsManager.RequestInfo createRequest(int app, int offset, FogIdentification fog, int duration) {
+        return new FogRequestsManager.RequestInfo(app, offset, fog, duration);
+    }
+
+    protected abstract int[][] getRequestMatrix();
 
     protected abstract void setupSimulation(TaskListBuilder.TaskListBuilderState.AppTaskBuilder simulationControlTrack, TaskListBuilder.TaskListBuilderState taskListBuilderState, BasicScenarioInfo basicScenarioInfo, List<TrackExecutionState> applications, boolean useAuction, ArrayList<TaskListBuilder.TaskListBuilderState.AppTaskBuilder> taskBuilders);
 }
