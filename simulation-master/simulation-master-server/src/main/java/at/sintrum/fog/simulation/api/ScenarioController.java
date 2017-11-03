@@ -57,7 +57,7 @@ public class ScenarioController {
 
     @RequestMapping(value = "result", method = RequestMethod.GET)
     public ScenarioExecutionResult getResult() {
-        return scenarioService.getResult();
+        return scenarioService.getExecutionResult();
     }
 
     @RequestMapping(value = "cancel", method = RequestMethod.DELETE)

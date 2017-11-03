@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.Map;
+
 /**
  * Created by Michael Mittermayr on 02.09.2017.
  */
@@ -55,5 +57,10 @@ public class InstanceIdHistoryServiceImpl implements InstanceIdHistoryService {
             instanceId = newInstanceId;
         }
         return instanceId;
+    }
+
+    @Override
+    public Map<String, String> getHistory() {
+        return getMap().readAllMap();
     }
 }

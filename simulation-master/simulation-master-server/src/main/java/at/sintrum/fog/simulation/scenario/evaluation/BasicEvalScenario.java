@@ -1,15 +1,19 @@
 package at.sintrum.fog.simulation.scenario.evaluation;
 
+import at.sintrum.fog.applicationhousing.client.api.AppEvolutionClient;
 import at.sintrum.fog.metadatamanager.client.api.AppRequestClient;
 import at.sintrum.fog.metadatamanager.client.api.ImageMetadataClient;
 import at.sintrum.fog.simulation.SimulationServerConfig;
 import at.sintrum.fog.simulation.scenario.dto.BasicScenarioInfo;
 import at.sintrum.fog.simulation.service.FogResourceService;
+import at.sintrum.fog.simulation.service.ScenarioService;
+import at.sintrum.fog.simulation.simulation.mongo.respositories.FullSimulationResultRepository;
 import at.sintrum.fog.simulation.taskengine.TaskListBuilder;
 import at.sintrum.fog.simulation.taskengine.TrackExecutionState;
 import at.sintrum.fog.simulation.taskengine.tasks.WaitTillFinishedTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -27,8 +31,20 @@ public class BasicEvalScenario extends EvaluationScenarioBase {
                              ImageMetadataClient imageMetadataClient,
                              SimulationServerConfig simulationServerConfig,
                              FogResourceService fogResourceService,
-                             AppRequestClient appRequestClient) {
-        super(taskListBuilder, imageMetadataClient, simulationServerConfig, fogResourceService, appRequestClient, 10);
+                             AppRequestClient appRequestClient,
+                             AppEvolutionClient appEvolutionClient,
+                             FullSimulationResultRepository fullSimulationResultRepository,
+                             @Lazy ScenarioService scenarioService) {
+        super(taskListBuilder,
+                imageMetadataClient,
+                simulationServerConfig,
+                fogResourceService,
+                appRequestClient,
+                appEvolutionClient,
+                fullSimulationResultRepository,
+                scenarioService,
+                10,
+                120);
     }
 
     @Override

@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import java.util.Map;
+
 /**
  * Created by Michael Mittermayr on 14.07.2017.
  */
@@ -32,6 +34,9 @@ public interface AppEvolutionApi {
 
     @RequestMapping(value = "getLatestInstanceId/{instanceId}", method = RequestMethod.GET)
     String getLatestInstanceId(@PathVariable("instanceId") String instanceId);
+
+    @RequestMapping(value = "getInstanceIdHistory", method = RequestMethod.GET)
+    Map<String, String> getInstanceIdHistory();
 
     @RequestMapping(value = "reset", method = RequestMethod.POST)
     void reset();

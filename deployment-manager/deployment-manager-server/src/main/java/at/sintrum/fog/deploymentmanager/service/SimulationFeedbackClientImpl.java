@@ -8,6 +8,8 @@ import at.sintrum.fog.metadatamanager.api.dto.DockerContainerMetadata;
 import at.sintrum.fog.metadatamanager.client.api.ContainerMetadataClient;
 import at.sintrum.fog.simulation.api.dto.AppEventInfo;
 import at.sintrum.fog.simulation.client.api.SimulationClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -23,6 +25,8 @@ public class SimulationFeedbackClientImpl implements SimulationFeedbackClient {
     private final FogIdentification location;
     private final ContainerMetadataClient containerMetadataClient;
     private final AppEvolutionClient appEvolutionClient;
+
+    private final Logger LOG = LoggerFactory.getLogger(SimulationFeedbackClientImpl.class);
 
     public SimulationFeedbackClientImpl(SimulationClient simulationClient,
                                         EnvironmentInfoService environmentInfoService,
@@ -41,6 +45,7 @@ public class SimulationFeedbackClientImpl implements SimulationFeedbackClient {
     @Async
     public void appStart(ApplicationStartRequest applicationStartRequest, FogOperationResult fogOperationResult) {
         try {
+            LOG.debug("Send feedback start: " + fogOperationResult.toString());
             simulationClient.started(applicationStartRequest.getInstanceId(), new AppEventInfo(applicationStartRequest.getMetadataId(), null, location, applicationStartRequest.getInstanceId(), applicationStartRequest.getInstanceId(), fogOperationResult.isSuccessful()));
         } catch (Exception ex) {
 
@@ -51,6 +56,7 @@ public class SimulationFeedbackClientImpl implements SimulationFeedbackClient {
     @Async
     public void appMove(ApplicationMoveRequest applicationMoveRequest, FogOperationResult fogOperationResult) {
         try {
+            LOG.debug("Send feedback move: " + fogOperationResult.toString());
             DockerContainerMetadata containerMetadata = containerMetadataClient.getById(environmentInfoService.getFogId(), applicationMoveRequest.getContainerId());
             simulationClient.moved(containerMetadata.getInstanceId(), new AppEventInfo(containerMetadata.getImageMetadataId(), location, applicationMoveRequest.getTargetFog(), containerMetadata.getInstanceId(), null, fogOperationResult.isSuccessful()));
         } catch (Exception ex) {
@@ -62,6 +68,7 @@ public class SimulationFeedbackClientImpl implements SimulationFeedbackClient {
     @Async
     public void appUpgrade(ApplicationUpgradeRequest applicationUpgradeRequest, FogOperationResult fogOperationResult) {
         try {
+            LOG.debug("Send feedback upgrade: " + fogOperationResult.toString());
             DockerContainerMetadata containerMetadata = containerMetadataClient.getById(environmentInfoService.getFogId(), applicationUpgradeRequest.getContainerId());
             String latestInstanceId = appEvolutionClient.getLatestInstanceId(containerMetadata.getInstanceId());
 
@@ -75,7 +82,7 @@ public class SimulationFeedbackClientImpl implements SimulationFeedbackClient {
     @Async
     public void appRecover(ApplicationRecoveryRequest applicationRecoveryRequest, FogOperationResult fogOperationResult) {
         try {
-
+            LOG.debug("Send feedback recover: " + fogOperationResult.toString());
             String imageMetadataId = null;
             if (!StringUtils.isEmpty(fogOperationResult.getContainerId())) {
                 imageMetadataId = containerMetadataClient.getById(environmentInfoService.getFogId(), fogOperationResult.getContainerId()).getImageMetadataId();
@@ -92,6 +99,7 @@ public class SimulationFeedbackClientImpl implements SimulationFeedbackClient {
     @Async
     public void appRemove(ApplicationRemoveRequest applicationRemoveRequest, FogOperationResult fogOperationResult) {
         try {
+            LOG.debug("Send feedback remove: " + fogOperationResult.toString());
             DockerContainerMetadata containerMetadata = containerMetadataClient.getById(environmentInfoService.getFogId(), applicationRemoveRequest.getContainerId());
             simulationClient.teardown(containerMetadata.getInstanceId(), new AppEventInfo(containerMetadata.getImageMetadataId(), location, null, containerMetadata.getInstanceId(), null, fogOperationResult.isSuccessful()));
         } catch (Exception ex) {

@@ -452,6 +452,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
 
     private FogOperationResult performUpgrade(ApplicationUpgradeRequest applicationUpgradeRequest, ContainerInfo containerInfo) {
 
+        LOG.info("Upgrade requested: " + applicationUpgradeRequest.getContainerId());
         DockerContainerMetadata containerMetadata = containerMetadataApi.getById(environmentInfoService.getFogId(), containerInfo.getId());
 
         if (containerMetadata == null) {
@@ -478,6 +479,8 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
                 LOG.error("Image metadata for new app version is missing!");
                 return new FogOperationResult(containerInfo.getId(), false, environmentInfoService.getFogBaseUrl(), "Image metadata for new app version missing");
             }
+
+            LOG.info("Upgrade: " + appUpdateInfo.getImageMetadataId() + "(" + imageMetadata.getApplicationName() + ")" + ": " + oldImageMetadata.getId() + " -> " + imageMetadata.getId());
 
             // create image for new version
             String newInstanceId = UUID.randomUUID().toString();

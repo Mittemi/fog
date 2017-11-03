@@ -11,6 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 /**
  * Created by Michael Mittermayr on 14.07.2017.
  */
@@ -58,6 +60,11 @@ public class AppEvolutionController implements AppEvolutionApi {
     @Override
     public String getLatestInstanceId(@PathVariable("instanceId") String instanceId) {
         return instanceIdHistoryService.getLatestInstanceId(instanceId);
+    }
+
+    @Override
+    public Map<String, String> getInstanceIdHistory() {
+        return instanceIdHistoryService.getHistory();
     }
 
     @RequestMapping(value = "reset", method = RequestMethod.POST)

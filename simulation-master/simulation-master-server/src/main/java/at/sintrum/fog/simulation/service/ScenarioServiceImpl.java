@@ -78,11 +78,6 @@ public class ScenarioServiceImpl implements ScenarioService {
     }
 
     @Override
-    public ScenarioExecutionResult getResult() {
-        return executionResult;
-    }
-
-    @Override
     public boolean cancel() {
         this.taskList = null;
         executionResult = null;

@@ -70,4 +70,34 @@ public class FogOperationResult {
     public void setInstanceId(String instanceId) {
         this.instanceId = instanceId;
     }
+
+    @Override
+    public String toString() {
+
+        String containerId = this.containerId;
+        String instanceId = this.instanceId;
+        String fogUrl = this.fogUrl;
+        String message = this.message;
+
+        if (containerId == null) {
+            containerId = "null";
+        }
+        if (instanceId == null) {
+            instanceId = "null";
+        }
+        if (fogUrl == null) {
+            fogUrl = "null";
+        }
+        if (message == null) {
+            message = "null";
+        }
+
+        return "FogOperationResult{" +
+                "containerId='" + containerId + '\'' +
+                ", instanceId='" + instanceId + '\'' +
+                ", successful=" + successful +
+                ", fogUrl='" + fogUrl + '\'' +
+                ", message='" + message + '\'' +
+                '}';
+    }
 }

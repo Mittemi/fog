@@ -1,5 +1,6 @@
 package at.sintrum.fog.simulation.scenario.evaluation;
 
+import at.sintrum.fog.applicationhousing.client.api.AppEvolutionClient;
 import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.core.dto.ResourceInfo;
 import at.sintrum.fog.metadatamanager.api.dto.DockerImageMetadata;
@@ -9,11 +10,15 @@ import at.sintrum.fog.simulation.SimulationServerConfig;
 import at.sintrum.fog.simulation.scenario.Scenario;
 import at.sintrum.fog.simulation.scenario.dto.BasicScenarioInfo;
 import at.sintrum.fog.simulation.service.FogResourceService;
+import at.sintrum.fog.simulation.service.ScenarioService;
+import at.sintrum.fog.simulation.simulation.mongo.FullSimulationResult;
+import at.sintrum.fog.simulation.simulation.mongo.respositories.FullSimulationResultRepository;
 import at.sintrum.fog.simulation.taskengine.TaskListBuilder;
 import at.sintrum.fog.simulation.taskengine.TrackExecutionState;
 import at.sintrum.fog.simulation.taskengine.tasks.WaitTillFinishedTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
@@ -29,8 +34,12 @@ public abstract class EvaluationScenarioBase implements Scenario {
     private final SimulationServerConfig config;
     private final FogResourceService fogResourceService;
     private final AppRequestClient appRequestClient;
+    private final AppEvolutionClient appEvolutionClient;
 
+    private final FullSimulationResultRepository fullSimulationResultRepository;
+    private final ScenarioService scenarioService;
     private final int NUMBER_OF_APPS;
+    private final int simulationDuration;
 
     private static final Logger LOG = LoggerFactory.getLogger(EvaluationScenarioBase.class);
     private LinkedList<DockerImageMetadata> applications;
@@ -39,13 +48,25 @@ public abstract class EvaluationScenarioBase implements Scenario {
         return applications;
     }
 
-    protected EvaluationScenarioBase(TaskListBuilder taskListBuilder, ImageMetadataClient imageMetadataClient, SimulationServerConfig config, FogResourceService fogResourceService, AppRequestClient appRequestClient, int numberOfApps) {
+    protected EvaluationScenarioBase(TaskListBuilder taskListBuilder,
+                                     ImageMetadataClient imageMetadataClient,
+                                     SimulationServerConfig config,
+                                     FogResourceService fogResourceService,
+                                     AppRequestClient appRequestClient,
+                                     AppEvolutionClient appEvolutionClient, FullSimulationResultRepository fullSimulationResultRepository,
+                                     @Lazy ScenarioService scenarioService,
+                                     int numberOfApps,
+                                     int simulationDuration) {
         this.taskListBuilder = taskListBuilder;
         this.imageMetadataClient = imageMetadataClient;
         this.config = config;
         this.fogResourceService = fogResourceService;
         this.appRequestClient = appRequestClient;
+        this.appEvolutionClient = appEvolutionClient;
+        this.fullSimulationResultRepository = fullSimulationResultRepository;
+        this.scenarioService = scenarioService;
         NUMBER_OF_APPS = numberOfApps;
+        this.simulationDuration = simulationDuration;
     }
 
     @Override
@@ -166,6 +187,10 @@ public abstract class EvaluationScenarioBase implements Scenario {
                     .ensureLocation(0, basicScenarioInfo.getCloud())
                     .logMessage(0, "App is back in cloud")
                     .removeApp(0)
+                    .codedTask(0, () -> {
+                        simulationState.appStopped();
+                        return true;
+                    })
                     .logMessage(0, "Track finished");
         }
 
@@ -189,7 +214,20 @@ public abstract class EvaluationScenarioBase implements Scenario {
                 .codedTask(0, () -> {
                     simulationState.setAllRequestsCompleted(true);
                     return true;
-                });
+                })
+                .codedTask(15, () -> simulationState.getRunningApplications() == 0)
+                .logMessage(0, "Save simulation results")
+                .codedTask(0, () -> {
+                    //persist results
+                    FullSimulationResult fullSimulationResult = new FullSimulationResult();
+                    fullSimulationResult.setExecutionInfo(scenarioService.getExecutionState());
+                    fullSimulationResult.setExecutionResult(scenarioService.getExecutionResult());
+
+                    fullSimulationResult.setInstanceIdHistory(appEvolutionClient.getInstanceIdHistory());
+                    fullSimulationResultRepository.save(fullSimulationResult);
+                    return true;
+                })
+                .logMessage(0, "Results saved, all done");
     }
 
     protected boolean checkIfAllAppsRunning(WaitTillFinishedTask.State simulationState) {
@@ -217,7 +255,7 @@ public abstract class EvaluationScenarioBase implements Scenario {
         int[] duration = getDuration();
 
 
-        for (int i = 1; i < 20; i++) {
+        for (int i = 1; i < simulationDuration; i++) {
             for (int fogIdx = 0; fogIdx < 5; fogIdx++) {
                 for (int appIdx = 0; appIdx < 10; appIdx++) {
                     int frequency = requestMatrix[fogIdx][appIdx];

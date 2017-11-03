@@ -17,6 +17,7 @@ public class SimulationDbEntry {
     private AppEventInfo appEventInfo;
     private AppEvent appEvent;
     private String metadataId;
+    private String appName;
 
     public String getSimulationRunId() {
         return simulationRunId;
@@ -56,5 +57,13 @@ public class SimulationDbEntry {
 
     public String getMetadataId() {
         return metadataId;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
+    }
+
+    public String getAppName() {
+        return appName;
     }
 }

@@ -19,7 +19,5 @@ public interface ScenarioService {
 
     ScenarioExecutionInfo getExecutionState();
 
-    ScenarioExecutionResult getResult();
-
     boolean cancel();
 }
