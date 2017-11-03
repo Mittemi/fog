@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -120,7 +121,10 @@ public class AppRequestServiceImpl {
     }
 
     public AppRequest getNextRequest(String instanceId) {
-        AppRequestInfo peek = getTravelQueueByInstanceId(instanceId).values().stream().sorted(getNextRequestComparator()).findFirst().orElse(null);
+        AppRequestInfo peek = getTravelQueueByInstanceId(instanceId).values().stream()
+                .sorted(getNextRequestComparator())
+                .filter(getRequestQueueFilter())
+                .findFirst().orElse(null);
         if (peek == null) return null;
         getActiveRequestBucket(instanceId).set(peek);
         return peek.getAppRequest();
@@ -131,6 +135,13 @@ public class AppRequestServiceImpl {
             return Comparator.comparing(AppRequestInfo::getCredits).reversed();
         }
         return Comparator.comparing(AppRequestInfo::getCreationDate);
+    }
+
+    private Predicate<? super AppRequestInfo> getRequestQueueFilter() {
+        if (configProperties.isUseAuction()) {
+            return appRequestInfo -> true;    //todo, impl
+        }
+        return appRequestInfo -> true;
     }
 
     public List<AppRequestInfo> getFinishedRequests() {

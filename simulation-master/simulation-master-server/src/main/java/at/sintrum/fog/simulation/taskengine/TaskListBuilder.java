@@ -299,6 +299,10 @@ public class TaskListBuilder {
             public AppTaskBuilder runFogRequestManager(FogRequestsManager fogRequestsManager) {
                 return addTask(fogRequestsManager);
             }
+
+            public AppTaskBuilder sleep(int duration) {
+                return addTask(new CodedTask(duration, getTrackExecutionState(), () -> true));
+            }
         }
 
         public List<Integer> getTrackIds() {

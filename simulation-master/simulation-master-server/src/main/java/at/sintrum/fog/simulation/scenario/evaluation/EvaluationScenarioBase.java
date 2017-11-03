@@ -35,6 +35,10 @@ public abstract class EvaluationScenarioBase implements Scenario {
     private static final Logger LOG = LoggerFactory.getLogger(EvaluationScenarioBase.class);
     private LinkedList<DockerImageMetadata> applications;
 
+    public LinkedList<DockerImageMetadata> getApplications() {
+        return applications;
+    }
+
     protected EvaluationScenarioBase(TaskListBuilder taskListBuilder, ImageMetadataClient imageMetadataClient, SimulationServerConfig config, FogResourceService fogResourceService, AppRequestClient appRequestClient, int numberOfApps) {
         this.taskListBuilder = taskListBuilder;
         this.imageMetadataClient = imageMetadataClient;
@@ -137,7 +141,7 @@ public abstract class EvaluationScenarioBase implements Scenario {
 
         TaskListBuilder.TaskListBuilderState.AppTaskBuilder simulationControlTrack = taskListBuilderState.createTrack();
         simulationControlTrack
-                .codedTask(120, () -> simulationState.getRunningApplications() == NUMBER_OF_APPS)
+                .codedTask(120, () -> checkIfAllAppsRunning(simulationState))
                 .logMessage(0, "All apps running!");
 
         List<TrackExecutionState> applicationStates = new ArrayList<>();
@@ -178,7 +182,7 @@ public abstract class EvaluationScenarioBase implements Scenario {
                 .runFogRequestManager(fogRequestManager)
                 .logMessage(0, "Fog request manager completed");
 
-        setupSimulation(simulationControlTrack, taskListBuilderState, basicScenarioInfo, applicationStates, useAuction, taskBuilders);
+        setupSimulation(simulationState, taskListBuilderState, basicScenarioInfo, applicationStates, useAuction, taskBuilders);
 
         simulationControlTrack
                 .logMessage(0, "Simulation specific tasks finished, init cleanup. Apps can be still in the cloud!")
@@ -186,6 +190,10 @@ public abstract class EvaluationScenarioBase implements Scenario {
                     simulationState.setAllRequestsCompleted(true);
                     return true;
                 });
+    }
+
+    protected boolean checkIfAllAppsRunning(WaitTillFinishedTask.State simulationState) {
+        return simulationState.getRunningApplications() == NUMBER_OF_APPS;
     }
 
     protected int[] getDuration() {
@@ -231,5 +239,5 @@ public abstract class EvaluationScenarioBase implements Scenario {
 
     protected abstract int[][] getRequestMatrix();
 
-    protected abstract void setupSimulation(TaskListBuilder.TaskListBuilderState.AppTaskBuilder simulationControlTrack, TaskListBuilder.TaskListBuilderState taskListBuilderState, BasicScenarioInfo basicScenarioInfo, List<TrackExecutionState> applications, boolean useAuction, ArrayList<TaskListBuilder.TaskListBuilderState.AppTaskBuilder> taskBuilders);
+    protected abstract void setupSimulation(WaitTillFinishedTask.State simulationControlTrack, TaskListBuilder.TaskListBuilderState taskListBuilderState, BasicScenarioInfo basicScenarioInfo, List<TrackExecutionState> applications, boolean useAuction, ArrayList<TaskListBuilder.TaskListBuilderState.AppTaskBuilder> taskBuilders);
 }
