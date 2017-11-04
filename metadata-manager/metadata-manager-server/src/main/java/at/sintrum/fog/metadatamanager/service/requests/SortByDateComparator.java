@@ -1,5 +1,7 @@
 package at.sintrum.fog.metadatamanager.service.requests;
 
+import at.sintrum.fog.metadatamanager.api.dto.AppRequestInfo;
+
 import java.util.Comparator;
 
 /**

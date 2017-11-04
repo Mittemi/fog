@@ -1,6 +1,5 @@
-package at.sintrum.fog.metadatamanager.service.requests;
+package at.sintrum.fog.metadatamanager.api.dto;
 
-import at.sintrum.fog.metadatamanager.api.dto.AppRequest;
 import org.joda.time.DateTime;
 
 import java.util.UUID;

@@ -225,6 +225,8 @@ public abstract class EvaluationScenarioBase implements Scenario {
                     fullSimulationResult.setExecutionResult(scenarioService.getExecutionResult());
 
                     fullSimulationResult.setInstanceIdHistory(appEvolutionClient.getInstanceIdHistory());
+                    fullSimulationResult.setFinishedRequests(appRequestClient.getFinishedRequests());
+                    fullSimulationResult.setNextRequests(appRequestClient.getNextRequests());
                     fullSimulationResultRepository.save(fullSimulationResult);
                     return true;
                 })
@@ -258,7 +260,7 @@ public abstract class EvaluationScenarioBase implements Scenario {
 
         for (int i = 1; i < simulationDuration; i++) {
             for (int fogIdx = 0; fogIdx < 5; fogIdx++) {
-                for (int appIdx = 0; appIdx < 10; appIdx++) {
+                for (int appIdx = 0; appIdx < NUMBER_OF_APPS; appIdx++) {
                     int frequency = requestMatrix[fogIdx][appIdx];
                     if (frequency == 0) {
                         continue;

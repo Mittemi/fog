@@ -1,10 +1,7 @@
 package at.sintrum.fog.metadatamanager.api;
 
 import at.sintrum.fog.core.dto.FogIdentification;
-import at.sintrum.fog.metadatamanager.api.dto.AppRequest;
-import at.sintrum.fog.metadatamanager.api.dto.AppRequestDto;
-import at.sintrum.fog.metadatamanager.api.dto.AppRequestResult;
-import at.sintrum.fog.metadatamanager.api.dto.RequestState;
+import at.sintrum.fog.metadatamanager.api.dto.*;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -50,4 +47,10 @@ public interface AppRequestsApi {
 
     @RequestMapping(value = "resetApp/{appName}", method = RequestMethod.DELETE)
     void resetApp(@PathVariable("appName") String appName);
+
+    @RequestMapping(value = "getFinishedRequests", method = RequestMethod.GET)
+    List<AppRequestInfo> getFinishedRequests();
+
+    @RequestMapping(value = "getNextRequests", method = RequestMethod.GET)
+    List<AppRequestInfo> getNextRequests();
 }
