@@ -41,7 +41,7 @@ public class ComplexEvalScenario extends EvaluationScenarioBase {
                 fullSimulationResultRepository,
                 scenarioService,
                 10,
-                20);
+                60);
     }
 
     @Override

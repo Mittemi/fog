@@ -32,4 +32,7 @@ public interface ApplicationManagerApi {
 
     @RequestMapping(value = "isAlive", method = RequestMethod.GET)
     boolean isAlive();
+
+    @RequestMapping(value = "reset", method = RequestMethod.POST)
+    void reset();
 }

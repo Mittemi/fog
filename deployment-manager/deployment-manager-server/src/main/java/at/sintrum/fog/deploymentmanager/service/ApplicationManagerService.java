@@ -20,4 +20,6 @@ public interface ApplicationManagerService {
     Future<FogOperationResult> remove(ApplicationRemoveRequest applicationRemoveRequest);
 
     boolean checkResources(ResourceInfo resourceInfo);
+
+    void reset();
 }

@@ -51,7 +51,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
 
     private final SimulationFeedbackClient simulationFeedbackClient;
 
-    private final ResourceInfo usedResources;
+    private ResourceInfo usedResources;
 
     public ApplicationManagerServiceImpl(DockerService dockerService,
                                          ImageMetadataApi imageMetadataApi,
@@ -103,7 +103,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
             }
         } finally {
             if (isSuccessful) {
-                freeLocalResources();
+                freeLocalResources(instanceId);
             }
         }
         return fogOperationResult;
@@ -153,7 +153,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
             return new FogOperationResult(null, false, environmentInfoService.getFogBaseUrl(), "Image metadata missing.");
         } else {
 
-            if (!ensureLocalResources(true)) {
+            if (!ensureLocalResources(true, applicationStartRequest.getInstanceId())) {
                 LOG.warn("Can't start application. Not enough resources available right now.");
                 return new FogOperationResult(null, false, environmentInfoService.getFogBaseUrl(), "Not enough resources");
             }
@@ -173,28 +173,28 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
                 }
             } finally {
                 if (result == null || !result.isSuccessful()) {
-                    freeLocalResources();
+                    freeLocalResources(applicationStartRequest.getInstanceId());
                 }
             }
             return result;
         }
     }
 
-    private void freeLocalResources() {
+    private void freeLocalResources(String instanceId) {
         synchronized (usedResources) {
-            LOG.debug("Free resources for 1 application");
+            LOG.debug("Free resources for 1 application: " + instanceId);
             usedResources.subtract(new ResourceInfo(1, 1, 1, 1));
         }
     }
 
-    private synchronized boolean ensureLocalResources(boolean blockResourcesIfAvailable) {
+    private synchronized boolean ensureLocalResources(boolean blockResourcesIfAvailable, String instanceId) {
         FogResourceInfoDto fogResourceInfoDto = fogResourcesApi.availableResources(currentFogIdentification);
         ResourceInfo demand = new ResourceInfo(1, 1, 1, 1);
         synchronized (usedResources) {
             LOG.debug("Check resources for 1 application");
             boolean result = fogResourceInfoDto.getResourceInfo().isEnough(demand.copy().add(usedResources));
             if (result && blockResourcesIfAvailable) {
-                LOG.debug("Block resources for 1 application");
+                LOG.debug("Block resources for 1 application: " + instanceId);
                 usedResources.add(demand);
             }
             return result;
@@ -408,10 +408,16 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
 
     @Override
     public boolean checkResources(ResourceInfo resourceInfo) {
-        return ensureLocalResources(false);
+        return ensureLocalResources(false, "noinstanceid");
+    }
+
+    @Override
+    public void reset() {
+        usedResources = ResourceInfo.fixedSized(0);
     }
 
     private FogOperationResult performRemove(ApplicationRemoveRequest applicationRemoveRequest, ContainerInfo containerInfo) {
+        DockerContainerMetadata containerMetadata = containerMetadataApi.getById(environmentInfoService.getFogId(), containerInfo.getId());
         if (containerInfo.isRunning()) {
             if (!stopApplication(applicationRemoveRequest.getApplicationUrl(), applicationRemoveRequest.getContainerId())) {
                 LOG.error("Failed to stop the container");
@@ -420,7 +426,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
         }
         if (dockerService.removeContainer(applicationRemoveRequest.getContainerId())) {
             LOG.debug("Container deleted: " + applicationRemoveRequest.getContainerId());
-            freeLocalResources();
+            freeLocalResources(containerMetadata != null ? containerMetadata.getInstanceId() : "missingmetadata");
             return new FogOperationResult(applicationRemoveRequest.getContainerId(), true, environmentInfoService.getFogBaseUrl());
         }
         LOG.error("Failed to remove the container");

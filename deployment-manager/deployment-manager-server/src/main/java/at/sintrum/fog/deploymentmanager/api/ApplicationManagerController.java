@@ -101,4 +101,9 @@ public class ApplicationManagerController implements ApplicationManagerApi {
     public boolean isAlive() {
         return true;
     }
+
+    @Override
+    public void reset() {
+        applicationManagerService.reset();
+    }
 }

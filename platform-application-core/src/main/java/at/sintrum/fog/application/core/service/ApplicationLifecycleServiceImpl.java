@@ -125,12 +125,7 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
                 } else {
                     if (!environmentInfoService.isCloud()) {
                         LOG.info("Let's move to the cloud, there is no target in queue right now");
-                        String cloudBaseUrl = cloudLocatorService.getCloudBaseUrl();
-                        if (!StringUtils.isEmpty(cloudBaseUrl)) {
-                            moveApplication(FogIdentification.parseFogBaseUrl(cloudBaseUrl));
-                        } else {
-                            LOG.warn("We can't move! Cloud was not found.");
-                        }
+                        moveToCloud();
                     }
                 }
             } catch (Exception ex) {
@@ -144,6 +139,15 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
         return true;
     }
 
+    private void moveToCloud() {
+        String cloudBaseUrl = cloudLocatorService.getCloudBaseUrl();
+        if (!StringUtils.isEmpty(cloudBaseUrl)) {
+            moveApplication(FogIdentification.parseFogBaseUrl(cloudBaseUrl));
+        } else {
+            LOG.warn("We can't move! Cloud was not found.");
+        }
+    }
+
     public boolean upgradeAppIfRequired() {
         synchronized (this) {
 
@@ -154,9 +158,6 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
 
                 if (appUpdateInfo.isUpdateRequired()) {
                     LOG.debug("Update is required. Request upgrade!");
-                    ApplicationUpgradeRequest applicationUpgradeRequest = new ApplicationUpgradeRequest();
-                    applicationUpgradeRequest.setContainerId(environmentInfoService.getOwnContainerId());
-                    applicationUpgradeRequest.setApplicationUrl(environmentInfoService.getOwnUrl());
 
                     if (acceptRequests) {
                         acceptRequests = false;
@@ -165,16 +166,25 @@ public class ApplicationLifecycleServiceImpl implements ApplicationLifecycleServ
                         return false;
                     }
 
-                    ApplicationStateMetadata stateMetadata = applicationStateMetadataClient.setState(environmentInfoService.getInstanceId(), AppState.Upgrade);
+                    if (!environmentInfoService.isCloud()) {
+                        LOG.debug("Upgrade needs to be executed in the cloud.");
+                        moveToCloud();
+                    } else {
 
-                    FogOperationResult fogOperationResult = applicationManagerClient.upgradeApplication(applicationUpgradeRequest);
+                        ApplicationUpgradeRequest applicationUpgradeRequest = new ApplicationUpgradeRequest();
+                        applicationUpgradeRequest.setContainerId(environmentInfoService.getOwnContainerId());
+                        applicationUpgradeRequest.setApplicationUrl(environmentInfoService.getOwnUrl());
 
-                    if (!fogOperationResult.isSuccessful()) {
-                        LOG.debug("Update failed, continue with normal execution");
-                        updateAppState(getFogIdentification(), null, stateMetadata);        //TODO: test it...
-                        return false;
+                        ApplicationStateMetadata stateMetadata = applicationStateMetadataClient.setState(environmentInfoService.getInstanceId(), AppState.Upgrade);
+
+                        FogOperationResult fogOperationResult = applicationManagerClient.upgradeApplication(applicationUpgradeRequest);
+
+                        if (!fogOperationResult.isSuccessful()) {
+                            LOG.debug("Update failed, continue with normal execution");
+                            updateAppState(getFogIdentification(), null, stateMetadata);        //TODO: test it...
+                            return false;
+                        }
                     }
-
                     return true;
                 }
 
