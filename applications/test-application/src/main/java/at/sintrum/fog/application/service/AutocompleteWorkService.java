@@ -44,7 +44,7 @@ public class AutocompleteWorkService {
         int estimatedWorkingTime = travelingCoordinationService.getEstimatedWorkingTime();
 
         if (Seconds.secondsBetween(startTime, new DateTime()).isGreaterThan(Seconds.seconds(estimatedWorkingTime))) {
-            LOG.debug("Autocomplete work service triggers work");
+            LOG.debug("Autocomplete work service triggers work. Duration: " + estimatedWorkingTime);
             finished = true;
             workService.doWork();
         }

@@ -21,4 +21,4 @@ endpoints.shutdown.enabled: true
 
 fog.app:
   enable-simulation-mode: false
-  enable-autocomplete-work-mode: true
+  enable-autocomplete-work-mode: ${AUTOCOMPLETE_WORK_ENABLED:true}

@@ -40,70 +40,69 @@ public class SimulationFeedbackClientImpl implements SimulationFeedbackClient {
         this.appEvolutionClient = appEvolutionClient;
     }
 
-
     @Override
     @Async
-    public void appStart(ApplicationStartRequest applicationStartRequest, FogOperationResult fogOperationResult) {
+    public void appStart(ApplicationStartRequest applicationStartRequest, FogOperationResult fogOperationResult, String containerId) {
         try {
             LOG.debug("Send feedback start: " + fogOperationResult.toString());
             simulationClient.started(applicationStartRequest.getInstanceId(), new AppEventInfo(applicationStartRequest.getMetadataId(), null, location, applicationStartRequest.getInstanceId(), applicationStartRequest.getInstanceId(), fogOperationResult.isSuccessful()));
         } catch (Exception ex) {
-
+            LOG.warn("Feedback failed", ex);
         }
     }
 
     @Override
     @Async
-    public void appMove(ApplicationMoveRequest applicationMoveRequest, FogOperationResult fogOperationResult) {
+    public void appMove(ApplicationMoveRequest applicationMoveRequest, FogOperationResult fogOperationResult, String containerId) {
         try {
             LOG.debug("Send feedback move: " + fogOperationResult.toString());
-            DockerContainerMetadata containerMetadata = containerMetadataClient.getById(environmentInfoService.getFogId(), applicationMoveRequest.getContainerId());
+            DockerContainerMetadata containerMetadata = containerMetadataClient.getById(environmentInfoService.getFogId(), containerId);
             simulationClient.moved(containerMetadata.getInstanceId(), new AppEventInfo(containerMetadata.getImageMetadataId(), location, applicationMoveRequest.getTargetFog(), containerMetadata.getInstanceId(), null, fogOperationResult.isSuccessful()));
         } catch (Exception ex) {
-
+            LOG.warn("Feedback failed", ex);
         }
     }
 
     @Override
     @Async
-    public void appUpgrade(ApplicationUpgradeRequest applicationUpgradeRequest, FogOperationResult fogOperationResult) {
+    public void appUpgrade(ApplicationUpgradeRequest applicationUpgradeRequest, FogOperationResult fogOperationResult, String containerId) {
         try {
             LOG.debug("Send feedback upgrade: " + fogOperationResult.toString());
-            DockerContainerMetadata containerMetadata = containerMetadataClient.getById(environmentInfoService.getFogId(), applicationUpgradeRequest.getContainerId());
+            DockerContainerMetadata containerMetadata = containerMetadataClient.getById(environmentInfoService.getFogId(), containerId);
             String latestInstanceId = appEvolutionClient.getLatestInstanceId(containerMetadata.getInstanceId());
 
             simulationClient.upgraded(containerMetadata.getInstanceId(), new AppEventInfo(containerMetadata.getImageMetadataId(), location, location, containerMetadata.getInstanceId(), latestInstanceId, fogOperationResult.isSuccessful()));
         } catch (Exception ex) {
-
+            LOG.warn("Feedback failed", ex);
         }
     }
 
     @Override
     @Async
-    public void appRecover(ApplicationRecoveryRequest applicationRecoveryRequest, FogOperationResult fogOperationResult) {
+    public void appRecover(ApplicationRecoveryRequest applicationRecoveryRequest, FogOperationResult fogOperationResult, String containerId) {
         try {
             LOG.debug("Send feedback recover: " + fogOperationResult.toString());
             String imageMetadataId = null;
-            if (!StringUtils.isEmpty(fogOperationResult.getContainerId())) {
-                imageMetadataId = containerMetadataClient.getById(environmentInfoService.getFogId(), fogOperationResult.getContainerId()).getImageMetadataId();
+            if (!StringUtils.isEmpty(containerId)) {
+                imageMetadataId = containerMetadataClient.getById(environmentInfoService.getFogId(), containerId).getImageMetadataId();
             }
 
             String latestInstanceId = appEvolutionClient.getLatestInstanceId(applicationRecoveryRequest.getInstanceId());
             simulationClient.recovered(applicationRecoveryRequest.getInstanceId(), new AppEventInfo(imageMetadataId, location, location, applicationRecoveryRequest.getInstanceId(), latestInstanceId, fogOperationResult.isSuccessful()));
         } catch (Exception ex) {
-
+            LOG.warn("Feedback failed", ex);
         }
     }
 
     @Override
     @Async
-    public void appRemove(ApplicationRemoveRequest applicationRemoveRequest, FogOperationResult fogOperationResult) {
+    public void appRemove(ApplicationRemoveRequest applicationRemoveRequest, FogOperationResult fogOperationResult, String containerId) {
         try {
             LOG.debug("Send feedback remove: " + fogOperationResult.toString());
-            DockerContainerMetadata containerMetadata = containerMetadataClient.getById(environmentInfoService.getFogId(), applicationRemoveRequest.getContainerId());
+            DockerContainerMetadata containerMetadata = containerMetadataClient.getById(environmentInfoService.getFogId(), containerId);
             simulationClient.teardown(containerMetadata.getInstanceId(), new AppEventInfo(containerMetadata.getImageMetadataId(), location, null, containerMetadata.getInstanceId(), null, fogOperationResult.isSuccessful()));
         } catch (Exception ex) {
-
+            LOG.warn("Feedback failed", ex);
         }
     }
 }

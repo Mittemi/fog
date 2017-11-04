@@ -17,6 +17,8 @@ public class DockerImageMetadata extends MetadataBase {
 
     private boolean isEurekaEnabled;
 
+    private boolean isAutocompleteWorkEnabled;
+
     private boolean isStateless;
 
     private boolean enableDebugging;
@@ -115,5 +117,13 @@ public class DockerImageMetadata extends MetadataBase {
 
     public void setApplicationName(String applicationName) {
         this.applicationName = applicationName;
+    }
+
+    public boolean isAutocompleteWorkEnabled() {
+        return isAutocompleteWorkEnabled;
+    }
+
+    public void setAutocompleteWorkEnabled(boolean autocompleteWorkEnabled) {
+        isAutocompleteWorkEnabled = autocompleteWorkEnabled;
     }
 }

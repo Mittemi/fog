@@ -24,6 +24,7 @@ public class DeploymentService {
     public static final String SERVICE_PROFILE = "SERVICE_PROFILE";
     public static final String EUREKA_SERVICE_URL = "EUREKA_SERVICE_URL";
     public static final String EUREKA_CLIENT_IP = "EUREKA_CLIENT_IP";
+    public static final String AUTOCOMPLETE_WORK_ENABLED = "AUTOCOMPLETE_WORK_ENABLED";
     public static final String FOG_BASE_URL = "FOG_BASE_URL";
     public static final String METADATA_ID = "METADATA_ID";
     public static final String APP_NAME = "APP_NAME";
@@ -99,6 +100,11 @@ public class DeploymentService {
         if (imageMetadata.isEurekaEnabled()) {
             addDynamicEnvironmentKey(environment, EUREKA_SERVICE_URL, environmentInfoService.getEurekaServiceUrl());
             addDynamicEnvironmentKey(environment, EUREKA_CLIENT_IP, environmentInfoService.getEurekaClientIp());
+        }
+        if (imageMetadata.isAutocompleteWorkEnabled()) {
+            addDynamicEnvironmentKey(environment, AUTOCOMPLETE_WORK_ENABLED, "true");
+        } else {
+            addDynamicEnvironmentKey(environment, AUTOCOMPLETE_WORK_ENABLED, "false");
         }
         addDynamicEnvironmentKey(environment, FOG_BASE_URL, environmentInfoService.getFogBaseUrl());
         addDynamicEnvironmentKey(environment, METADATA_ID, imageMetadata.getId());

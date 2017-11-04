@@ -146,6 +146,7 @@ public abstract class EvaluationScenarioBase implements Scenario {
         imageMetadata.setApplicationName(name);
         imageMetadata.setTag("latest");
         imageMetadata.setEurekaEnabled(true);
+        imageMetadata.setAutocompleteWorkEnabled(true);
         imageMetadata.setEnableDebugging(enableDebug);
         imageMetadata.setEnvironment(Collections.singletonList("SERVER_PORT=" + port));
         imageMetadata.setPorts(Collections.singletonList(port));
