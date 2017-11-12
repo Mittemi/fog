@@ -155,7 +155,7 @@ public class TaskListBuilder {
                 anotherAppMetadata = all.stream().filter(x -> x.getApplicationName().equals("another-application") && x.isEnableDebugging() && x.getTag().equals("latest")).findFirst().orElse(null);
 
                 if (testAppMetadata == null || anotherAppMetadata == null) {
-                    LOG.error("Failed to find image metadata");
+                    LOG.debug("Failed to find image metadata");
                 }
             }
 

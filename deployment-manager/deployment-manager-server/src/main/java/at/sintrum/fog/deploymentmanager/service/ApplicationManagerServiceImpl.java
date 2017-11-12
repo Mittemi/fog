@@ -53,7 +53,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
 
     private final SimulationFeedbackClient simulationFeedbackClient;
 
-    private ResourceInfo usedResources;
+    private final ResourceInfo usedResources;
 
     private List<String> runningApps = Collections.synchronizedList(new LinkedList<>());
 
@@ -107,7 +107,11 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
             }
         } finally {
             if (isSuccessful) {
-                freeLocalResources(instanceId);
+                if (applicationMoveRequest.getTargetFog().isSameFog(FogIdentification.parseFogId(environmentInfoService.getFogId()))) {
+                    LOG.debug("Move to same Fog, no resources to free!");
+                } else {
+                    freeLocalResources(instanceId);
+                }
             }
         }
         return fogOperationResult;
@@ -157,7 +161,9 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
             return new FogOperationResult(null, false, environmentInfoService.getFogBaseUrl(), "Image metadata missing.");
         } else {
 
-            if (!ensureLocalResources(true, applicationStartRequest.getInstanceId())) {
+            boolean alreadyBlocked = checkAlreadyBlocked(true, applicationStartRequest.getInstanceId());
+
+            if (!alreadyBlocked && !ensureLocalResources(true, applicationStartRequest.getInstanceId())) {
                 LOG.warn("Can't start application. Not enough resources available right now.");
                 return new FogOperationResult(null, false, environmentInfoService.getFogBaseUrl(), "Not enough resources");
             }
@@ -177,8 +183,12 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
                 }
             } finally {
                 if (result == null || !result.isSuccessful()) {
-                    freeLocalResources(applicationStartRequest.getInstanceId());
-                    LOG.debug("Free resources due to start error: " + result);
+                    if (!alreadyBlocked) {
+                        freeLocalResources(applicationStartRequest.getInstanceId());
+                        LOG.debug("Free resources due to start error: " + result);
+                    } else {
+                        LOG.warn("Not freed resources, already blocked before! " + applicationStartRequest.getInstanceId());
+                    }
                 }
             }
             return result;
@@ -202,20 +212,30 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
         ResourceInfo demand = new ResourceInfo(1, 1, 1, 1);
         synchronized (usedResources) {
             LOG.debug("Check resources for 1 application");
+            if (checkAlreadyBlocked(blockResourcesIfAvailable, instanceId)) {
+                return true;
+            }
             boolean result = fogResourceInfoDto.getResourceInfo().isEnough(demand.copy().add(usedResources));
             if (result && blockResourcesIfAvailable) {
                 LOG.debug("Block resources for 1 application: " + instanceId);
                 usedResources.add(demand);
-                if (runningApps.stream().noneMatch(x -> x.equals(instanceId))) {
-                    runningApps.add(instanceId);
-                } else {
-                    LOG.warn("Block resources, already blocked for instance: " + instanceId);
-                }
+                runningApps.add(instanceId);
             } else {
                 LOG.debug("Resources blocked by instances: " + String.join(", ", runningApps));
             }
 
             return result;
+        }
+    }
+
+    private synchronized boolean checkAlreadyBlocked(boolean blockResourcesIfAvailable, String instanceId) {
+        synchronized (usedResources) {
+            boolean alreadyBlocked = runningApps.stream().anyMatch(x -> x.equals(instanceId));
+            if (alreadyBlocked && blockResourcesIfAvailable) {
+                LOG.warn("Block resources, already blocked for instance: " + instanceId);
+                return true;
+            }
+            return false;
         }
     }
 
@@ -353,6 +373,11 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
     }
 
     private boolean checkRemoteResources(ApplicationMoveRequest applicationMoveRequest) {
+        if (applicationMoveRequest.getTargetFog().isSameFog(FogIdentification.parseFogId(environmentInfoService.getFogId()))) {
+            LOG.debug("CheckRemoteResources, remote == local: ");
+            return true;        // remote == local
+        }
+
         ApplicationManagerClient applicationManagerClient = clientFactory.createApplicationManagerClient(applicationMoveRequest.getTargetFog().toUrl());
         return applicationManagerClient.checkResources(new ResourceInfo(1, 1, 1, 1));
     }
@@ -431,7 +456,9 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
 
     @Override
     public void reset() {
-        usedResources = ResourceInfo.fixedSized(0);
+        synchronized (usedResources) {
+            usedResources.setToFixedSize(0);
+        }
     }
 
     private FogOperationResult performRemove(ApplicationRemoveRequest applicationRemoveRequest, ContainerInfo containerInfo) {
@@ -547,7 +574,17 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
             if (!finalizeReplaceContainerOperation(startNewAppSuccessful, oldContainerId)) {
                 return new FogOperationResult(oldContainerId, false, environmentInfoService.getFogBaseUrl(), "upgrade failed, recovered");
             }
+            resourcesInstanceIdUpdate(containerMetadata.getInstanceId(), newInstanceId);
             return new FogOperationResult(newContainerId, true, environmentInfoService.getFogBaseUrl());
+        }
+    }
+
+    private void resourcesInstanceIdUpdate(String instanceId, String newInstanceId) {
+        synchronized (usedResources) {
+            if (runningApps.remove(instanceId)) {
+                LOG.error("Old instanceId not found during resourcesInstanceIdUpdate");
+            }
+            runningApps.add(newInstanceId);
         }
     }
 

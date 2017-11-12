@@ -86,4 +86,11 @@ public class ResourceInfo {
     public static ResourceInfo fixedSized(int numberApps) {
         return new ResourceInfo(numberApps, numberApps, numberApps, numberApps);
     }
+
+    public void setToFixedSize(int value) {
+        this.storage = value;
+        this.cpu = value;
+        this.memory = value;
+        this.network = value;
+    }
 }
