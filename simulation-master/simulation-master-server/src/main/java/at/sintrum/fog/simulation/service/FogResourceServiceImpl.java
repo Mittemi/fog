@@ -27,7 +27,7 @@ public class FogResourceServiceImpl implements FogResourceService {
     }
 
     private ResourceInfo getDefaultResourceInfo() {
-        return new ResourceInfo(Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE);
+        return new ResourceInfo(1000, 1000, 1000, 1000);
     }
 
     @Override

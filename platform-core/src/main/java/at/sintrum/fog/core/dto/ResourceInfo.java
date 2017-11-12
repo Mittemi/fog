@@ -5,15 +5,15 @@ package at.sintrum.fog.core.dto;
  */
 public class ResourceInfo {
 
-    private float storage;
-    private float cpu;
-    private float memory;
-    private float network;
+    private int storage;
+    private int cpu;
+    private int memory;
+    private int network;
 
     public ResourceInfo() {
     }
 
-    public ResourceInfo(float storage, float cpu, float memory, float network) {
+    public ResourceInfo(int storage, int cpu, int memory, int network) {
         this.storage = storage;
         this.cpu = cpu;
         this.memory = memory;
@@ -27,35 +27,35 @@ public class ResourceInfo {
         this.memory = resourceInfo.memory;
     }
 
-    public float getStorage() {
+    public int getStorage() {
         return storage;
     }
 
-    public void setStorage(float storage) {
+    public void setStorage(int storage) {
         this.storage = storage;
     }
 
-    public float getCpu() {
+    public int getCpu() {
         return cpu;
     }
 
-    public void setCpu(float cpu) {
+    public void setCpu(int cpu) {
         this.cpu = cpu;
     }
 
-    public float getMemory() {
+    public int getMemory() {
         return memory;
     }
 
-    public void setMemory(float memory) {
+    public void setMemory(int memory) {
         this.memory = memory;
     }
 
-    public float getNetwork() {
+    public int getNetwork() {
         return network;
     }
 
-    public void setNetwork(float network) {
+    public void setNetwork(int network) {
         this.network = network;
     }
 

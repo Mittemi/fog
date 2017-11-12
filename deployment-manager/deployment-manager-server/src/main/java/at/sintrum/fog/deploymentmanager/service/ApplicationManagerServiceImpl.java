@@ -27,6 +27,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -52,6 +54,8 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
     private final SimulationFeedbackClient simulationFeedbackClient;
 
     private ResourceInfo usedResources;
+
+    private List<String> runningApps = Collections.synchronizedList(new LinkedList<>());
 
     public ApplicationManagerServiceImpl(DockerService dockerService,
                                          ImageMetadataApi imageMetadataApi,
@@ -111,7 +115,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
 
     private boolean finalizeReplaceContainerOperation(boolean isSuccessful, String originalContainerId) {
         if (isSuccessful) {
-            containerMetadataApi.delete(environmentInfoService.getFogId(), originalContainerId);
+            //containerMetadataApi.delete(environmentInfoService.getFogId(), originalContainerId);
             if (!dockerService.removeContainer(originalContainerId)) {
                 LOG.error("Failed to delete moved container. Unnecessary resources!");
             }
@@ -174,6 +178,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
             } finally {
                 if (result == null || !result.isSuccessful()) {
                     freeLocalResources(applicationStartRequest.getInstanceId());
+                    LOG.debug("Free resources due to start error: " + result);
                 }
             }
             return result;
@@ -184,6 +189,11 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
         synchronized (usedResources) {
             LOG.debug("Free resources for 1 application: " + instanceId);
             usedResources.subtract(new ResourceInfo(1, 1, 1, 1));
+            if (runningApps.stream().anyMatch(x -> x.equals(instanceId))) {
+                runningApps.remove(instanceId);
+            } else {
+                LOG.warn("Free resources, UNKNOWN instance: " + instanceId);
+            }
         }
     }
 
@@ -196,7 +206,15 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
             if (result && blockResourcesIfAvailable) {
                 LOG.debug("Block resources for 1 application: " + instanceId);
                 usedResources.add(demand);
+                if (runningApps.stream().noneMatch(x -> x.equals(instanceId))) {
+                    runningApps.add(instanceId);
+                } else {
+                    LOG.warn("Block resources, already blocked for instance: " + instanceId);
+                }
+            } else {
+                LOG.debug("Resources blocked by instances: " + String.join(", ", runningApps));
             }
+
             return result;
         }
     }
@@ -430,6 +448,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
             return new FogOperationResult(applicationRemoveRequest.getContainerId(), true, environmentInfoService.getFogBaseUrl());
         }
         LOG.error("Failed to remove the container");
+        LOG.error("Dangerous resources not removed");
 
         return new FogOperationResult(applicationRemoveRequest.getContainerId(), false, environmentInfoService.getFogBaseUrl());
     }
@@ -450,6 +469,8 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
         if (!dockerService.startContainer(containerInfo.getId())) {
             dockerService.removeContainer(containerInfo.getId());
             LOG.error("Failed to start container");
+            LOG.error("Super dangerous, check this");
+            freeLocalResources(applicationRecoveryRequest.getInstanceId());
             return new FogOperationResult(containerInfo.getId(), false, environmentInfoService.getFogBaseUrl(), "Failed to start the container");
         }
 
@@ -506,6 +527,7 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
 
             //copy data
             migrateData(oldContainerId, oldImageMetadata, newContainerId, imageMetadata);
+
             appEvolutionClient.saveInstanceIdHistory(new AppInstanceIdHistoryInfo(containerMetadata.getInstanceId(), newInstanceId));
 
             //start new application, delete old container
