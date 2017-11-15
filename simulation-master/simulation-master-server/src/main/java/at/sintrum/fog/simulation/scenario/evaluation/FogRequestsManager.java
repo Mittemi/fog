@@ -3,6 +3,7 @@ package at.sintrum.fog.simulation.scenario.evaluation;
 import at.sintrum.fog.applicationhousing.client.api.AppEvolutionClient;
 import at.sintrum.fog.core.dto.FogIdentification;
 import at.sintrum.fog.metadatamanager.client.api.AppRequestClient;
+import at.sintrum.fog.simulation.service.FogCellStateService;
 import at.sintrum.fog.simulation.taskengine.AppRequestState;
 import at.sintrum.fog.simulation.taskengine.TrackExecutionState;
 import at.sintrum.fog.simulation.taskengine.tasks.FogTaskBase;
@@ -30,6 +31,7 @@ public class FogRequestsManager extends FogTaskBase {
 
     private List<RequestInfo> requestInfos;
     private AppEvolutionClient appEvolutionClient;
+    private final FogCellStateService fogCellStateService;
 
     private List<RequestInfo> getCurrentRequests() {
         final int currentOffset = Seconds.secondsBetween(simulationStart, new DateTime()).getSeconds();
@@ -46,7 +48,8 @@ public class FogRequestsManager extends FogTaskBase {
                               int secondsBetweenRequests,
                               AppRequestClient appRequestClient,
                               List<RequestInfo> requestInfos,
-                              AppEvolutionClient appEvolutionClient) {
+                              AppEvolutionClient appEvolutionClient,
+                              FogCellStateService fogCellStateService) {
         super(0, null, FogRequestsManager.class);
 
         this.applicationTracks = applicationTracks;
@@ -55,6 +58,7 @@ public class FogRequestsManager extends FogTaskBase {
         this.appRequestClient = appRequestClient;
         this.requestInfos = requestInfos;
         this.appEvolutionClient = appEvolutionClient;
+        this.fogCellStateService = fogCellStateService;
     }
 
     public void start() {
@@ -79,11 +83,19 @@ public class FogRequestsManager extends FogTaskBase {
         List<RequestInfo> unfinishedRequests = currentRequests.stream().filter(x -> !x.isFinished()).collect(Collectors.toList());
 
         if (unfinishedRequests.size() > 0) {
-            Map<String, List<RequestInfo>> appsPerFog = unfinishedRequests.stream().collect(Collectors.groupingBy(x -> x.getFog().toFogId()));
+            Map<String, List<RequestInfo>> appsPerFog = unfinishedRequests
+                    .stream()
+                    .collect(Collectors.groupingBy(x -> x.getFog().toFogId()));
+
+            List<String> onlineFogs = appsPerFog.keySet().stream().filter(x -> fogCellStateService.isOnline(FogIdentification.parseFogId(x))).collect(Collectors.toList());
 
             // not yet finished requests
             for (RequestInfo requestInfo : unfinishedRequests) {
                 String fogId = requestInfo.getFog().toFogId();
+                if (!onlineFogs.contains(fogId)) {
+                    LOG.debug("Fog " + fogId + " currently offline, skip bidding for this one!");
+                    continue;
+                }
                 int credits = fogCredits.get(fogId) / appsPerFog.get(fogId).size();
 
                 if (requestInfo.getLastRequest() == null || Seconds.secondsBetween(requestInfo.getLastRequest(), new DateTime()).isGreaterThan(Seconds.seconds(secondsBetweenRequests))) {

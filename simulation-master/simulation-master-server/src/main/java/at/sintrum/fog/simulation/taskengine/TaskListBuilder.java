@@ -292,7 +292,7 @@ public class TaskListBuilder {
             }
 
             public FogRequestsManager createFogRequestManager(List<TrackExecutionState> applicationTracks, Map<String, Integer> fogCredits, int secondsBetweenRequests, List<FogRequestsManager.RequestInfo> requestInfos) {
-                FogRequestsManager task = new FogRequestsManager(applicationTracks, fogCredits, secondsBetweenRequests, appRequestClient, requestInfos, appEvolutionApi);
+                FogRequestsManager task = new FogRequestsManager(applicationTracks, fogCredits, secondsBetweenRequests, appRequestClient, requestInfos, appEvolutionApi, fogCellStateService);
                 return task;
             }
 
