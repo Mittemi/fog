@@ -17,15 +17,34 @@ public class ExecutionLogging {
         logs = Collections.synchronizedList(new LinkedList<>());
     }
 
-    public class LogEntry {
-        private final String message;
-        private final String instanceId;
-        private final DateTime dateTime;
+    public static class LogEntry {
+        private String message;
+        private String instanceId;
+        private DateTime dateTime;
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+
+        public void setInstanceId(String instanceId) {
+            this.instanceId = instanceId;
+        }
+
+        public void setDateTime(DateTime dateTime) {
+            this.dateTime = dateTime;
+        }
+
+        public LogEntry() {
+        }
+
+        public LogEntry(String message, String instanceId, DateTime dateTime) {
+            this.message = message;
+            this.instanceId = instanceId;
+            this.dateTime = dateTime;
+        }
 
         public LogEntry(String instanceId, String message) {
-            this.instanceId = instanceId;
-            this.message = message;
-            dateTime = new DateTime();
+            this(instanceId, message, new DateTime());
         }
 
         public String getMessage() {
