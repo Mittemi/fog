@@ -15,11 +15,11 @@ public class ScenarioExecutionInfo {
 
     private final List<TrackExecutionInfo> trackExecutionInfos;
 
-    public ScenarioExecutionInfo(String name, boolean isFinished, List<TrackExecutionInfo> trackExecutionInfos, boolean useAuctioning) {
+    public ScenarioExecutionInfo(String name, boolean isFinished, List<TrackExecutionInfo> trackExecutionInfos, boolean usesAuctioning) {
         this.name = name;
         this.isFinished = isFinished;
         this.trackExecutionInfos = trackExecutionInfos;
-        this.usesAuctioning = useAuctioning;
+        this.usesAuctioning = usesAuctioning;
     }
 
     public String getName() {
