@@ -58,7 +58,7 @@ public class ScenarioServiceImpl implements ScenarioService {
         }
         Scenario scenario = scenarios.get(name);
         taskList = scenario.build(basicScenarioInfo, useAuction);
-        executionResult = new ScenarioExecutionResult(scenario.getId(), basicScenarioInfo, new DateTime());
+        executionResult = new ScenarioExecutionResult(scenario.getId(), basicScenarioInfo, new DateTime(), useAuction);
         return getExecutionState();
     }
 
@@ -67,7 +67,7 @@ public class ScenarioServiceImpl implements ScenarioService {
         if (taskList == null) return null;
 
         List<TrackExecutionInfo> trackExecutionInfos = new LinkedList<>();
-        ScenarioExecutionInfo scenarioExecutionInfo = new ScenarioExecutionInfo(taskList.getScenario().getId(), taskList.isFinished(), trackExecutionInfos);
+        ScenarioExecutionInfo scenarioExecutionInfo = new ScenarioExecutionInfo(taskList.getScenario().getId(), taskList.isFinished(), trackExecutionInfos, executionResult.isUseAuctioning());
 
         for (Integer trackId : taskList.getTrackIds()) {
             TrackExecutionState trackState = taskList.getTrackState(trackId);

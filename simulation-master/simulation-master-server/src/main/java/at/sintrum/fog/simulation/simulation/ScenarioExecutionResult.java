@@ -24,6 +24,8 @@ public class ScenarioExecutionResult {
 
     private List<AppExecutionLogging> appResults;
 
+    private boolean useAuctioning;
+
     public List<AppExecutionLogging> getAppResults() {
         return appResults;
     }
@@ -32,14 +34,11 @@ public class ScenarioExecutionResult {
         this.appResults = appResults;
     }
 
-    public ScenarioExecutionResult() {
-        appResults = new LinkedList<>();
-    }
-
-    public ScenarioExecutionResult(String scenarioName, BasicScenarioInfo scenarioInfo, DateTime start) {
+    public ScenarioExecutionResult(String scenarioName, BasicScenarioInfo scenarioInfo, DateTime start, boolean useAuctioning) {
         this.start = start;
         this.scenarioName = scenarioName;
         this.scenarioInfo = scenarioInfo;
+        this.useAuctioning = useAuctioning;
         appResults = new LinkedList<>();
         executionId = UUID.randomUUID().toString();
     }
@@ -93,5 +92,13 @@ public class ScenarioExecutionResult {
             return appExecutionLogging;
         }
         return appExecutionLogging;
+    }
+
+    public boolean isUseAuctioning() {
+        return useAuctioning;
+    }
+
+    public void setUseAuctioning(boolean useAuctioning) {
+        this.useAuctioning = useAuctioning;
     }
 }

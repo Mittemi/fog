@@ -33,8 +33,15 @@ public class EvaluationController {
     public List<EvaluationQuickInfo> getRuns() {
         return StreamSupport
                 .stream(fullSimulationResultRepository.findAll().spliterator(), false)
-                .map(fullSimulationResult -> new EvaluationQuickInfo(fullSimulationResult.getId(), fullSimulationResult.getExecutionInfo().getName() + ": " + fullSimulationResult.getExecutionResult().getStart()))
+                .map(fullSimulationResult -> new EvaluationQuickInfo(fullSimulationResult.getId(), buildName(fullSimulationResult)))
                 .collect(Collectors.toList());
+    }
+
+    private String buildName(FullSimulationResult fullSimulationResult) {
+        return fullSimulationResult.getExecutionInfo().getName()
+                + ": "
+                + (fullSimulationResult.getExecutionResult().isUseAuctioning() ? "(Auction) " : "(Classic) ")
+                + fullSimulationResult.getExecutionResult().getStart();
     }
 
     @RequestMapping(value = "details/{id}", method = RequestMethod.GET)
