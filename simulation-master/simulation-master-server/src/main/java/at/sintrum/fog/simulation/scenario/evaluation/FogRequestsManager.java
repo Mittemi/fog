@@ -35,8 +35,13 @@ public class FogRequestsManager extends FogTaskBase {
 
     private List<RequestInfo> getCurrentRequests() {
         final int currentOffset = Seconds.secondsBetween(simulationStart, new DateTime()).getSeconds();
-        return requestInfos.stream()
-                .filter(x -> !x.isFinished())
+
+        long cntUnfinished = requestInfos.stream().filter(x -> !x.isFinished()).count();
+        if (cntUnfinished % 9 == 0) {
+            LOG.debug("Unfinished requests: " + cntUnfinished);
+        }
+
+        return requestInfos.stream().filter(x -> !x.isFinished())
                 .filter(x -> x.offset <= currentOffset)
                 .collect(Collectors.toList());
     }

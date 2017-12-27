@@ -30,3 +30,4 @@ fog.deploymentmanager:
     - "elasticsearch:5.3.0"
     - "tenstartups/redis-commander"
     - "redis"
+    - "ubu1604.internal.sintrum.at:5000/deployment-manager-server"

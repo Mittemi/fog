@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 /**
  * Created by Michael on 2017-06-29.
@@ -456,9 +457,21 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
 
     @Override
     public void reset() {
+
+        for (ContainerInfo containerInfo : dockerService.getContainers().stream().filter(ContainerInfo::isRunning).collect(Collectors.toList())) {
+            LOG.debug("AutoCleanup: Stop container: " + containerInfo.getId() + ", " + containerInfo.getImage());
+            dockerService.stopContainer(containerInfo.getId());
+        }
+
+        for (ContainerInfo containerInfo : dockerService.getContainers()) {
+            LOG.debug("AutoCleanup: Remove container: " + containerInfo.getImage());
+            dockerService.removeContainer(containerInfo.getId());
+        }
+
         synchronized (usedResources) {
             usedResources.setToFixedSize(0);
         }
+        LOG.debug("Deployment Manager Reset");
     }
 
     private FogOperationResult performRemove(ApplicationRemoveRequest applicationRemoveRequest, ContainerInfo containerInfo) {
@@ -627,5 +640,9 @@ public class ApplicationManagerServiceImpl implements ApplicationManagerService 
             LOG.debug("Failed to acquire lock for container: " + containerInfo.getId());
             return new FogOperationResult(containerInfo.getId(), false, environmentInfoService.getFogBaseUrl(), "Pending operation! Could not acquire lock for container");
         }
+    }
+
+    public ResourceInfo getUsedResources() {
+        return usedResources;
     }
 }

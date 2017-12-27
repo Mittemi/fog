@@ -73,5 +73,6 @@ public class ApplicationStateMetadataService extends RedissonMetadataServiceBase
     public void deleteAll() {
         getInstanceDeprecatedMap().clear();
         super.deleteAll();
+        getRedissonClient().getKeys().flushall();
     }
 }

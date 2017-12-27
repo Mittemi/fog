@@ -22,4 +22,6 @@ public interface ApplicationManagerService {
     boolean checkResources(ResourceInfo resourceInfo);
 
     void reset();
+
+    ResourceInfo getUsedResources();
 }
