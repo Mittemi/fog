@@ -2,7 +2,7 @@ FROM openjdk:8
 MAINTAINER Michael Mittermayr
 
 # Install Filebeat
-ENV FILEBEAT_VERSION=5.6.3
+ENV FILEBEAT_VERSION=6.1.1
 
 RUN set -x && \
   apt-get update && \
@@ -12,6 +12,8 @@ RUN set -x && \
   tar xzvf filebeat.tar.gz && \
   cd filebeat-* && \
   cp filebeat /bin && \
+  mkdir -p /beat && \
+  cp -r * /beat && \
   cd /opt && \
   rm -rf filebeat* && \
   apt-get purge -y wget && \
@@ -43,7 +45,7 @@ RUN mkdir -p /app/storage
 
 COPY docker-entrypoint.sh /
 COPY run_app.sh /usr/share/
-RUN chmod +x docker-entrypoint.sh && mkdir -p /beat && chmod +x /usr/share/run_app.sh
+RUN chmod +x docker-entrypoint.sh && chmod +x /usr/share/run_app.sh
 
 EXPOSE 50050
 ENTRYPOINT ["/docker-entrypoint.sh"]
