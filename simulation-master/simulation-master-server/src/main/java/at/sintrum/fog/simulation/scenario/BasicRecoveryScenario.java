@@ -23,7 +23,7 @@ public class BasicRecoveryScenario implements Scenario {
 
     @Override
     public TaskListBuilder.TaskListBuilderState build(BasicScenarioInfo basicScenarioInfo, boolean useAuction) {
-        TaskListBuilder.TaskListBuilderState taskListBuilderState = taskListBuilder.newTaskList(this);
+        TaskListBuilder.TaskListBuilderState taskListBuilderState = taskListBuilder.newTaskList(this, basicScenarioInfo);
 
         taskListBuilderState.createTrack()
                 .resetMetadata(0)

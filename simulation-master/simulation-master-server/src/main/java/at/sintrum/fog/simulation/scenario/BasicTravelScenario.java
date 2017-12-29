@@ -34,7 +34,7 @@ public class BasicTravelScenario implements Scenario {
             appRequestClient.disableAuction();
         }
 
-        TaskListBuilder.TaskListBuilderState taskListBuilderState = taskListBuilder.newTaskList(this);
+        TaskListBuilder.TaskListBuilderState taskListBuilderState = taskListBuilder.newTaskList(this, basicScenarioInfo);
 
         AppRequestState fogAState = new AppRequestState();
         AppRequestState fogBState = new AppRequestState();

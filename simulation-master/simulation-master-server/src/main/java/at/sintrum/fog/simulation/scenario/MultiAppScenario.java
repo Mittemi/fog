@@ -28,7 +28,7 @@ public class MultiAppScenario implements Scenario {
             basicScenarioInfo.setIterations(1);
         }
 
-        TaskListBuilder.TaskListBuilderState taskListBuilderState = taskListBuilder.newTaskList(this);
+        TaskListBuilder.TaskListBuilderState taskListBuilderState = taskListBuilder.newTaskList(this, basicScenarioInfo);
 
         taskListBuilderState.resetMetadata();
 

@@ -25,7 +25,7 @@ public class AutocompleteAuctionScenario implements Scenario {
 
     @Override
     public TaskListBuilder.TaskListBuilderState build(BasicScenarioInfo basicScenarioInfo, boolean useAuction) {
-        TaskListBuilder.TaskListBuilderState taskListBuilderState = taskListBuilder.newTaskList(this);
+        TaskListBuilder.TaskListBuilderState taskListBuilderState = taskListBuilder.newTaskList(this, basicScenarioInfo);
 
         AppRequestState firstRequest = new AppRequestState();
 

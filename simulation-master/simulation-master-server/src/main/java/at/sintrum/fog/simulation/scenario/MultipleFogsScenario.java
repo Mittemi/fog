@@ -24,7 +24,7 @@ public class MultipleFogsScenario implements Scenario {
     @Override
     public TaskListBuilder.TaskListBuilderState build(BasicScenarioInfo basicScenarioInfo, boolean useAuction) {
 
-        TaskListBuilder.TaskListBuilderState taskListBuilderState = taskListBuilder.newTaskList(this);
+        TaskListBuilder.TaskListBuilderState taskListBuilderState = taskListBuilder.newTaskList(this, basicScenarioInfo);
 
         TaskListBuilder.TaskListBuilderState.AppTaskBuilder track = taskListBuilderState.resetMetadata()
                 .createTrack();

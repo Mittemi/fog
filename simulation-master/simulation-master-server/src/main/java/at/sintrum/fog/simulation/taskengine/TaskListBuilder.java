@@ -14,7 +14,9 @@ import at.sintrum.fog.metadatamanager.client.api.AppRequestClient;
 import at.sintrum.fog.metadatamanager.client.api.ContainerMetadataClient;
 import at.sintrum.fog.metadatamanager.client.api.ImageMetadataClient;
 import at.sintrum.fog.metadatamanager.client.factory.MetadataManagerClientFactory;
+import at.sintrum.fog.simulation.SimulationMasterInfoContributor;
 import at.sintrum.fog.simulation.scenario.Scenario;
+import at.sintrum.fog.simulation.scenario.dto.BasicScenarioInfo;
 import at.sintrum.fog.simulation.scenario.evaluation.FogRequestsManager;
 import at.sintrum.fog.simulation.service.FogCellStateService;
 import at.sintrum.fog.simulation.service.FogResourceService;
@@ -57,6 +59,7 @@ public class TaskListBuilder {
     private final FogCellStateService fogCellStateService;
     private final AppRecoveryClient appRecovery;
     private final RedissonClient redissonClient;
+    private final SimulationMasterInfoContributor simulationMasterInfoContributor;
 
     public TaskListBuilder(DeploymentManagerClientFactory deploymentManagerClientFactory,
                            MetadataManagerClientFactory metadataManagerClientFactory,
@@ -70,7 +73,8 @@ public class TaskListBuilder {
                            FogResourceService fogResourceService,
                            FogCellStateService fogCellStateService,
                            AppRecoveryClient appRecovery,
-                           RedissonClient redissonClient) {
+                           RedissonClient redissonClient,
+                           SimulationMasterInfoContributor simulationMasterInfoContributor) {
         this.deploymentManagerClientFactory = deploymentManagerClientFactory;
         this.metadataManagerClientFactory = metadataManagerClientFactory;
         this.applicationStateMetadataClient = applicationStateMetadataClient;
@@ -86,6 +90,7 @@ public class TaskListBuilder {
         this.fogCellStateService = fogCellStateService;
         this.appRecovery = appRecovery;
         this.redissonClient = redissonClient;
+        this.simulationMasterInfoContributor = simulationMasterInfoContributor;
     }
 
     public class TaskListBuilderState {
@@ -93,6 +98,7 @@ public class TaskListBuilder {
         private final Map<Integer, Queue<FogTask>> tracks;
         private final Map<Integer, TrackExecutionState> state;
         private final Scenario scenario;
+        private final BasicScenarioInfo basicScenarioInfo;
         private int currentId;
 
         private final ConcurrentHashMap<Integer, DateTime> simulationTime;
@@ -106,8 +112,9 @@ public class TaskListBuilder {
             return simulationTime.get(id);
         }
 
-        private TaskListBuilderState(Scenario scenario) {
+        private TaskListBuilderState(Scenario scenario, BasicScenarioInfo basicScenarioInfo) {
             this.scenario = scenario;
+            this.basicScenarioInfo = basicScenarioInfo;
             simulationTime = new ConcurrentHashMap<>();
             tracks = new ConcurrentHashMap<>();
             state = new ConcurrentHashMap<>();
@@ -122,7 +129,7 @@ public class TaskListBuilder {
         }
 
         public TaskListBuilderState resetMetadata() {
-            ResetMetadataTask.reset(applicationStateMetadataClient, appEvolutionApi, appRecovery, fogResourceService, fogCellStateService, appRequestClient);
+            ResetMetadataTask.reset(basicScenarioInfo.getLocations(), deploymentManagerClientFactory, applicationStateMetadataClient, appEvolutionApi, appRecovery, fogResourceService, fogCellStateService, appRequestClient);
             return this;
         }
 
@@ -132,6 +139,15 @@ public class TaskListBuilder {
 
         public TrackExecutionState getTrackState(int trackId) {
             return state.get(trackId);
+        }
+
+        public void cancel() {
+            resetMetadata();
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+            }
+            resetMetadata();
         }
 
         public class AppTaskBuilder {
@@ -234,7 +250,7 @@ public class TaskListBuilder {
             }
 
             public AppTaskBuilder resetMetadata(int offset) {
-                return addTask(new ResetMetadataTask(offset, trackExecutionState, applicationStateMetadataClient, appEvolutionApi, appRecovery, fogResourceService, fogCellStateService, appRequestClient));
+                return addTask(new ResetMetadataTask(offset, trackExecutionState, basicScenarioInfo.getLocations(), deploymentManagerClientFactory, applicationStateMetadataClient, appEvolutionApi, appRecovery, fogResourceService, fogCellStateService, appRequestClient));
             }
 
             public AppTaskBuilder setResourceLimit(int offset, FogIdentification fogIdentification, ResourceInfo resourceInfo) {
@@ -293,6 +309,7 @@ public class TaskListBuilder {
 
             public FogRequestsManager createFogRequestManager(List<TrackExecutionState> applicationTracks, Map<String, Integer> fogCredits, int secondsBetweenRequests, List<FogRequestsManager.RequestInfo> requestInfos) {
                 FogRequestsManager task = new FogRequestsManager(applicationTracks, fogCredits, secondsBetweenRequests, appRequestClient, requestInfos, appEvolutionApi, fogCellStateService);
+                simulationMasterInfoContributor.setFogRequestsManager(task);
                 return task;
             }
 
@@ -346,7 +363,7 @@ public class TaskListBuilder {
         }
     }
 
-    public TaskListBuilderState newTaskList(Scenario scenario) {
-        return new TaskListBuilderState(scenario);
+    public TaskListBuilderState newTaskList(Scenario scenario, BasicScenarioInfo basicScenarioInfo) {
+        return new TaskListBuilderState(scenario, basicScenarioInfo);
     }
 }

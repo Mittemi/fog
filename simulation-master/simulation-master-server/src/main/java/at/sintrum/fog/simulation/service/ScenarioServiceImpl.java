@@ -1,5 +1,6 @@
 package at.sintrum.fog.simulation.service;
 
+import at.sintrum.fog.simulation.SimulationMasterInfoContributor;
 import at.sintrum.fog.simulation.scenario.Scenario;
 import at.sintrum.fog.simulation.scenario.dto.BasicScenarioInfo;
 import at.sintrum.fog.simulation.scenario.dto.ScenarioExecutionInfo;
@@ -11,6 +12,7 @@ import at.sintrum.fog.simulation.taskengine.TrackExecutionState;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +30,7 @@ public class ScenarioServiceImpl implements ScenarioService {
     private final ConcurrentHashMap<String, Scenario> scenarios;
     private static final Logger LOG = LoggerFactory.getLogger(ScenarioServiceImpl.class);
     private final TaskListAsyncInvoker taskListAsyncInvoker;
+    private final SimulationMasterInfoContributor simulationMasterInfoContributor;
     private TaskListBuilder.TaskListBuilderState taskList;
 
     private ScenarioExecutionResult executionResult;
@@ -36,8 +39,9 @@ public class ScenarioServiceImpl implements ScenarioService {
         return executionResult;
     }
 
-    public ScenarioServiceImpl(Set<Scenario> scenarioList, TaskListAsyncInvoker taskListAsyncInvoker) {
+    public ScenarioServiceImpl(Set<Scenario> scenarioList, TaskListAsyncInvoker taskListAsyncInvoker, SimulationMasterInfoContributor simulationMasterInfoContributor) {
         this.taskListAsyncInvoker = taskListAsyncInvoker;
+        this.simulationMasterInfoContributor = simulationMasterInfoContributor;
         scenarios = new ConcurrentHashMap<>();
         for (Scenario scenario : scenarioList) {
             scenarios.put(scenario.getId(), scenario);
@@ -78,9 +82,21 @@ public class ScenarioServiceImpl implements ScenarioService {
     }
 
     @Override
+    @Async
     public boolean cancel() {
+        if (this.taskList == null) {
+            return true;
+        }
+        TaskListBuilder.TaskListBuilderState lTaskList = this.taskList;
         this.taskList = null;
         executionResult = null;
+        this.simulationMasterInfoContributor.setFogRequestsManager(null);
+
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+        }
+        lTaskList.cancel();
         return true;
     }
 

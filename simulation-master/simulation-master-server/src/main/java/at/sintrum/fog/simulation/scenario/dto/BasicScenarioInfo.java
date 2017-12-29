@@ -2,6 +2,12 @@ package at.sintrum.fog.simulation.scenario.dto;
 
 import at.sintrum.fog.core.dto.FogIdentification;
 
+import java.beans.Transient;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 /**
  * Created by Michael Mittermayr on 31.08.2017.
  */
@@ -135,5 +141,11 @@ public class BasicScenarioInfo {
 
     public void setSecondsBetweenRequests(int secondsBetweenRequests) {
         this.secondsBetweenRequests = secondsBetweenRequests;
+    }
+
+    @Transient
+    public List<FogIdentification> getLocations() {
+        FogIdentification[] fogIdentifications = {this.getCloud(), this.getFogA(), this.getFogB(), this.getFogC(), this.getFogD(), this.getFogE()};
+        return Arrays.stream(fogIdentifications).filter(Objects::nonNull).collect(Collectors.toList());
     }
 }

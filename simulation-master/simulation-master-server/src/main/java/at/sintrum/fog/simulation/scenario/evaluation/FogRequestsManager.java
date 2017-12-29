@@ -33,13 +33,13 @@ public class FogRequestsManager extends FogTaskBase {
     private AppEvolutionClient appEvolutionClient;
     private final FogCellStateService fogCellStateService;
 
+    public String getState() {
+        long cntUnfinished = requestInfos.stream().filter(x -> !x.isFinished()).count();
+        return "Unfinished requests: " + cntUnfinished + " out of: " + requestInfos.size();
+    }
+
     private List<RequestInfo> getCurrentRequests() {
         final int currentOffset = Seconds.secondsBetween(simulationStart, new DateTime()).getSeconds();
-
-        long cntUnfinished = requestInfos.stream().filter(x -> !x.isFinished()).count();
-        if (cntUnfinished % 9 == 0) {
-            LOG.debug("Unfinished requests: " + cntUnfinished);
-        }
 
         return requestInfos.stream().filter(x -> !x.isFinished())
                 .filter(x -> x.offset <= currentOffset)
