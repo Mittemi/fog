@@ -91,7 +91,6 @@ public class ScenarioServiceImpl implements ScenarioService {
         this.taskList = null;
         executionResult = null;
         this.simulationMasterInfoContributor.setFogRequestsManager(null);
-
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {

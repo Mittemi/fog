@@ -46,11 +46,13 @@ public class ResetMetadataTask extends FogTaskBase {
 
     public static void reset(List<FogIdentification> fogs, DeploymentManagerClientFactory deploymentManagerClientFactory, ApplicationStateMetadataApi applicationStateMetadataApi, AppEvolutionApi appEvolutionApi, AppRecoveryApi appRecovery, FogResourceService fogResourceService, FogCellStateService fogCellStateService, AppRequestClient appRequestClient) {
 
+        appRecovery.reset();
         for (FogIdentification fogIdentification : fogs) {
             deploymentManagerClientFactory.createApplicationManagerClient(fogIdentification.toUrl()).reset();
         }
         fogResourceService.reset();
         appEvolutionApi.reset();
+        appRecovery.reset();
         applicationStateMetadataApi.reset();
         fogCellStateService.reset();
         appRequestClient.reset();
