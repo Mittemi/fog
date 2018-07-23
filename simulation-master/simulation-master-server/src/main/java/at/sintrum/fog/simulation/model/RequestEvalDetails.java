@@ -13,11 +13,17 @@ public class RequestEvalDetails {
 
     private int waitTime;
 
-    public RequestEvalDetails(String id, String fogId, int credits, int waitTime) {
+    private int timeAfterSimulationStart;
+
+    private String instanceId;
+
+    public RequestEvalDetails(String id, String fogId, int credits, int waitTime, int timeAfterSimulationStart, String instanceId) {
         this.id = id;
         this.fogId = fogId;
         this.credits = credits;
         this.waitTime = waitTime;
+        this.timeAfterSimulationStart = timeAfterSimulationStart;
+        this.instanceId = instanceId;
     }
 
     public String getFogId() {
@@ -50,5 +56,21 @@ public class RequestEvalDetails {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public int getTimeAfterSimulationStart() {
+        return timeAfterSimulationStart;
+    }
+
+    public void setTimeAfterSimulationStart(int timeAfterSimulationStart) {
+        this.timeAfterSimulationStart = timeAfterSimulationStart;
+    }
+
+    public String getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(String intanceId) {
+        this.instanceId = intanceId;
     }
 }

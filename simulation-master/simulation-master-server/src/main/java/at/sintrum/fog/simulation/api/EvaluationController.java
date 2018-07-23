@@ -6,7 +6,9 @@ import at.sintrum.fog.simulation.model.EvaluationQuickInfo;
 import at.sintrum.fog.simulation.model.RequestEvalDetails;
 import at.sintrum.fog.simulation.simulation.mongo.FullSimulationResult;
 import at.sintrum.fog.simulation.simulation.mongo.respositories.FullSimulationResultRepository;
+import org.joda.time.DateTime;
 import org.joda.time.Seconds;
+import org.joda.time.base.AbstractInstant;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -52,15 +54,27 @@ public class EvaluationController {
 
         EvaluationDetails evaluationDetails = new EvaluationDetails(id);
 
-        evaluationDetails.setRequestDetails(one.getFinishedRequests().stream().map(this::toRequestEvalDetails).collect(Collectors.toList()));
+        DateTime minDate = one.getFinishedRequests().stream().map(x -> x.getCreationDate()).min(AbstractInstant::compareTo).orElse(null);
+
+        evaluationDetails.setRequestDetails(one.getFinishedRequests().stream().map(x -> toRequestEvalDetails(x, minDate)).collect(Collectors.toList()));
 
         return evaluationDetails;
     }
 
-    private RequestEvalDetails toRequestEvalDetails(AppRequestInfo x) {
+    @RequestMapping(value = "full/{id}", method = RequestMethod.GET)
+    public FullSimulationResult getFullResult(@PathVariable("id") String id) {
+        return fullSimulationResultRepository.findOne(id);
+    }
 
-        RequestEvalDetails requestEvalDetails = new RequestEvalDetails(x.getInternalId(), x.getTargetFog(), x.getCredits(), Seconds.secondsBetween(x.getCreationDate(), x.getFinishedDate()).getSeconds());
+    private RequestEvalDetails toRequestEvalDetails(AppRequestInfo x, DateTime minDate) {
 
+        RequestEvalDetails requestEvalDetails = new RequestEvalDetails(
+                x.getInternalId(),
+                x.getTargetFog(),
+                x.getCredits(),
+                Seconds.secondsBetween(x.getCreationDate(), x.getFinishedDate()).getSeconds(),
+                Seconds.secondsBetween(minDate, x.getCreationDate()).getSeconds(),
+                x.getAppRequest().getInstanceId());
 
         return requestEvalDetails;
     }
