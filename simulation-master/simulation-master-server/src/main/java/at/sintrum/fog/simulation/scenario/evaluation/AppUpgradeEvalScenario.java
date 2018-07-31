@@ -102,7 +102,7 @@ public class AppUpgradeEvalScenario extends EvaluationScenarioBase {
                 .logMessage(0, "Upgrade app 1")
                 .upgradeApp(0, firstAppV2, firstAppV3)
                 .logMessage(0, "Upgrade app 3")
-                .upgradeApp(0, thirdAppV2, thirdAppV2)
+                .upgradeApp(0, thirdAppV1, thirdAppV2)
 
                 .logMessage(0, "App upgrades completed");
     }
