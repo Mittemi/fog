@@ -5,8 +5,10 @@ import at.sintrum.fog.simulation.model.EvaluationDetails;
 import at.sintrum.fog.simulation.model.EvaluationQuickInfo;
 import at.sintrum.fog.simulation.model.RequestEvalDetails;
 import at.sintrum.fog.simulation.simulation.mongo.FullSimulationResult;
+import at.sintrum.fog.simulation.simulation.mongo.SimulationDbEntry;
 import at.sintrum.fog.simulation.simulation.mongo.respositories.FullSimulationResultRepository;
 import org.joda.time.DateTime;
+import at.sintrum.fog.simulation.simulation.mongo.respositories.SimulationDbEntryRepository;
 import org.joda.time.Seconds;
 import org.joda.time.base.AbstractInstant;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,9 +28,11 @@ import java.util.stream.StreamSupport;
 public class EvaluationController {
 
     private final FullSimulationResultRepository fullSimulationResultRepository;
+    private SimulationDbEntryRepository simulationDbEntryRepository;
 
-    public EvaluationController(FullSimulationResultRepository fullSimulationResultRepository) {
+    public EvaluationController(FullSimulationResultRepository fullSimulationResultRepository, SimulationDbEntryRepository simulationDbEntryRepository) {
         this.fullSimulationResultRepository = fullSimulationResultRepository;
+        this.simulationDbEntryRepository = simulationDbEntryRepository;
     }
 
     @RequestMapping(value = "runs", method = RequestMethod.GET)
@@ -44,6 +48,11 @@ public class EvaluationController {
                 + ": "
                 + (fullSimulationResult.getExecutionResult().isUseAuctioning() ? "(Auction) " : "(Classic) ")
                 + fullSimulationResult.getExecutionResult().getStart();
+    }
+
+    @RequestMapping(value = "simulationDbEntries/{id}", method = RequestMethod.GET)
+    public List<SimulationDbEntry> getSimulationDbEntries(@PathVariable("id") String id) {
+        return simulationDbEntryRepository.findBySimulationRunId(id);
     }
 
     @RequestMapping(value = "details/{id}", method = RequestMethod.GET)
