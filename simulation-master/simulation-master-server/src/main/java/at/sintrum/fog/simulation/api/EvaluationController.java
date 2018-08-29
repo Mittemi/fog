@@ -40,7 +40,7 @@ public class EvaluationController {
     public List<EvaluationQuickInfo> getRuns() {
         return StreamSupport
                 .stream(fullSimulationResultRepository.findAll().spliterator(), false)
-                .map(fullSimulationResult -> new EvaluationQuickInfo(fullSimulationResult.getId(), buildName(fullSimulationResult)))
+                .map(fullSimulationResult -> new EvaluationQuickInfo(fullSimulationResult.getId(), buildName(fullSimulationResult), fullSimulationResult.getExecutionResult().getExecutionId()))
                 .collect(Collectors.toList());
     }
 

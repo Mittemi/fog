@@ -7,13 +7,23 @@ public class EvaluationQuickInfo {
 
     private String id;
     private String notes;
+    private String executionId;
 
     public EvaluationQuickInfo() {
     }
 
-    public EvaluationQuickInfo(String id, String notes) {
+    public EvaluationQuickInfo(String id, String notes, String executionId) {
         this.id = id;
         this.notes = notes;
+        this.executionId = executionId;
+    }
+
+    public String getExecutionId() {
+        return executionId;
+    }
+
+    public void setExecutionId(String executionId) {
+        this.executionId = executionId;
     }
 
     public String getId() {
