@@ -3,12 +3,13 @@ package at.sintrum.fog.simulation.api;
 import at.sintrum.fog.metadatamanager.api.dto.AppRequestInfo;
 import at.sintrum.fog.simulation.model.EvaluationDetails;
 import at.sintrum.fog.simulation.model.EvaluationQuickInfo;
+import at.sintrum.fog.simulation.model.InstanceIdDetails;
 import at.sintrum.fog.simulation.model.RequestEvalDetails;
 import at.sintrum.fog.simulation.simulation.mongo.FullSimulationResult;
 import at.sintrum.fog.simulation.simulation.mongo.SimulationDbEntry;
 import at.sintrum.fog.simulation.simulation.mongo.respositories.FullSimulationResultRepository;
-import org.joda.time.DateTime;
 import at.sintrum.fog.simulation.simulation.mongo.respositories.SimulationDbEntryRepository;
+import org.joda.time.DateTime;
 import org.joda.time.Seconds;
 import org.joda.time.base.AbstractInstant;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -73,6 +74,15 @@ public class EvaluationController {
     @RequestMapping(value = "full/{id}", method = RequestMethod.GET)
     public FullSimulationResult getFullResult(@PathVariable("id") String id) {
         return fullSimulationResultRepository.findOne(id);
+    }
+
+    @RequestMapping(value = "instanceIdDetails/{id}", method = RequestMethod.GET)
+    public List<InstanceIdDetails> getInstanceIdDetails(@PathVariable("id") String id) {
+        return simulationDbEntryRepository.findBySimulationRunId(id).stream()
+                .filter(x -> x.getAppEventInfo().getOriginalInstanceId() != null)
+                .map(x -> new InstanceIdDetails(x.getAppEventInfo().getOriginalInstanceId(), x.getAppName()))
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     private RequestEvalDetails toRequestEvalDetails(AppRequestInfo x, DateTime minDate) {
